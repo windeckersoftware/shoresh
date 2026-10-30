@@ -1,0 +1,23 @@
+# Local toolchain and its home directory (JDK + Android SDK, ~10 GB)
+.toolchain/
+.home/
+
+# Build output, APKs and screenshots
+build/
+out/
+*.apk
+*.idsig
+
+# GitHub Pages site: its own repo (windeckersoftware.github.io)
+site/
+
+# Signing keys never go into a public repo
+keystore/
+*.keystore
+*.jks
+
+# Downloaded source data; rebuilt by tools/build_pack.py and tools/build_phrases.py
+data/raw/
+
+.DS_Store
+__pycache__/

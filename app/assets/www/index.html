@@ -1,0 +1,556 @@
+<!doctype html>
+<html lang="he" dir="rtl" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5">
+<meta name="theme-color" content="#f6f2e9">
+<title>שורש — שורש המילה</title>
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<svg class="svg-sprite" aria-hidden="true">
+  <symbol id="i-bookmark" viewBox="0 0 24 24"><path d="M6 3.5h12a1.5 1.5 0 0 1 1.5 1.5v16l-7.5-4.2L4.5 21V5A1.5 1.5 0 0 1 6 3.5Z" fill="currentColor"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="m3 10.6 9-7.4 9 7.4V21a1 1 0 0 1-1 1h-5.3v-6.7H9.3V22H4a1 1 0 0 1-1-1V10.6Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path fill="currentColor" d="M5.2 2.4h13.6A2.2 2.2 0 0 1 21 4.6v16.9l-9-4.3-9 4.3V4.6a2.2 2.2 0 0 1 2.2-2.2Z"/><path d="M8 7h8M8 10.4h5" stroke="rgba(255,255,255,.55)" stroke-width="1.4" stroke-linecap="round" fill="none"/></symbol>
+  <symbol id="i-words" viewBox="0 0 24 24"><path d="M4 6h16M4 12h11M4 18h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" fill="none"/><circle cx="19" cy="12" r="1.6"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V10m6 10V4m6 16v-7m4 7H2" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" fill="none"/></symbol>
+  <symbol id="i-settings" viewBox="0 0 24 24"><path d="M12 8.2a3.8 3.8 0 1 0 0 7.6 3.8 3.8 0 0 0 0-7.6Zm8.2 3.8c0 .6-.06 1.1-.17 1.65l2.02 1.56-2 3.46-2.38-.96c-.86.72-1.86 1.28-2.96 1.62L14.3 22h-4.6l-.4-2.67a8.3 8.3 0 0 1-2.96-1.62l-2.38.96-2-3.46 2.02-1.56A7.8 7.8 0 0 1 3.8 12c0-.6.06-1.1.17-1.65L1.95 8.79l2-3.46 2.38.96c.86-.72 1.86-1.28 2.96-1.62L9.7 2h4.6l.4 2.67c1.1.34 2.1.9 2.96 1.62l2.38-.96 2 3.46-2.02 1.56c.11.55.17 1.05.17 1.65Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></symbol>
+  <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13.8a4.2 4.2 0 0 0 6 0l2.4-2.4a4.24 4.24 0 0 0-6-6L11.3 6.5M14 10.2a4.2 4.2 0 0 0-6 0l-2.4 2.4a4.24 4.24 0 0 0 6 6l1.1-1.1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-paste" viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M9 4.2V3h6v1.2M8.5 9h7M8.5 13h7M8.5 17h4.5" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" fill="none"/></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24"><path d="M6 2.8h7l5 5V21H6z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M13 3v5h5M9 13h6M9 17h5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="m15.5 15.5 5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-speaker" viewBox="0 0 24 24"><path d="M4 9.5h3L12 5v14l-5-4.5H4z" fill="currentColor"/><path d="M15 8.5a5 5 0 0 1 0 7M17.8 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M14.5 5 21 12l-6.5 7M21 12H3" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="m4.5 12.5 5 5 10-11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 14h10l1-14M10 11v6M14 11v6" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-share" viewBox="0 0 24 24"><circle cx="18" cy="5" r="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="6" cy="12" r="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="18" cy="19" r="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m8.2 10.8 7.6-4.5M8.2 13.2l7.6 4.5" stroke="currentColor" stroke-width="1.8"/></symbol>
+  <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3.5 9h17M3.5 15h17M12 3c2.4 2.5 3.5 5.5 3.5 9s-1.1 6.5-3.5 9c-2.4-2.5-3.5-5.5-3.5-9S9.6 5.5 12 3Z" fill="none" stroke="currentColor" stroke-width="1.5"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 15.2A8.4 8.4 0 0 1 8.8 4 8.5 8.5 0 1 0 20 15.2Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M19.1 4.9l-1.8 1.8M6.7 17.3l-1.8 1.8" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></symbol>
+  <symbol id="i-flame" viewBox="0 0 24 24"><path d="M12 2.5c-1.5 3-4.8 4.5-4.8 8.5a4.8 4.8 0 0 0 9.6 0c0-2-1.1-3.4-2.3-4.8-.2 1.7-.8 2.7-1.7 3.2.2-2.1.1-4.1-.8-6.9Z" fill="currentColor"/><path d="M9.5 17.5h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12m0 0 4.5-4.5M12 15l-4.5-4.5M4 20h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V4m0 0 4.5 4.5M12 4 7.5 8.5M4 20h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+</svg>
+
+<div id="app">
+  <header id="topbar" class="topbar">
+    <button class="brand" data-go="home" aria-label="לדף הבית">
+      <span class="brand-mark"><svg><use href="#i-flame"></use></svg></span>
+      <span class="brand-text"><strong>שורש</strong><small>שורש המילה</small></span>
+    </button>
+    <div class="topbar-actions">
+      <button class="icon-btn" id="theme-btn" aria-label="מצב כהה"><svg><use href="#i-moon"></use></svg></button>
+      <button class="icon-btn" data-go="settings" aria-label="הגדרות"><svg><use href="#i-settings"></use></svg></button>
+      <button class="lang-pill" id="lang-pill" aria-label="שפת לימוד"><span id="lang-code">HE</span><span id="lang-name">עברית</span><svg><use href="#i-chevron"></use></svg></button>
+    </div>
+  </header>
+
+  <main id="main">
+    <section id="view-home" class="view active" aria-label="בית">
+      <div class="home-hello">
+        <div class="eyebrow"><span class="live-dot"></span> <span id="home-date">היום</span></div>
+        <h1>מה קוראים<br><em>היום?</em></h1>
+        <p class="hero-sub">מילה חדשה, עמוד אחד, עוד קצת. שורש מראה את מה שאתם קוראים — ואתם בוחרים מה לזכור.</p>
+      </div>
+
+      <div class="today-card">
+        <div class="today-main">
+          <span class="eyebrow">היום</span>
+          <strong id="today-read">0</strong>
+          <span>מילים נקראו</span>
+        </div>
+        <div class="today-side">
+          <div><strong id="today-known">0</strong><small>מילים חדשות</small></div>
+          <div><strong id="streak-mini">0</strong><small>ימים ברצף</small></div>
+        </div>
+      </div>
+
+      <button class="review-card" id="review-card" data-action="open-review" type="button">
+        <span>
+          <span class="eyebrow">חזרה על מילים</span>
+          <strong id="review-due">0</strong>
+          <small id="review-due-label">אין חזרות עכשיו</small>
+        </span>
+        <span class="review-go">לחזרה</span>
+      </button>
+      <button class="ghost practice-early" id="practice-early" type="button" data-action="practice-early" hidden>תרגול מוקדם</button>
+
+      <div class="start-card" id="start-card" hidden>
+        <div class="eyebrow">התחלה</div>
+        <h2>שלושה צעדים</h2>
+        <p>קראו שורה, לחצו על מילה, ודרגו אותה. המילה תחזור אחר כך.</p>
+        <button class="primary" type="button" data-action="sample">נסו עמוד לדוגמה</button>
+        <button class="ghost" type="button" data-action="file">הוסיפו ספר</button>
+        <button class="ghost" type="button" data-go="watch">פתחו סרטון עם כתוביות</button>
+      </div>
+
+      <div class="section-head"><h2>שני מסלולים, שפה אחת</h2></div>
+      <div class="module-grid">
+        <button class="module-card read" data-go="read">
+          <span class="module-icon"><svg><use href="#i-book"></use></svg></span>
+          <span class="module-eyebrow">קריאה</span>
+          <strong>ספרים, כתבות<br>והאינטרנט</strong>
+          <small>EPUB · TXT · עמודי רשת</small>
+          <span class="module-cta">פתחו את המדף <svg><use href="#i-arrow"></use></svg></span>
+        </button>
+        <button class="module-card watch" data-go="watch">
+          <span class="module-icon"><svg><use href="#i-speaker"></use></svg></span>
+          <span class="module-eyebrow">צפייה והאזנה</span>
+          <strong>יוטיוב<br>בלי רעש</strong>
+          <small>כתוביות · האזנה · מילים</small>
+          <span class="module-cta">פתחו צפייה <svg><use href="#i-arrow"></use></svg></span>
+        </button>
+      </div>
+
+      <div class="section-head"><h2>להמשיך מאיפה שעצרתם</h2><button class="text-btn" data-go="read">למדף <svg><use href="#i-chevron"></use></svg></button></div>
+      <div id="home-continue" class="recent-list"></div>
+
+      <div class="section-head"><h2>מילים אחרונות</h2><button class="text-btn" data-go="words">לכל המילים <svg><use href="#i-chevron"></use></svg></button></div>
+      <div id="home-word-preview" class="word-preview"></div>
+
+      <div class="tip-card">
+        <span class="tip-flame"><svg><use href="#i-flame"></use></svg></span>
+        <div><strong>הרעיון של שורש</strong><p>לא צריך להבין הכול. מספיק לפגוש את אותה מילה שוב ושוב, בתוך טקסט אמיתי. לוחצים, מדרגים, ממשיכים לקרוא.</p></div>
+      </div>
+    </section>
+
+    <section id="view-read" class="view" aria-label="קריאה">
+      <div class="view-head">
+        <div><div class="eyebrow">המדף שלכם</div><h1>קריאה</h1></div>
+        <button class="icon-btn" data-action="paste" aria-label="טקסט חדש"><svg><use href="#i-plus"></use></svg></button>
+      </div>
+      <div class="segmented read-seg" id="read-mode-seg">
+        <button data-read-mode="books" class="active">ספרים</button>
+        <button data-read-mode="web">אינטרנט</button>
+      </div>
+      <div id="read-books-panel">
+        <div class="section-head"><h2>הספרים שלכם</h2><button class="small-btn" data-action="file">+ הוסיפו ספר</button></div>
+        <div id="book-grid" class="book-grid"></div>
+        <div class="format-card">
+          <div class="format-row"><span class="format-badge">TXT</span><div><strong>טקסט פשוט</strong><small>פתוח, עברית מלאה, ללא הגבלה</small></div><span class="format-state">נתמך</span></div>
+          <div class="format-row"><span class="format-badge">EPUB</span><div><strong>ספרים אלקטרוניים</strong><small>פרקים, כותרות וטקסט; תמונות בשלב הבא</small></div><span class="format-state">נתמך</span></div>
+          <div class="format-row"><span class="format-badge">PDF</span><div><strong>מסמכים עם טקסט</strong><small>טקסט או OCR לסרוקים</small></div><span class="format-state">טקסט</span></div>
+        </div>
+      </div>
+      <div id="read-web-panel" hidden>
+        <div class="url-box">
+          <svg><use href="#i-link"></use></svg>
+          <input id="url-input" type="url" inputmode="url" placeholder="כתובת של כתבה, סיפור או ויקיפדיה" autocomplete="off" spellcheck="false">
+          <button id="open-url-btn" class="primary">פתחו</button>
+        </div>
+        <div class="read-actions">
+          <button class="read-action" data-action="paste"><svg><use href="#i-paste"></use></svg><span>הדביקו טקסט</span></button>
+          <button class="read-action" data-action="file"><svg><use href="#i-file"></use></svg><span>פתחו ספר</span></button>
+          <button class="read-action" data-action="open-brave"><svg><use href="#i-globe"></use></svg><span>פתחו ב-Brave</span></button>
+        </div>
+        <div class="section-head"><h2>כתבות ואתרים</h2><button class="text-btn" id="recent-clear">ניקוי</button></div>
+        <div id="read-shelf" class="recent-list"></div>
+      </div>
+    </section>
+
+    <section id="view-watch" class="view" aria-label="צפייה והאזנה">
+      <div class="view-head">
+        <div><div class="eyebrow">עוד קלט, יותר שפה</div><h1>צפייה<br>והאזנה</h1></div>
+      </div>
+      <div class="watch-hero">
+        <div class="watch-screen">
+          <span class="watch-play"><svg><use href="#i-arrow"></use></svg></span>
+          <div class="watch-screen-copy"><span>YOUTUBE</span><strong>קול, כתוביות<br>ומילים שנדלקות.</strong></div>
+        </div>
+        <div class="watch-form">
+          <label for="watch-url">קישור ליוטיוב</label>
+          <div class="url-box compact-box">
+            <svg><use href="#i-link"></use></svg>
+            <input id="watch-url" type="url" inputmode="url" placeholder="youtube.com/watch?v=…" autocomplete="off" spellcheck="false">
+            <button id="watch-open" class="primary">צפו</button>
+          </div>
+          <div class="watch-buttons">
+            <button class="ghost-btn" data-action="watch-youtube"><svg><use href="#i-speaker"></use></svg> יוטיוב</button>
+          </div>
+          <p class="watch-note">הנגן הפנימי מסתיר המלצות ותגובות, חוסם פרסומות ומציג כתוביות לחיצות. אין צורך לצאת מהאפליקציה.</p>
+        </div>
+      </div>
+      <div class="stat-grid watch-stats">
+        <div class="stat-tile"><svg><use href="#i-speaker"></use></svg><strong id="watch-minutes">0</strong><span>דקות האזנה</span></div>
+        <div class="stat-tile"><svg><use href="#i-words"></use></svg><strong id="watch-words">0</strong><span>מילים מהכתוביות</span></div>
+        <div class="stat-tile"><svg><use href="#i-flame"></use></svg><strong id="watch-streak">0</strong><span>ימים ברצף</span></div>
+      </div>
+      <div class="section-head"><h2>אחרון שנצפה</h2></div>
+      <div id="watch-recent" class="recent-list"></div>
+      <div class="tip-card"><span class="tip-flame"><svg><use href="#i-flame"></use></svg></span><div><strong>למה זה נחשב?</strong><p>האזנה היא חצי מהקלט. שורש סופר רק זמן שבו הנגן באמת מתקדם — לא טיימר של טאב פתוח.</p></div></div>
+    </section>
+
+    <section id="view-words" class="view" aria-label="מילים">
+      <div class="view-head">
+        <div><div class="eyebrow">אוצר המילים</div><h1>מילים</h1></div>
+        <div class="big-count"><strong id="words-total">0</strong><small>מילים</small></div>
+      </div>
+      <div class="search-box">
+        <svg><use href="#i-search"></use></svg>
+        <input id="word-search" type="search" placeholder="חיפוש מילה, תעתיק או משמעות…" autocomplete="off">
+      </div>
+      <div class="chips" id="word-filters">
+        <button class="chip active" data-filter="all">הכל</button>
+        <button class="chip" data-filter="new">חדשות</button>
+        <button class="chip" data-filter="learning">בלימוד</button>
+        <button class="chip" data-filter="known">ידועות</button>
+        <button class="chip" data-filter="ignored">דילגתי</button>
+      </div>
+      <div id="word-list" class="word-list"></div>
+    </section>
+
+    <section id="view-progress" class="view" aria-label="התקדמות">
+      <div class="view-head">
+        <div><div class="eyebrow">המסע שלכם</div><h1>התקדמות</h1></div>
+        <button class="icon-btn" data-go="settings" aria-label="הגדרות"><svg><use href="#i-settings"></use></svg></button>
+      </div>
+      <div class="progress-card">
+        <div class="ring" id="progress-ring"><div><strong id="known-big">0</strong><small>מילים ידועות</small></div></div>
+        <div class="progress-copy">
+          <span class="eyebrow">בלימוד</span>
+          <h2 id="learning-big">0</h2>
+          <p id="progress-sentence">כל מילה שקראתם מקרבת אתכם לשפה.</p>
+          <div class="progress-pills"><span id="level-pill">A0</span><span id="known-pct">0%</span></div>
+        </div>
+      </div>
+      <div class="stat-grid">
+        <div class="stat-tile"><svg><use href="#i-book"></use></svg><strong id="stat-read">0</strong><span>מילים נקראו</span></div>
+        <div class="stat-tile"><svg><use href="#i-flame"></use></svg><strong id="stat-streak">0</strong><span>ימים ברצף</span></div>
+        <div class="stat-tile"><svg><use href="#i-speaker"></use></svg><strong id="stat-listen">0</strong><span>דקות האזנה</span></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h2>שבעת הימים האחרונים</h2><span id="week-total">0 מילים</span></div>
+        <div class="bars" id="week-chart"></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h2>רצף קריאה</h2><span>28 יום</span></div>
+        <div class="heatmap" id="heatmap"></div>
+      </div>
+      <div class="card" id="lang-breakdown-card">
+        <div class="card-head"><h2>לפי שפה</h2><span>אוצר מילים</span></div>
+        <div id="lang-breakdown"></div>
+      </div>
+    </section>
+
+    <section id="view-settings" class="view" aria-label="הגדרות">
+      <div class="view-head"><div><div class="eyebrow">הכל בשליטה שלכם</div><h1>הגדרות</h1></div></div>
+
+      <div class="settings-group">
+        <h3>שפה</h3>
+        <button class="setting-row" data-action="language">
+          <span class="setting-icon"><svg><use href="#i-globe"></use></svg></span>
+          <span class="setting-copy"><strong>שפת לימוד</strong><small id="setting-lang-label">עברית</small></span>
+          <span class="setting-value" id="setting-lang-code">HE</span><svg class="row-arrow"><use href="#i-chevron"></use></svg>
+        </button>
+        <div class="setting-row static">
+          <span class="setting-icon"><svg><use href="#i-globe"></use></svg></span>
+          <span class="setting-copy"><strong>שפת ממשק</strong><small>לפי המערכת, עברית, English, Magyar, Español, Français, Deutsch, Русский, العربية</small></span>
+          <select id="ui-select" class="ui-select" aria-label="שפת ממשק">
+            <option value="system">לפי המערכת</option>
+            <option value="he">עברית</option>
+            <option value="en">English</option>
+            <option value="hu">Magyar</option>
+            <option value="es">Español</option>
+            <option value="fr">Français</option>
+            <option value="de">Deutsch</option>
+            <option value="ru">Русский</option>
+            <option value="ar">العربية</option>
+          </select>
+        </div>
+        <button class="setting-row" data-action="base-language">
+          <span class="setting-icon"><svg><use href="#i-globe"></use></svg></span>
+          <span class="setting-copy"><strong>שפת אם / תרגום</strong><small id="base-lang-label">עברית</small></span>
+          <span class="setting-value" id="base-lang-code">HE</span><svg class="row-arrow"><use href="#i-chevron"></use></svg>
+        </button>
+        <div class="setting-row static">
+          <span class="setting-icon"><svg><use href="#i-words"></use></svg></span>
+          <span class="setting-copy"><strong>מילון</strong><small id="dict-status">חבילת עברית מותקנת · 12,000 ערכים</small></span>
+          <span class="badge" id="dict-badge">מותקן</span>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <h3>קריאה</h3>
+        <div class="setting-row static">
+          <span class="setting-icon"><svg><use href="#i-sun"></use></svg></span>
+          <span class="setting-copy"><strong>ערכת נושא</strong><small>בהיר, כהה או לפי המערכת</small></span>
+          <div class="segmented" id="theme-seg"><button data-theme="light">בהיר</button><button data-theme="dark">כהה</button><button data-theme="auto">אוטומטי</button></div>
+        </div>
+        <div class="setting-row static">
+          <span class="setting-icon"><svg><use href="#i-book"></use></svg></span>
+          <span class="setting-copy"><strong>גודל טקסט</strong><small>בקריאה בלבד</small></span>
+          <div class="range-wrap"><input id="font-range" type="range" min="16" max="30" step="1" value="19"><span id="font-range-val">19</span></div>
+        </div>
+        <div class="setting-row static">
+          <span class="setting-icon"><svg><use href="#i-flame"></use></svg></span>
+          <span class="setting-copy"><strong>יעד יומי</strong><small>מילים חדשות</small></span>
+          <div class="range-wrap"><input id="goal-range" type="range" min="5" max="100" step="5" value="20"><span id="goal-range-val">20</span></div>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <h3>קול</h3>
+        <div class="setting-row static">
+          <span class="setting-icon"><svg><use href="#i-speaker"></use></svg></span>
+          <span class="setting-copy"><strong>הקראה</strong><small>קול המערכת של אנדרואיד</small></span>
+          <button class="small-btn" id="test-voice">בדיקה</button>
+        </div>
+        <div class="setting-row static">
+          <span class="setting-icon"><svg><use href="#i-speaker"></use></svg></span>
+          <span class="setting-copy"><strong>מהירות דיבור</strong><small>0.5× עד 1.5×</small></span>
+          <div class="range-wrap"><input id="tts-range" type="range" min="50" max="150" step="10" value="100"><span id="tts-range-val">1.0×</span></div>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <h3>סנכרון מקומי</h3>
+        <button class="setting-row" data-action="sync-host">
+          <span class="setting-icon"><svg><use href="#i-arrow"></use></svg></span>
+          <span class="setting-copy"><strong>ארחו את המכשיר הזה</strong><small>אפשרו למכשיר אחר להצטרף באותה רשת Wi-Fi</small></span>
+          <span class="setting-value" id="sync-state">כבוי</span><svg class="row-arrow"><use href="#i-chevron"></use></svg>
+        </button>
+        <div id="sync-host-box" class="sync-box" hidden>
+          <div class="sync-host-line"><span>כתובת</span><strong id="sync-host-ip">—</strong></div>
+          <div class="sync-host-line"><span>קוד</span><strong id="sync-host-token">—</strong></div>
+          <div class="sync-actions"><button class="small-btn" data-action="sync-copy">העתיקו קוד</button><button class="small-btn danger-text" data-action="sync-stop">עצרו</button></div>
+        </div>
+        <div class="sync-join">
+          <div class="sync-fields">
+            <input id="sync-ip" class="field" inputmode="url" placeholder="כתובת IP">
+            <input id="sync-port" class="field sync-port" inputmode="numeric" placeholder="8765" value="8765">
+            <input id="sync-code" class="field sync-code" inputmode="numeric" placeholder="קוד 6 ספרות">
+          </div>
+          <button class="primary sync-join-btn" data-action="sync-join">הצטרפו לסנכרון</button>
+        </div>
+        <p class="sync-note">הסנכרון ישיר בין המכשירים ברשת המקומית. אין שרת חיצוני. אם ה-Wi-Fi מפריד בין המכשירים, זה לא יעבוד.</p>
+      </div>
+
+      <div class="settings-group">
+        <h3>נתונים</h3>
+        <button class="setting-row" data-action="export-anki"><span class="setting-icon"><svg><use href="#i-upload"></use></svg></span><span class="setting-copy"><strong>ייצוא ל-Anki</strong><small>קובץ TSV עם מילה, תעתיק, משמעות והקשר</small></span><svg class="row-arrow"><use href="#i-chevron"></use></svg></button>
+        <button class="setting-row" data-action="library"><span class="setting-icon"><svg><use href="#i-book"></use></svg></span><span class="setting-copy"><strong>ניהול ספרייה</strong><small>גודל הספרים, מחיקה וניקוי קבצים יתומים</small></span><svg class="row-arrow"><use href="#i-chevron"></use></svg></button>
+        <button class="setting-row" data-action="export"><span class="setting-icon"><svg><use href="#i-download"></use></svg></span><span class="setting-copy"><strong>ייצוא גיבוי</strong><small>קובץ JSON עם כל המילים וההתקדמות</small></span><svg class="row-arrow"><use href="#i-chevron"></use></svg></button>
+        <button class="setting-row" data-action="import"><span class="setting-icon"><svg><use href="#i-upload"></use></svg></span><span class="setting-copy"><strong>ייבוא גיבוי</strong><small>שחזור מקובץ של שורש</small></span><svg class="row-arrow"><use href="#i-chevron"></use></svg></button>
+        <button class="setting-row danger" data-action="reset"><span class="setting-icon"><svg><use href="#i-trash"></use></svg></span><span class="setting-copy"><strong>איפוס התקדמות</strong><small>מוחק מילים, סטטיסטיקה והיסטוריה</small></span><svg class="row-arrow"><use href="#i-chevron"></use></svg></button>
+      </div>
+
+      <div class="about-card">
+        <div class="about-brand"><span class="brand-mark"><svg><use href="#i-flame"></use></svg></span><div><strong>שורש</strong><small>גרסה <span id="app-version">0.1.0</span> · נבנה מאפס</small></div></div>
+        <p>קורא רב-לשוני עם אוצר מילים מקומי. לא חשבון, לא ענן, לא מעקב.</p>
+        <div class="about-links"><button data-action="notices">רישיונות וייחוס</button><button data-action="privacy">פרטיות</button></div>
+      </div>
+    </section>
+
+    <section id="view-reader" class="view reader-view" aria-label="קריאה">
+      <div id="reader-progress" class="reader-progress" aria-hidden="true"><span></span></div>
+      <div class="reader-topbar">
+        <button class="icon-btn" data-action="reader-back" aria-label="חזרה"><svg><use href="#i-arrow"></use></svg></button>
+        <div class="reader-title-wrap"><strong id="reader-title">קריאה</strong><small id="reader-meta"></small></div>
+        <button class="icon-btn" data-action="reader-bookmark" aria-label="סימנייה"><svg><use href="#i-bookmark"></use></svg></button>
+        <button class="icon-btn" data-action="reader-aa" aria-label="גודל טקסט">Aa</button>
+        <button class="icon-btn" data-action="reader-share" aria-label="שיתוף"><svg><use href="#i-share"></use></svg></button>
+      </div>
+      <div id="reader-pagebar" class="reader-pagebar" hidden>
+        <button class="page-btn" data-action="page-next" aria-label="העמוד הבא"><svg><use href="#i-chevron"></use></svg></button>
+        <span id="reader-page-count">1 / 1</span>
+        <button class="page-btn prev" data-action="page-prev" aria-label="העמוד הקודם"><svg><use href="#i-chevron"></use></svg></button>
+        <button class="page-btn utility" data-action="reader-toc" aria-label="תוכן"><svg><use href="#i-words"></use></svg></button>
+      </div>
+      <div id="reader-scroll" class="reader-scroll">
+        <article id="reader-body" class="reader-body" dir="rtl"></article>
+        <div class="reader-end" id="reader-end"><span>סוף הטקסט</span><button class="primary" data-action="reader-back">חזרה לספרייה</button></div>
+      </div>
+      <div id="reader-toolbar" class="reader-toolbar">
+        <div class="reader-status" id="reader-status">0%</div>
+        <button class="small-btn" data-action="reader-toc">תוכן</button>
+        <button class="small-btn" data-action="know-all">סמן הכל כידוע</button>
+      </div>
+    </section>
+
+    <section id="view-review" class="view" aria-label="חזרה על מילים">
+      <div class="view-head">
+        <div><div class="eyebrow">חזרה על מילים</div><h1 id="review-progress">0</h1></div>
+        <button class="icon-btn" data-go="home" aria-label="לדף הבית"><svg><use href="#i-close"></use></svg></button>
+      </div>
+      <div id="review-stage" class="review-stage"></div>
+    </section>
+  </main>
+
+  <nav id="tabbar" class="tabbar" aria-label="ניווט ראשי">
+    <button class="tab active" data-go="home"><svg><use href="#i-home"></use></svg><span>בית</span></button>
+    <button class="tab" data-go="read"><svg><use href="#i-book"></use></svg><span>קריאה</span></button>
+    <button class="tab" data-go="watch"><svg><use href="#i-speaker"></use></svg><span>צפייה</span></button>
+    <button class="tab" data-go="words"><svg><use href="#i-words"></use></svg><span>מילים</span></button>
+    <button class="tab" data-go="progress"><svg><use href="#i-chart"></use></svg><span>התקדמות</span></button>
+  </nav>
+</div>
+
+<div id="sheet-backdrop" class="backdrop" hidden></div>
+<section id="word-sheet" class="word-sheet" aria-hidden="true">
+  <div class="sheet-grab"></div>
+  <div class="sheet-head">
+    <div class="sheet-word-wrap">
+      <h2 id="sheet-word">מילה</h2>
+      <p id="sheet-meta">תעתיק · חלק דיבור</p>
+    </div>
+    <button class="icon-btn speak-btn" id="sheet-speak" aria-label="השמעה"><svg><use href="#i-speaker"></use></svg></button>
+  </div>
+  <button id="sheet-phrase" class="sheet-phrase" hidden>
+    <span id="sheet-phrase-kind" class="sheet-phrase-kind">צירוף</span>
+    <strong id="sheet-phrase-text"></strong>
+    <span id="sheet-phrase-meaning" class="sheet-phrase-meaning"></span>
+    <span id="sheet-phrase-gloss" class="sheet-phrase-gloss"></span>
+    <svg><use href="#i-chevron"></use></svg>
+  </button>
+  <p id="sheet-meaning" class="sheet-meaning">המשמעות תופיע כאן.</p>
+  <div id="sheet-glosses" class="sheet-glosses"></div>
+  <p id="sheet-context" class="sheet-context" hidden></p>
+  <button id="sheet-edit" class="text-btn sheet-edit-btn">ערכו משמעות והקשר <svg><use href="#i-chevron"></use></svg></button>
+  <div class="grade-label">כמה המילה מוכרת לכם?</div>
+  <div class="grade-grid" id="grade-grid">
+    <button data-grade="1"><b>1</b><small>לא מכיר</small></button>
+    <button data-grade="2"><b>2</b><small>מזהה</small></button>
+    <button data-grade="3"><b>3</b><small>מבין</small></button>
+    <button data-grade="4"><b>4</b><small>כמעט</small></button>
+    <button data-grade="5" class="known-btn"><b>K</b><small>ידוע</small></button>
+    <button data-grade="-1" class="ignore-btn"><b>X</b><small>דלג</small></button>
+  </div>
+  <div class="sheet-footer">
+    <span id="sheet-rank">—</span>
+    <button id="sheet-translate" class="text-btn">תרגום אונליין <svg><use href="#i-chevron"></use></svg></button>
+  </div>
+</section>
+
+<div id="reader-settings-backdrop" class="backdrop" hidden></div>
+<section id="reader-settings" class="reader-settings" aria-hidden="true">
+  <div class="sheet-grab"></div>
+  <div class="settings-sheet-head"><div><h2>תצוגת קריאה</h2><p>איך הספר ייראה ואיך תנוע בו.</p></div><button class="icon-btn" data-action="reader-settings-close" aria-label="סגירה"><svg><use href="#i-close"></use></svg></button></div>
+  <div class="rs-row static">
+    <span class="rs-label">צבע דף</span>
+  </div>
+  <div class="paper-grid" id="paper-swatches">
+    <button data-paper="auto"><i class="paper-auto"></i><span>אוטומטי</span></button>
+    <button data-paper="paper"><i style="background:#fffdf8"></i><span>לבן</span></button>
+    <button data-paper="cream"><i style="background:#ebdbbc"></i><span>קרם</span></button>
+    <button data-paper="sepia"><i style="background:#ecdfc4"></i><span>ספיה</span></button>
+    <button data-paper="xuan"><i style="background:#f3eee3"></i><span>נייר אורז</span></button>
+    <button data-paper="quiet"><i style="background:#e4e3df"></i><span>אפור שקט</span></button>
+    <button data-paper="sage"><i style="background:#e3e8dc"></i><span>מרווה</span></button>
+    <button data-paper="blush"><i style="background:#f1e7e3"></i><span>ורוד עדין</span></button>
+    <button data-paper="dark"><i style="background:#1a1c1e"></i><span>לילה</span></button>
+    <button data-paper="dusk"><i style="background:#23201c"></i><span>דמדומים</span></button>
+    <button data-paper="inkgreen"><i style="background:#1b211e"></i><span>ירוק דיו</span></button>
+    <button data-paper="black"><i style="background:#000"></i><span>שחור</span></button>
+  </div>
+  <div class="rs-row static">
+    <span class="rs-label">גודל טקסט</span>
+    <div class="size-control"><button data-action="font-minus">−</button><span id="rs-font-size">19</span><button data-action="font-plus">+</button></div>
+  </div>
+  <div class="rs-row static">
+    <span class="rs-label">גופן</span>
+    <div class="segmented rs-seg" id="font-seg"><button data-font="sans">סאנס</button><button data-font="serif">סריף</button><button data-font="mono">מונו</button></div>
+  </div>
+  <div class="rs-row static">
+    <span class="rs-label">מרווח שורות</span>
+    <div class="segmented rs-seg" id="line-seg"><button data-line="tight">צפוף</button><button data-line="normal">רגיל</button><button data-line="airy">מרווח</button></div>
+  </div>
+  <div class="rs-row static">
+    <span class="rs-label">דפדוף בעמודים</span>
+    <button class="switch" id="paged-switch" role="switch" aria-checked="false"><span></span></button>
+  </div>
+  <button class="read-aloud-btn" data-action="read-aloud"><svg><use href="#i-speaker"></use></svg> הקראה משפט-משפט</button>
+</section>
+
+<div id="toc-backdrop" class="backdrop" hidden></div>
+<section id="reader-toc" class="toc-sheet" aria-hidden="true">
+  <div class="sheet-grab"></div>
+  <div class="settings-sheet-head"><div><h2>ניווט בספר</h2><p id="toc-subtitle">תוכן וסימניות</p></div><button class="icon-btn" data-action="toc-close" aria-label="סגירה"><svg><use href="#i-close"></use></svg></button></div>
+  <div class="segmented toc-tabs" id="toc-tabs">
+    <button data-toc-tab="contents" class="active">תוכן</button>
+    <button data-toc-tab="bookmarks">סימניות</button>
+  </div>
+  <div id="toc-list" class="toc-list"></div>
+</section>
+
+<div id="library-modal" class="modal" hidden>
+  <div class="modal-card">
+    <div class="modal-head"><h2>ניהול ספרייה</h2><button class="icon-btn" data-close="library"><svg><use href="#i-close"></use></svg></button></div>
+    <p class="modal-sub" id="library-summary">—</p>
+    <div id="library-list" class="library-list"></div>
+    <div class="modal-actions"><button class="ghost" data-action="library-clean">ניקוי קבצים יתומים</button><button class="primary" data-close="library">סגירה</button></div>
+  </div>
+</div>
+
+<div id="onboarding-modal" class="modal" hidden>
+  <div class="modal-card onboarding-card">
+    <div class="onboarding-mark"><span class="brand-mark"><svg><use href="#i-flame"></use></svg></span></div>
+    <div class="eyebrow">שורש</div>
+    <h2 class="onboarding-title">ברוכים הבאים לשורש</h2>
+    <p class="modal-sub">בחרו מה ללמוד, באיזו שפה לתרגם, ואיך תיראה האפליקציה. אפשר לשנות הכול אחר כך.</p>
+    <label class="field-label" for="onboard-target">שפת לימוד</label>
+    <select id="onboard-target" class="field"></select>
+    <label class="field-label" for="onboard-base">שפת אם / תרגום</label>
+    <select id="onboard-base" class="field"></select>
+    <label class="field-label" for="onboard-ui">שפת ממשק</label>
+    <select id="onboard-ui" class="field"></select>
+    <button id="onboard-start" class="primary onboarding-start">מתחילים</button>
+  </div>
+</div>
+
+<div id="edit-word-modal" class="modal" hidden>
+  <div class="modal-card">
+    <div class="modal-head"><h2>עריכת מילה</h2><button class="icon-btn" data-close="edit-word"><svg><use href="#i-close"></use></svg></button></div>
+    <p class="modal-sub">המשמעות וההקשר נשמרים מקומית ובאים לידי ביטוי גם בייצוא.</p>
+    <label class="field-label">משמעות</label>
+    <textarea id="edit-meaning" class="field textarea edit-meaning" rows="3"></textarea>
+    <label class="field-label">הקשר</label>
+    <textarea id="edit-context" class="field textarea edit-context" rows="3"></textarea>
+    <div class="modal-actions"><button class="ghost" data-close="edit-word">ביטול</button><button class="primary" id="edit-save">שמירה</button></div>
+  </div>
+</div>
+
+<div id="paste-modal" class="modal" hidden>
+  <div class="modal-card">
+    <div class="modal-head"><h2>טקסט חדש</h2><button class="icon-btn" data-close="paste"><svg><use href="#i-close"></use></svg></button></div>
+    <p class="modal-sub">הדביקו כתבה, סיפור, פתק או שיחה. אפשר גם לבחור כותרת.</p>
+    <input id="paste-title" class="field" placeholder="כותרת (לא חובה)" autocomplete="off">
+    <textarea id="paste-text" class="field textarea" placeholder="הדביקו כאן את הטקסט…" rows="10"></textarea>
+    <div class="modal-actions"><button class="ghost" data-close="paste">ביטול</button><button class="primary" id="paste-create">צרו טקסט</button></div>
+  </div>
+</div>
+
+<div id="lang-modal" class="modal" hidden>
+  <div class="modal-card lang-card">
+    <div class="modal-head"><div><h2 id="lang-modal-title">שפת לימוד</h2><p class="modal-sub" id="lang-modal-sub">25 שפות. עברית עם מילון מקומי מלא.</p></div><button class="icon-btn" data-close="lang"><svg><use href="#i-close"></use></svg></button></div>
+    <div class="search-box compact"><svg><use href="#i-search"></use></svg><input id="lang-search" type="search" placeholder="חיפוש שפה…" autocomplete="off"></div>
+    <div id="custom-base-row" class="custom-base" hidden>
+      <div><strong>שפה אחרת</strong><small>הקלידו קוד שפה (ISO 639-1), למשל hu, cs, ro</small></div>
+      <div class="custom-base-controls"><input id="custom-base-code" class="field" maxlength="3" placeholder="hu"><button class="small-btn" data-action="base-custom">השתמשו</button></div>
+    </div>
+    <div id="lang-list" class="lang-list"></div>
+  </div>
+</div>
+
+<div id="notices-modal" class="modal" hidden>
+  <div class="modal-card">
+    <div class="modal-head"><h2>רישיונות וייחוס</h2><button class="icon-btn" data-close="notices"><svg><use href="#i-close"></use></svg></button></div>
+    <div class="notices" id="notices-body"></div>
+  </div>
+</div>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<script src="vendor/pdf.min.js"></script>
+<script src="js/seed-he.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/i18n-reader.js"></script>
+<script src="js/packs.js"></script>
+<script src="js/langs.js"></script>
+<script src="js/review.js"></script>
+<script src="js/pinyin.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
