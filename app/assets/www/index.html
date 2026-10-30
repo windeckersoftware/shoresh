@@ -146,6 +146,10 @@
           <button class="read-action" data-action="file"><svg><use href="#i-file"></use></svg><span>פתחו ספר</span></button>
           <button class="read-action" data-action="open-brave"><svg><use href="#i-globe"></use></svg><span>פתחו ב-Brave</span></button>
         </div>
+        <div id="news-section" hidden>
+          <div class="section-head"><h2>חדשות</h2><span class="section-note" id="news-title"></span></div>
+          <div id="news-list" class="news-grid"></div>
+        </div>
         <div class="section-head"><h2>כתבות ואתרים</h2><button class="text-btn" id="recent-clear">ניקוי</button></div>
         <div id="read-shelf" class="recent-list"></div>
       </div>
@@ -424,6 +428,15 @@
   </div>
 </section>
 
+<div id="item-backdrop" class="backdrop" hidden></div>
+<section id="item-sheet" class="item-sheet" aria-hidden="true">
+  <div class="sheet-grab"></div>
+  <strong id="item-title" class="item-title"></strong>
+  <button id="item-open" class="item-btn">פתיחה</button>
+  <button id="item-delete" class="item-btn danger">מחיקה</button>
+  <button id="item-cancel" class="item-btn ghost">ביטול</button>
+</section>
+
 <div id="reader-settings-backdrop" class="backdrop" hidden></div>
 <section id="reader-settings" class="reader-settings" aria-hidden="true">
   <div class="sheet-grab"></div>
@@ -456,6 +469,10 @@
   <div class="rs-row static">
     <span class="rs-label">מרווח שורות</span>
     <div class="segmented rs-seg" id="line-seg"><button data-line="tight">צפוף</button><button data-line="normal">רגיל</button><button data-line="airy">מרווח</button></div>
+  </div>
+  <div class="rs-row static" id="pinyin-row" hidden>
+    <span class="rs-label">פיניין</span>
+    <button class="switch" id="pinyin-switch" role="switch" aria-checked="false"><span></span></button>
   </div>
   <div class="rs-row static">
     <span class="rs-label">דפדוף בעמודים</span>
@@ -547,6 +564,7 @@
 <script src="js/seed-he.js"></script>
 <script src="js/i18n.js"></script>
 <script src="js/i18n-reader.js"></script>
+<script src="js/news.js"></script>
 <script src="js/packs.js"></script>
 <script src="js/langs.js"></script>
 <script src="js/review.js"></script>

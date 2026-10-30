@@ -33,6 +33,15 @@
     'כמעט': ['almost', 'majdnem', 'casi', 'presque', 'fast', 'почти', 'تقريبًا'],
     'ידוע': ['known', 'tudom', 'conocida', 'connu', 'bekannt', 'знаю', 'معروفة'],
     'דלג': ['skip', 'kihagy', 'saltar', 'ignorer', 'überspringen', 'пропустить', 'تخطَّ'],
+    'פיניין': ['Pinyin', 'Pinjin', 'Pinyin', 'Pinyin', 'Pinyin', 'Пиньинь', 'بينيين'],
+    'חדשות': ['News', 'Hírek', 'Noticias', 'Actualités', 'Nachrichten', 'Новости', 'أخبار'],
+    'אפשרויות': ['Options', 'Lehetőségek', 'Opciones', 'Options', 'Optionen', 'Действия', 'خيارات'],
+    'פתיחה': ['Open', 'Megnyitás', 'Abrir', 'Ouvrir', 'Öffnen', 'Открыть', 'فتح'],
+    'מחיקה': ['Delete', 'Törlés', 'Eliminar', 'Supprimer', 'Löschen', 'Удалить', 'حذف'],
+    'לחצו שוב למחיקה': ['Tap again to delete', 'Koppints újra a törléshez', 'Toca otra vez para eliminar', 'Touchez encore pour supprimer', 'Zum Löschen nochmal tippen', 'Нажмите ещё раз, чтобы удалить', 'اضغط مرة أخرى للحذف'],
+    'ניקוי': ['Clear', 'Törlés', 'Borrar', 'Effacer', 'Leeren', 'Очистить', 'مسح'],
+    'ביטול': ['Cancel', 'Mégse', 'Cancelar', 'Annuler', 'Abbrechen', 'Отмена', 'إلغاء'],
+    'נמחק': ['Deleted', 'Törölve', 'Eliminado', 'Supprimé', 'Gelöscht', 'Удалено', 'تم الحذف'],
     'בשכיחות': ['by frequency', 'gyakoriság szerint', 'por frecuencia', 'par fréquence', 'nach Häufigkeit', 'по частоте', 'حسب التكرار'],
     'מילון מקומי': ['Offline dictionary', 'Offline szótár', 'Diccionario sin conexión', 'Dictionnaire hors ligne', 'Offline-Wörterbuch', 'Офлайн-словарь', 'قاموس دون اتصال']
   };

@@ -21,14 +21,14 @@
     return ISO3[code] || code;
   }
   var UI = {
-    he: { read: 'מצב קריאה', close: 'סיום', loading: 'טוען…', how: 'כמה המילה מוכרת לכם?', g1: 'לא מכיר', g2: 'מזהה', g3: 'מבין', g4: 'כמעט', g5: 'ידוע', gx: 'דלג', online: 'תרגום אונליין ›', hint: 'לחצו על מילה כדי לפתוח · 1–4 / K / X', saved: 'שמור באוצר שלכם', missing: 'לא נמצאה משמעות במילון המקומי.', tryOnline: 'אפשר לפתוח תרגום אונליין.', notFound: 'לא נמצא', noMeaning: 'אין משמעות.', local: 'מילון מקומי', rank: 'בשכיחות', translating: 'מתרגם…' },
-    en: { read: 'Read mode', close: 'Close', loading: 'Loading…', how: 'How well do you know this word?', g1: 'new', g2: 'seen', g3: 'know', g4: 'almost', g5: 'known', gx: 'skip', online: 'Online translation ›', hint: 'Tap a word · 1–4 / K / X', saved: 'Saved', missing: 'Not in the local dictionary.', tryOnline: 'You can open an online translation.', notFound: 'Not found', noMeaning: 'No meaning.', local: 'Local dictionary', rank: 'frequency', translating: 'Translating…' },
-    hu: { read: 'Olvasó', close: 'Bezár', loading: 'Betöltés…', how: 'Mennyire ismered ezt a szót?', g1: 'idegen', g2: 'ismerős', g3: 'értem', g4: 'majdnem', g5: 'tudom', gx: 'kihagy', online: 'Online fordítás ›', hint: 'Koppints egy szóra · 1–4 / K / X', saved: 'Elmentve', missing: 'Nincs a helyi szótárban.', tryOnline: 'Nyiss online fordítást.', notFound: 'Nincs találat', noMeaning: 'Nincs jelentés.', local: 'Helyi szótár', rank: 'gyakoriság', translating: 'Fordítás…' },
-    es: { read: 'Lectura', close: 'Cerrar', loading: 'Cargando…', how: '¿Cuánto conoces esta palabra?', g1: 'nueva', g2: 'vista', g3: 'entiendo', g4: 'casi', g5: 'sé', gx: 'saltar', online: 'Traducción en línea ›', hint: 'Toca una palabra · 1–4 / K / X', saved: 'Guardada', missing: 'No está en el diccionario local.', tryOnline: 'Puedes abrir una traducción en línea.', notFound: 'No encontrada', noMeaning: 'Sin significado.', local: 'Diccionario local', rank: 'frecuencia', translating: 'Traduciendo…' },
-    fr: { read: 'Lecture', close: 'Fermer', loading: 'Chargement…', how: 'À quel point connaissez-vous ce mot ?', g1: 'nouveau', g2: 'vu', g3: 'compris', g4: 'presque', g5: 'su', gx: 'passer', online: 'Traduction en ligne ›', hint: 'Touchez un mot · 1–4 / K / X', saved: 'Enregistré', missing: 'Absent du dictionnaire local.', tryOnline: 'Vous pouvez ouvrir une traduction en ligne.', notFound: 'Introuvable', noMeaning: 'Pas de sens.', local: 'Dictionnaire local', rank: 'fréquence', translating: 'Traduction…' },
-    de: { read: 'Lesen', close: 'Schließen', loading: 'Lädt…', how: 'Wie gut kennst du dieses Wort?', g1: 'neu', g2: 'gesehen', g3: 'verstanden', g4: 'fast', g5: 'bekannt', gx: 'weg', online: 'Online-Übersetzung ›', hint: 'Wort antippen · 1–4 / K / X', saved: 'Gespeichert', missing: 'Nicht im lokalen Wörterbuch.', tryOnline: 'Du kannst eine Online-Übersetzung öffnen.', notFound: 'Nicht gefunden', noMeaning: 'Keine Bedeutung.', local: 'Lokales Wörterbuch', rank: 'Häufigkeit', translating: 'Übersetze…' },
-    ru: { read: 'Чтение', close: 'Закрыть', loading: 'Загрузка…', how: 'Насколько знакомо это слово?', g1: 'новое', g2: 'видел', g3: 'понял', g4: 'почти', g5: 'знаю', gx: 'мимо', online: 'Онлайн-перевод ›', hint: 'Нажмите слово · 1–4 / K / X', saved: 'Сохранено', missing: 'Нет в местном словаре.', tryOnline: 'Можно открыть онлайн-перевод.', notFound: 'Не найдено', noMeaning: 'Нет значения.', local: 'Местный словарь', rank: 'частота', translating: 'Перевод…' },
-    ar: { read: 'وضع القراءة', close: 'إغلاق', loading: 'جارٍ التحميل…', how: 'ما مدى معرفتك بهذه الكلمة؟', g1: 'جديدة', g2: 'مألوفة', g3: 'أفهم', g4: 'تقريبًا', g5: 'أعرف', gx: 'تجاوز', online: 'ترجمة عبر الإنترنت ›', hint: 'اضغط كلمة · 1–4 / K / X', saved: 'محفوظة', missing: 'ليست في القاموس المحلي.', tryOnline: 'يمكنك فتح ترجمة عبر الإنترنت.', notFound: 'غير موجود', noMeaning: 'لا معنى.', local: 'قاموس محلي', rank: 'التكرار', translating: 'جارٍ الترجمة…' }
+    he: { openLink: 'פתיחת הקישור', back: 'חזרה', home: 'דף הבית של האתר', read: 'מצב קריאה', close: 'סיום', loading: 'טוען…', how: 'כמה המילה מוכרת לכם?', g1: 'לא מכיר', g2: 'מזהה', g3: 'מבין', g4: 'כמעט', g5: 'ידוע', gx: 'דלג', online: 'תרגום אונליין ›', hint: 'לחצו על מילה כדי לפתוח · 1–4 / K / X', saved: 'שמור באוצר שלכם', missing: 'לא נמצאה משמעות במילון המקומי.', tryOnline: 'אפשר לפתוח תרגום אונליין.', notFound: 'לא נמצא', noMeaning: 'אין משמעות.', local: 'מילון מקומי', rank: 'בשכיחות', translating: 'מתרגם…' },
+    en: { openLink: 'Open link', back: 'Back', home: 'Site home', read: 'Read mode', close: 'Close', loading: 'Loading…', how: 'How well do you know this word?', g1: 'new', g2: 'seen', g3: 'know', g4: 'almost', g5: 'known', gx: 'skip', online: 'Online translation ›', hint: 'Tap a word · 1–4 / K / X', saved: 'Saved', missing: 'Not in the local dictionary.', tryOnline: 'You can open an online translation.', notFound: 'Not found', noMeaning: 'No meaning.', local: 'Local dictionary', rank: 'frequency', translating: 'Translating…' },
+    hu: { openLink: 'Link megnyitása', back: 'Vissza', home: 'Az oldal kezdőlapja', read: 'Olvasó', close: 'Bezár', loading: 'Betöltés…', how: 'Mennyire ismered ezt a szót?', g1: 'idegen', g2: 'ismerős', g3: 'értem', g4: 'majdnem', g5: 'tudom', gx: 'kihagy', online: 'Online fordítás ›', hint: 'Koppints egy szóra · 1–4 / K / X', saved: 'Elmentve', missing: 'Nincs a helyi szótárban.', tryOnline: 'Nyiss online fordítást.', notFound: 'Nincs találat', noMeaning: 'Nincs jelentés.', local: 'Helyi szótár', rank: 'gyakoriság', translating: 'Fordítás…' },
+    es: { openLink: 'Abrir enlace', back: 'Atrás', home: 'Inicio del sitio', read: 'Lectura', close: 'Cerrar', loading: 'Cargando…', how: '¿Cuánto conoces esta palabra?', g1: 'nueva', g2: 'vista', g3: 'entiendo', g4: 'casi', g5: 'sé', gx: 'saltar', online: 'Traducción en línea ›', hint: 'Toca una palabra · 1–4 / K / X', saved: 'Guardada', missing: 'No está en el diccionario local.', tryOnline: 'Puedes abrir una traducción en línea.', notFound: 'No encontrada', noMeaning: 'Sin significado.', local: 'Diccionario local', rank: 'frecuencia', translating: 'Traduciendo…' },
+    fr: { openLink: 'Ouvrir le lien', back: 'Retour', home: 'Accueil du site', read: 'Lecture', close: 'Fermer', loading: 'Chargement…', how: 'À quel point connaissez-vous ce mot ?', g1: 'nouveau', g2: 'vu', g3: 'compris', g4: 'presque', g5: 'su', gx: 'passer', online: 'Traduction en ligne ›', hint: 'Touchez un mot · 1–4 / K / X', saved: 'Enregistré', missing: 'Absent du dictionnaire local.', tryOnline: 'Vous pouvez ouvrir une traduction en ligne.', notFound: 'Introuvable', noMeaning: 'Pas de sens.', local: 'Dictionnaire local', rank: 'fréquence', translating: 'Traduction…' },
+    de: { openLink: 'Link öffnen', back: 'Zurück', home: 'Startseite der Website', read: 'Lesen', close: 'Schließen', loading: 'Lädt…', how: 'Wie gut kennst du dieses Wort?', g1: 'neu', g2: 'gesehen', g3: 'verstanden', g4: 'fast', g5: 'bekannt', gx: 'weg', online: 'Online-Übersetzung ›', hint: 'Wort antippen · 1–4 / K / X', saved: 'Gespeichert', missing: 'Nicht im lokalen Wörterbuch.', tryOnline: 'Du kannst eine Online-Übersetzung öffnen.', notFound: 'Nicht gefunden', noMeaning: 'Keine Bedeutung.', local: 'Lokales Wörterbuch', rank: 'Häufigkeit', translating: 'Übersetze…' },
+    ru: { openLink: 'Открыть ссылку', back: 'Назад', home: 'Главная сайта', read: 'Чтение', close: 'Закрыть', loading: 'Загрузка…', how: 'Насколько знакомо это слово?', g1: 'новое', g2: 'видел', g3: 'понял', g4: 'почти', g5: 'знаю', gx: 'мимо', online: 'Онлайн-перевод ›', hint: 'Нажмите слово · 1–4 / K / X', saved: 'Сохранено', missing: 'Нет в местном словаре.', tryOnline: 'Можно открыть онлайн-перевод.', notFound: 'Не найдено', noMeaning: 'Нет значения.', local: 'Местный словарь', rank: 'частота', translating: 'Перевод…' },
+    ar: { openLink: 'فتح الرابط', back: 'رجوع', home: 'الصفحة الرئيسية', read: 'وضع القراءة', close: 'إغلاق', loading: 'جارٍ التحميل…', how: 'ما مدى معرفتك بهذه الكلمة؟', g1: 'جديدة', g2: 'مألوفة', g3: 'أفهم', g4: 'تقريبًا', g5: 'أعرف', gx: 'تجاوز', online: 'ترجمة عبر الإنترنت ›', hint: 'اضغط كلمة · 1–4 / K / X', saved: 'محفوظة', missing: 'ليست في القاموس المحلي.', tryOnline: 'يمكنك فتح ترجمة عبر الإنترنت.', notFound: 'غير موجود', noMeaning: 'لا معنى.', local: 'قاموس محلي', rank: 'التكرار', translating: 'جارٍ الترجمة…' }
   };
   if (!UI[uiCode]) uiCode = 'en';
   function t(key) { return (UI[uiCode] && UI[uiCode][key]) || UI.en[key] || key; }
@@ -79,6 +79,13 @@
     .brand{display:flex;align-items:center;gap:6px;padding:0 4px;font-weight:800;letter-spacing:-.02em}
     .flame{width:25px;height:25px;border-radius:8px;background:#2f6f5e;color:#f6e7c8;display:grid;place-items:center;font-size:13px}
     .grow{flex:1}
+    .bar{transition:transform .25s ease,opacity .25s}
+    .bar.away{transform:translateY(-140%);opacity:0;pointer-events:none}
+    .b.nav{font-size:19px;line-height:1;padding:4px 9px;font-weight:700}
+    .link-btn{display:flex;align-items:center;gap:6px;width:100%;margin:10px 0 2px;padding:10px 12px;border:0;border-radius:12px;cursor:pointer;
+      background:#2f6f5e;color:#fff;font:inherit;font-size:13px;font-weight:750;text-align:start}
+    .link-btn[hidden]{display:none}
+    .link-btn small{font-weight:500;opacity:.8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;flex:1;unicode-bidi:plaintext}
     .b{border:0;background:transparent;color:inherit;font:inherit;font-size:11px;font-weight:650;padding:7px 8px;border-radius:9px;cursor:pointer}
     .b:active{background:${dark ? '#2c3731' : '#f0e9db'}}
     .b.ok{background:#2f6f5e;color:#fff;padding:7px 10px}
@@ -131,7 +138,9 @@
     var wrap = document.createElement('div');
     safeHTML(wrap, `
       <div class="bar">
-        <div class="brand"><span class="flame">${uiCode === 'he' ? 'ש' : brandName.charAt(0)}</span><span>${brandName}</span></div>
+        <button class="b nav" data-act="back" aria-label="${t('back')}">${uiDir === 'rtl' ? '›' : '‹'}</button>
+        <button class="b nav" data-act="home" aria-label="${t('home')}">⌂</button>
+        <div class="brand"><span class="flame">${uiCode === 'he' ? 'ש' : brandName.charAt(0)}</span></div>
         <span class="grow"></span>
         <button class="b" data-act="reader">${t('read')}</button>
         <button class="b" data-act="font">Aa</button>
@@ -142,6 +151,7 @@
         <div class="head"><div><h2 class="word">…</h2><p class="meta"></p></div><button class="speak" data-act="speak">🔊</button></div>
         <div class="phrase" hidden><small class="ph-kind"></small><b class="ph-text"></b><span class="ph-meaning"></span></div>
         <p class="meaning">${t('loading')}</p>
+        <button class="link-btn" data-act="link" hidden></button>
         <p class="more"></p>
         <div class="label">${t('how')}</div>
         <div class="grades">
@@ -158,6 +168,9 @@
       <div class="hint">${t('hint')}</div>`);
     while (wrap.firstChild) root.appendChild(wrap.firstChild);
     document.documentElement.appendChild(host);
+    // Cookie banners and paywalls sit at the highest z-index too; the top
+    // layer is above all of them.
+    try { host.setAttribute('popover', 'manual'); host.showPopover(); } catch (e) { }
     bar = root.querySelector('.bar');
     panel = root.querySelector('.panel');
     overlay = root.querySelector('.reader');
@@ -167,6 +180,9 @@
       if (b) {
         var act = b.getAttribute('data-act');
         if (act === 'close') send('close', {});
+        if (act === 'back') { if (!overlay.hidden) toggleReader(); else history.back(); }
+        if (act === 'home') { location.href = location.origin + '/'; }
+        if (act === 'link') { var href = b.getAttribute('data-href'); if (href) { closePanel(); location.href = href; } }
         if (act === 'font') { font = font >= 26 ? 18 : font + 2; var inner = root.querySelector('.reader-inner'); if (inner) inner.style.fontSize = font + 'px'; }
         if (act === 'reader') toggleReader();
         if (act === 'speak') { if (current) speak(current); }
@@ -186,10 +202,46 @@
 
     document.addEventListener('click', function (e) {
       var span = e.target.closest && e.target.closest('.ner-w');
-      if (!span) return;
+      if (!span) {
+        // With the card open, a tap elsewhere only closes it.
+        if (panel.classList.contains('open') && e.target !== host) { e.preventDefault(); e.stopPropagation(); closePanel(); }
+        return;
+      }
       e.preventDefault(); e.stopPropagation();
       openWord(span.getAttribute('data-raw'), span);
     }, true);
+
+    // Drag the card down to close it.
+    var dragY = 0, dragDy = 0, dragging = false;
+    panel.addEventListener('touchstart', function (e) {
+      if (e.touches.length !== 1 || (panel.scrollTop > 0 && !e.target.closest('.grab'))) return;
+      dragY = e.touches[0].clientY; dragDy = 0; dragging = true;
+    }, { passive: true });
+    panel.addEventListener('touchmove', function (e) {
+      if (!dragging) return;
+      dragDy = e.touches[0].clientY - dragY;
+      if (dragDy <= 0) return;
+      panel.style.transition = 'none';
+      panel.style.transform = 'translate(-50%,' + dragDy + 'px)';
+    }, { passive: true });
+    function endDrag() {
+      if (!dragging) return;
+      dragging = false;
+      panel.style.transition = '';
+      panel.style.transform = '';
+      if (dragDy > 80) closePanel();
+    }
+    panel.addEventListener('touchend', endDrag);
+    panel.addEventListener('touchcancel', endDrag);
+
+    // The bar steps aside while reading down a page and comes back on the way up.
+    var lastY = window.scrollY;
+    window.addEventListener('scroll', function () {
+      var y = window.scrollY, dy = y - lastY;
+      lastY = y;
+      if (y < 80 || dy < -6) bar.classList.remove('away');
+      else if (dy > 6 && !panel.classList.contains('open')) bar.classList.add('away');
+    }, { passive: true });
 
     document.addEventListener('keydown', function (e) {
       if (!panel.classList.contains('open')) return;
@@ -390,6 +442,18 @@
     rank.textContent = (w && w.meaningBase === baseLang && w.meaning) ? t('saved') : '';
     root.querySelectorAll('.grades button').forEach(function (b) { b.classList.toggle('active', !!w && Number(b.getAttribute('data-grade')) === Number(w.grade)); });
     root.querySelector('.phrase').hidden = true;
+    var link = span && span.closest ? span.closest('a[href]') : null;
+    var linkBtn = root.querySelector('.link-btn');
+    var href = link ? link.href : '';
+    if (href && /^https?:/i.test(href) && href.split('#')[0] !== location.href.split('#')[0]) {
+      var label = (link.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 80);
+      safeHTML(linkBtn, '<span>' + esc(t('openLink')) + ' ' + (uiDir === 'rtl' ? '‹' : '›') + '</span><small>' + esc(label) + '</small>');
+      linkBtn.setAttribute('data-href', href);
+      linkBtn.hidden = false;
+    } else {
+      linkBtn.hidden = true;
+    }
+    bar.classList.remove('away');
     panel.classList.add('open');
     var rid = 'r' + (++reqId);
     panel.__rid = rid;

@@ -43,6 +43,17 @@ def pinyin(numbered):
     return " ".join(tone_mark(s) for s in numbered.split())
 
 
+XREF = re.compile(r"([^\s|\[\],;/]+)(?:\|([^\s|\[\],;/]+))?\[([^\]]+)\]")
+
+
+def clean_gloss(g, traditional):
+    """CEDICT cross-references: 中國共產黨|中国共产党[Zhong1 guo2 ...] → 中国共产党 (Zhōng guó ...)."""
+    def sub(m):
+        trad, simp, py = m.group(1), m.group(2) or m.group(1), m.group(3)
+        return f"{trad if traditional else simp} ({pinyin(py)})"
+    return XREF.sub(sub, g)
+
+
 def main():
     if not RAW.exists():
         RAW.parent.mkdir(parents=True, exist_ok=True)
@@ -98,7 +109,7 @@ def main():
             if e["name"] and rank(simp) >= 60000:
                 continue  # rare proper names only bloat the pack
             key, other = key_of(simp), other_of(simp)
-            item = {"w": key, "tr": e["tr"] if keep_tr else "", "pos": e["pos"], "g": [re.sub(r"\s*\(idiom\)\s*", " ", g).strip()[:140] for g in e["g"]][:3],
+            item = {"w": key, "tr": e["tr"] if keep_tr else "", "pos": e["pos"], "g": [clean_gloss(re.sub(r"\s*\(idiom\)\s*", " ", g).strip(), not keep_tr)[:140] for g in e["g"]][:3],
                     "rank": min(rank(simp), rank(trad_of[simp]))}
             if key in entries:
                 old = entries[key]

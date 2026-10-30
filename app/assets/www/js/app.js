@@ -36,7 +36,7 @@
   const DEFAULT_SETTINGS = {
     lang: 'en', baseLang: DEFAULT_BASE, ui: 'system', theme: 'auto', fontSize: 19, ttsRate: 1,
     dailyGoal: 20, highlightNew: true, showTranslit: true,
-    readerPaged: false, readerPaper: 'auto', readerFont: 'sans', readerLine: 'normal'
+    readerPaged: false, readerPaper: 'auto', readerFont: 'sans', readerLine: 'normal', readerPinyin: false
   };
   // Reading backgrounds: [page, ink, dark?]. Low-glare palettes after the 发财中文 reader.
   const PAPERS = {
@@ -74,6 +74,7 @@
   let readObserver = null;
   let tokenObserver = null;
   let scrollTick = false;
+  let longPressed = false;
   let lastScrollTop = 0;
   let readPosTimer = null;
   let readTimers = new WeakMap();
@@ -491,17 +492,45 @@
         const words = a.text ? countWords(a.text) : 0;
         const hue = ['#2f6f5e', '#73513a', '#3f5f86', '#7c5a2e', '#4d5b43'][i % 5];
         return `<button class="book-card" data-article-id="${escapeHtml(a.id)}">
+          <span class="book-menu" data-item-menu="${escapeHtml(a.id)}" role="button" aria-label="${escapeHtml(tr('אפשרויות'))}">⋯</span>
           <span class="book-cover" style="--cover:${hue}"><span class="book-cover-title">${escapeHtml(a.title || 'ספר')}</span><span class="book-cover-format">${/epub/i.test(a.name || '') ? 'EPUB' : 'TXT'}</span></span>
           <strong>${escapeHtml(a.title || 'ספר')}</strong><small>${words ? tf('words', { n: fmt(words) }) : tr('ספר')} · ${relativeDate(a.lastOpened || a.added)}</small>
         </button>`;
       }).join('') : `<div class="book-empty"><div class="empty-mark"><svg><use href="#i-book"></use></svg></div><h3>המדף מחכה לספר הראשון</h3><p>ייבאו קובץ EPUB או TXT, או הדביקו טקסט ארוך.</p><button class="primary" data-action="file">הוסיפו ספר</button></div>`;
     }
+    renderNews();
     const web = articles.filter(a => a.kind !== 'book' && a.kind !== 'watch');
     const shelf = $('#read-shelf');
     if (shelf) {
       shelf.innerHTML = web.length ? web.map(a => articleRow(a)).join('') : `<div class="recent-empty">עוד אין כתבות או טקסטים. הדביקו קישור או טקסט כדי להתחיל.</div>`;
     }
     applyReadMode();
+  }
+
+  function renderNews() {
+    const host = $('#news-list');
+    if (!host) return;
+    const sites = (window.NER_NEWS || {})[lang().id] || [];
+    $('#news-section').hidden = !sites.length;
+    $('#news-title').textContent = langName(lang());
+    host.innerHTML = sites.map(n => {
+      let domain = '';
+      try { domain = new URL(n.url).hostname.replace(/^www\./, ''); } catch (e) { }
+      return `<button class="news-card" data-news-url="${escapeHtml(n.url)}" data-news-name="${escapeHtml(n.name)}">
+        <strong>${escapeHtml(n.name)}</strong><small>${escapeHtml(n.note || '')}</small><span>${escapeHtml(domain)}</span>
+      </button>`;
+    }).join('');
+  }
+
+  function openWebUrl(url, title) {
+    const article = {
+      id: 'web-' + Date.now(), title: title || url, url, lang: lang().id, kind: 'web', added: Date.now(), lastOpened: Date.now()
+    };
+    const old = state.articles.find(a => a.kind === 'web' && a.url === url);
+    if (old) old.lastOpened = Date.now(); else addArticle(article);
+    save();
+    renderRead();
+    try { N.openUrl(url); } catch (e) { toast('לא ניתן לפתוח את הקישור'); }
   }
 
   function applyReadMode() {
@@ -743,7 +772,7 @@
     $('#goal-range-val').textContent = state.settings.dailyGoal;
     $('#tts-range').value = Math.round((state.settings.ttsRate || 1) * 100);
     $('#tts-range-val').textContent = (state.settings.ttsRate || 1).toFixed(1) + '×';
-    $('#app-version').textContent = boot.version || '1.5.0';
+    $('#app-version').textContent = boot.version || '1.6.0';
     renderSyncUI();
   }
 
@@ -785,6 +814,7 @@
     if ($('#reader-toc').classList.contains('open')) { closeReaderToc(); return true; }
     if ($('#reader-settings').classList.contains('open')) { closeReaderSettings(); return true; }
     if ($('#word-sheet').classList.contains('open')) { closeSheet(); return true; }
+    if ($('#item-sheet').classList.contains('open')) { closeItemSheet(); return true; }
     if (!$('#edit-word-modal').hidden) { hideModal('edit-word'); return true; }
     if (!$('#paste-modal').hidden) { hideModal('paste'); return true; }
     if (!$('#lang-modal').hidden) { hideModal('lang'); return true; }
@@ -1251,6 +1281,21 @@
     }, 0);
   }
 
+  // Redraw the open text (after a display setting changed) without losing the place.
+  function rerenderKeepingPlace() {
+    const r = currentReader;
+    if (!r) return;
+    if (r.paged) { renderReaderPage(); return; }
+    r.wantOffset = r.offsetNow != null ? r.offsetNow : null;
+    if (r.stream) r.streamBlocks = splitBlocksFromParas(r.paras);
+    renderReaderScroll();
+  }
+
+  // Streamed books keep only what is on the page; rebuild their blocks from it.
+  function splitBlocksFromParas(paras) {
+    return paras.map(p => ({ text: p.__text || p.textContent, off: Number(p.dataset.off) }));
+  }
+
   function switchReaderMode(paged) {
     const r = currentReader;
     if (!r || r.paged === paged) return;
@@ -1543,6 +1588,9 @@
     const line = LINE_HEIGHTS[s.readerLine] ? s.readerLine : 'normal';
     document.documentElement.style.setProperty('--reader-lh', String(LINE_HEIGHTS[line]));
     $$('#line-seg button').forEach(b => b.classList.toggle('active', b.dataset.line === line));
+    $('#pinyin-row').hidden = lang().id !== 'zh';
+    $('#pinyin-switch').classList.toggle('on', !!s.readerPinyin);
+    $('#pinyin-switch').setAttribute('aria-checked', s.readerPinyin ? 'true' : 'false');
     document.documentElement.style.setProperty('--reader-font', (s.fontSize || 19) + 'px');
     $('#rs-font-size').textContent = s.fontSize || 19;
     $$('#font-seg button').forEach(b => b.classList.toggle('active', b.dataset.font === (s.readerFont || 'sans')));
@@ -1558,6 +1606,34 @@
     $('#reader-settings').classList.add('open');
     $('#reader-settings').setAttribute('aria-hidden', 'false');
     $('#reader-settings-backdrop').hidden = false;
+  }
+
+  // Drag a bottom sheet down to close it (from its handle, or anywhere once
+  // its content is scrolled to the top).
+  function swipeToClose(sheet, close) {
+    let startY = 0, dy = 0, dragging = false;
+    sheet.addEventListener('touchstart', e => {
+      if (e.touches.length !== 1 || (sheet.scrollTop > 0 && !e.target.closest('.sheet-grab'))) return;
+      startY = e.touches[0].clientY;
+      dy = 0;
+      dragging = true;
+    }, { passive: true });
+    sheet.addEventListener('touchmove', e => {
+      if (!dragging) return;
+      dy = e.touches[0].clientY - startY;
+      if (dy <= 0) return;
+      sheet.style.transition = 'none';
+      sheet.style.transform = `translate(-50%, ${dy}px)`;
+    }, { passive: true });
+    const end = () => {
+      if (!dragging) return;
+      dragging = false;
+      sheet.style.transition = '';
+      sheet.style.transform = '';
+      if (dy > 80) close();
+    };
+    sheet.addEventListener('touchend', end);
+    sheet.addEventListener('touchcancel', end);
   }
 
   function closeReaderSettings() {
@@ -1700,7 +1776,7 @@
     span.className = 'ner-w';
     span.textContent = raw;
     span.dataset.raw = raw;
-    const py = hanReading(raw);
+    const py = state.settings.readerPinyin ? hanReading(raw) : '';
     if (py) {
       span.classList.add('has-py');
       const pyEl = document.createElement('span');
@@ -1750,7 +1826,7 @@
     if (!body || !root || !root.isConnected) return;
     const l = lang();
     body.dataset.cjk = ['zh', 'yue', 'ja', 'th'].includes(l.id) ? 'true' : 'false';
-    body.dataset.py = l.id === 'zh' ? 'on' : 'off';
+    body.dataset.py = l.id === 'zh' && state.settings.readerPinyin ? 'on' : 'off';
     const segmenter = wordSegmenter(l.id);
     const elide = l.id === 'fr' || l.id === 'it';
     const addWord = (frag, token) => {
@@ -2718,6 +2794,41 @@
     showModal('library');
   }
 
+  // Long-press (or ⋯) on a shelf item: open or delete it. Delete asks for a
+  // second tap instead of a dialog.
+  let itemSheetId = null;
+  function openItemSheet(id) {
+    const a = state.articles.find(x => x.id === id);
+    if (!a) return;
+    itemSheetId = id;
+    $('#item-title').textContent = a.title || a.url || '';
+    const del = $('#item-delete');
+    del.classList.remove('confirm');
+    del.textContent = tr('מחיקה');
+    $('#item-backdrop').hidden = false;
+    $('#item-sheet').classList.add('open');
+    $('#item-sheet').setAttribute('aria-hidden', 'false');
+  }
+
+  function closeItemSheet() {
+    itemSheetId = null;
+    $('#item-sheet').classList.remove('open');
+    $('#item-sheet').setAttribute('aria-hidden', 'true');
+    $('#item-backdrop').hidden = true;
+  }
+
+  function deleteArticle(id) {
+    const a = state.articles.find(x => x.id === id);
+    if (!a) return;
+    for (const file of [a.bookId, a.pdfId]) {
+      if (file) { try { N.deleteBook(file); } catch (e) { } }
+    }
+    state.articles = state.articles.filter(x => x.id !== id);
+    save(true);
+    renderAll();
+    toast(tr('נמחק'));
+  }
+
   function deleteLibraryBook(id) {
     try { N.deleteBook(id); } catch (e) { }
     state.articles = (state.articles || []).filter(a => a.bookId !== id && a.pdfId !== id);
@@ -2789,7 +2900,36 @@
         openSavedWord(e.target.closest('[data-word-id]').dataset.wordId);
         return;
       }
+      if (e.target.closest('[data-item-menu]')) {
+        openItemSheet(e.target.closest('[data-item-menu]').dataset.itemMenu);
+        return;
+      }
+      if (e.target.closest('[data-news-url]')) {
+        const n = e.target.closest('[data-news-url]');
+        openWebUrl(n.dataset.newsUrl, n.dataset.newsName);
+        return;
+      }
+      if (e.target.closest('#item-open')) {
+        const id = itemSheetId;
+        closeItemSheet();
+        if (id) openArticle(id);
+        return;
+      }
+      if (e.target.closest('#item-delete')) {
+        const del = $('#item-delete');
+        if (!del.classList.contains('confirm')) {
+          del.classList.add('confirm');
+          del.textContent = tr('לחצו שוב למחיקה');
+          return;
+        }
+        const id = itemSheetId;
+        closeItemSheet();
+        if (id) deleteArticle(id);
+        return;
+      }
+      if (e.target.closest('#item-cancel')) { closeItemSheet(); return; }
       if (e.target.closest('[data-article-id]')) {
+        if (longPressed) { longPressed = false; return; }
         openArticle(e.target.closest('[data-article-id]').dataset.articleId);
         return;
       }
@@ -2911,6 +3051,21 @@
       applyUiLanguage();
     });
     $('#reader-settings-backdrop').addEventListener('click', closeReaderSettings);
+    swipeToClose($('#word-sheet'), closeSheet);
+    // Long-press a book or article for its menu.
+    let pressTimer = null;
+    document.addEventListener('touchstart', e => {
+      const item = e.target.closest && e.target.closest('[data-article-id]');
+      if (!item || e.touches.length !== 1) return;
+      clearTimeout(pressTimer);
+      pressTimer = setTimeout(() => { longPressed = true; openItemSheet(item.dataset.articleId); }, 520);
+    }, { passive: true });
+    ['touchend', 'touchmove', 'touchcancel'].forEach(ev => document.addEventListener(ev, () => clearTimeout(pressTimer), { passive: true }));
+    document.addEventListener('contextmenu', e => { if (e.target.closest && e.target.closest('[data-article-id]')) e.preventDefault(); });
+    swipeToClose($('#reader-settings'), closeReaderSettings);
+    swipeToClose($('#reader-toc'), closeReaderToc);
+    swipeToClose($('#item-sheet'), closeItemSheet);
+    $('#item-backdrop').addEventListener('click', closeItemSheet);
     $('#toc-backdrop').addEventListener('click', closeReaderToc);
     $('#toc-tabs').addEventListener('click', e => {
       const b = e.target.closest('[data-toc-tab]'); if (!b) return;
@@ -2934,6 +3089,12 @@
     });
     $('#paged-switch').addEventListener('click', () => {
       state.settings.readerPaged = state.settings.readerPaged === false; save(); applyReaderSettings();
+    });
+    $('#pinyin-switch').addEventListener('click', () => {
+      state.settings.readerPinyin = !state.settings.readerPinyin;
+      save();
+      applyReaderSettings();
+      rerenderKeepingPlace();
     });
     $('#line-seg').addEventListener('click', e => {
       const b = e.target.closest('[data-line]'); if (!b) return;

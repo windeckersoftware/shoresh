@@ -1,6 +1,6 @@
 # Shoresh (שורש) — Handoff for Future Agents
 
-Updated 2026-10-30. Current version **1.5.0** (`versionCode 116`). The visible name is Shoresh, written שורש. The Android package stays `app.ner.reader` so an update keeps the existing vocabulary.
+Updated 2026-10-30. Current version **1.6.0** (`versionCode 117`). The visible name is Shoresh, written שורש. The Android package stays `app.ner.reader` so an update keeps the existing vocabulary.
 
 ## Snapshot
 
@@ -73,6 +73,7 @@ Then build, install, verify signature, and run `tools/publish.sh "one-line relea
 
 ## Hard-won traps
 
+- **The web reader overlay is a manual popover** (`host.showPopover()`), so it renders in the top layer above site banners. Keep `all:initial` in the host's inline style, which also cancels the UA popover box styles.
 - **Never load a pack with `org.json`.** `Dict` stream-parses packs with `android.util.JsonReader` into small objects. The 12 MB CEDICT pack read into a `JSONObject` ran out of a 192 MB heap.
 - **Phrase matching rules live in the phrase pack's `meta`** (`elision`, `poss`, `refl`, `unspaced`), written by `tools/build_phrases.py`. Change them there, not in Java.
 - **Inflected forms are often entries of their own** in the Wiktionary packs ("pleuvait: …imperfect indicative of pleuvoir"). `Dict.lemmaOf` follows the "… of X" gloss; lookup shows the lemma's meaning and keeps the form note.

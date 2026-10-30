@@ -2,7 +2,17 @@
 
 Shoresh is an original Android reading app built from scratch. The name is the Hebrew word for “root”, שורש. It is inspired by the *workflow* of Sluka — tap a word, grade how well you know it, keep reading — but contains no Sluka code, assets, dictionaries, branding, or licence logic. It is not Hebrew-first: any supported language can be the learning language, and any language can be the base/translation language.
 
-**Current build:** `out/Shoresh-1.5.0.apk` (dev-signed, Android 8+). The Android package is still `app.ner.reader`, so this installs over the earlier Ner build and keeps its data.
+**Current build:** `out/Shoresh-1.6.0.apk` (dev-signed, Android 8+). The Android package is still `app.ner.reader`, so this installs over the earlier Ner build and keeps its data.
+
+## New in 1.6.0
+
+- **Pinyin is a switch** (Aa sheet, Chinese only), off by default. The word sheet still shows the reading.
+- **News** — Read → Web lists news sites for the learning language: Chinese (BBC 中文, 联合早报, DW, RFI, 纽约时报中文网, 澎湃, 新华网, 端传媒), Cantonese/traditional, French, Korean, Brazilian/European Portuguese and Spanish (`js/news.js`).
+- **Web reader navigation** — the bar has Back and site-home buttons, and hides while reading down a page. Tapping a word inside a link still looks the word up, and the card offers *Open link* with the link's text, so headlines lead to articles. A tap outside the card closes it.
+- **Above cookie banners** — the web reader's overlay sits in the browser top layer (popover API), so consent dialogs and paywalls at max z-index no longer cover the word card.
+- **Swipe down to close** — the word card, reading settings, contents and the shelf menu close with a downward drag; in the web reader too.
+- **Delete books** — long-press any book or article (or ⋯ on a book cover): Open / Delete, where Delete asks for a second tap. Book files are removed with it.
+- **Chinese glosses** — CC-CEDICT cross-references read "中国共产党 (zhōng guó gòng chǎn dǎng)" instead of the raw `繁|简[pin1 yin1]` form.
 
 ## New in 1.5.0
 
@@ -97,7 +107,7 @@ The project builds without Gradle, using the Android SDK command-line tools and 
 ./build.sh
 ```
 
-The script writes `out/Shoresh-1.5.0.apk`. The toolchain lives in `.toolchain/` and is not part of the app. The dev keystore is `keystore/ner-dev.keystore` (password `nerdev`); do not ship with it.
+The script writes `out/Shoresh-1.6.0.apk`. The toolchain lives in `.toolchain/` and is not part of the app. The dev keystore is `keystore/ner-dev.keystore` (password `nerdev`); do not ship with it.
 
 ## Data pipeline
 
