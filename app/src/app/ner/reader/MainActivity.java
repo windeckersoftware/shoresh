@@ -62,6 +62,7 @@ public class MainActivity extends Activity {
     private boolean ttsReady;
     private String pendingExport;
     private String pendingShare;
+    private String pendingImport;
     private BookServer bookServer;
     private long lastBackAt;
     private boolean firstResume = true;
@@ -138,6 +139,7 @@ public class MainActivity extends Activity {
             @Override
             public void onPageFinished(WebView view, String url) {
                 flushPendingShare();
+                flushPendingImport();
             }
         });
         web.setWebChromeClient(new WebChromeClient() {
@@ -242,6 +244,22 @@ public class MainActivity extends Activity {
             if ("true".equals(value)) {
                 pendingShare = null;
                 callJs("NerApp.onShare", json);
+            }
+        });
+    }
+
+    private void queueImport(String json) {
+        pendingImport = json;
+        flushPendingImport();
+    }
+
+    private void flushPendingImport() {
+        if (pendingImport == null || web == null) return;
+        final String json = pendingImport;
+        web.evaluateJavascript("(window.NerApp && typeof NerApp.onFile === 'function')", value -> {
+            if ("true".equals(value)) {
+                pendingImport = null;
+                callJs("NerApp.onFile", json);
             }
         });
     }
@@ -620,7 +638,7 @@ public class MainActivity extends Activity {
                                 payload.put("pdfId", finalPdfId);
                                 payload.put("bytes", finalBookBytes);
                             } else payload.put("text", finalText);
-                            callJs("NerApp.onFile", payload.toString());
+                            queueImport(payload.toString());
                         } catch (Exception ignored) { }
                     });
                 }
