@@ -1,7 +1,20 @@
 # Shoresh (שורש) — language-learning reading app
 
 Shoresh is an original Android reading app built from scratch. The name is the Hebrew word for “root”, שורש. 
-**Current build:** `out/Shoresh-1.6.1.apk` (dev-signed, Android 8+). The Android package is still `app.ner.reader`, so this installs over the earlier Ner build and keeps its data.
+**Current build:** `out/Shoresh-1.7.0.apk` (dev-signed, Android 8+). The Android package is still `app.ner.reader`, so this installs over the earlier Ner build and keeps its data.
+
+## New in 1.7.0
+
+A reader built after the owner's two screen recordings, plus share-to-Shoresh.
+
+- **Word card next to the word.** Tap a word: it gets an outline and a compact card opens above or below its line, in the colours of the reading paper, with the other script, reading, how often you've seen it, speak, dictionary links and the numbered meanings. Expand it for the full sheet: HSK level, frequency rank, every link, Meaning | Characters tabs, your own meaning and the grades. The full sheet now takes the reading paper too.
+- **Dictionaries per language** in an in-app sheet: Pealim, Morfix and Milog for Hebrew, MDBG and Zdic for Chinese, Jisho, Naver, Larousse, RAE, Duden, Priberam and more, plus Google Translate, Wiktionary, Reverso, Forvo and Ask ChatGPT for every language.
+- **Reader bars:** page box you can type into, contents, bookmark, a menu (share, read aloud, mark all known, reading view) and Aa on top; ← 1 2 3 4 I K → at the bottom grades the open word and turns pages. A "n new · n learning" chip and a % badge.
+- **Several learning languages.** Settings → Languages has Learning, Options, Dictionary and Interface tabs. Pasted, imported, shared and web texts are detected and open in their own language; the Read shelf shows the current language's books with page, percentage and a word-stats card (% new, frequent new, learning, known).
+- **Share to Shoresh.** Share text, a link, a TXT/EPUB/PDF file, or select a word in any app and choose Shoresh: a word opens its card in its own language, a link opens in the reader, text becomes an article. Shares go to the running app (no second copy in the other app's task) and wait for the page when they start the app.
+- **Proverbs and sayings:** 113 common Korean proverbs and four-character idioms added (백지장도 맞들면 낫다, 소 잃고 외양간 고친다, 일석이조…), recognised with particles and endings attached (버릇이, 낫다는). Korean 친구들과 now splits as 친구들 | 과 and looks up 친구.
+- **Chinese words never break across lines** (结 | 果 at a line end read as two words).
+- Hebrew left in the English UI: book errors, empty states, library messages, bookmark titles; the voice test speaks the learning language.
 
 ## New in 1.6.1
 
@@ -116,7 +129,7 @@ The project builds without Gradle, using the Android SDK command-line tools and 
 ./build.sh
 ```
 
-The script writes `out/Shoresh-1.6.1.apk`. The toolchain lives in `.toolchain/` and is not part of the app. The dev keystore is `keystore/ner-dev.keystore` (password `nerdev`); do not ship with it.
+The script writes `out/Shoresh-1.7.0.apk`. The toolchain lives in `.toolchain/` and is not part of the app. The dev keystore is `keystore/ner-dev.keystore` (password `nerdev`); do not ship with it.
 
 ## Data pipeline
 

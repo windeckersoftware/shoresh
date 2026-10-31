@@ -1,12 +1,12 @@
 # Shoresh (שורש) — Handoff for Future Agents
 
-Updated 2026-10-31. Current version **1.6.1** (+ uncommitted work, see below) (`versionCode 118`). The visible name is Shoresh, written שורש. The Android package stays `app.ner.reader` so an update keeps the existing vocabulary.
+Updated 2026-10-31. Current version **1.7.0** (`versionCode 120`). The visible name is Shoresh, written שורש. The Android package stays `app.ner.reader` so an update keeps the existing vocabulary.
 
-## In progress (2026-10-31) — reader like the user's two screen recordings
+## 1.7.0 (2026-10-31) — reader like the user's two screen recordings, share target
 
-The user recorded the Sluka reader (two videos on their Desktop, `Screenrecorder-2026-10-31-13-0*.mp4`) and wants every feature in Shoresh. Build them in Shoresh's own design (clean-room: no Sluka text, icons or branding). Uncommitted on `main` on top of 1.6.1 (`be301d9`); the tree builds.
+The user recorded the Sluka reader (two videos on their Desktop, `Screenrecorder-2026-10-31-13-0*.mp4`) and wants every feature in Shoresh. Build them in Shoresh's own design (clean-room: no Sluka text, icons or branding). Committed as 1.7.0 on top of the owner's share-target commits (1.6.2).
 
-**Done (uncommitted, tested on the emulator by the builders):**
+**Done:**
 - `js/dictlinks.js` — `NER_DICTS` (2–3 specialised dictionaries per language: Pealim/Morfix/Milog for Hebrew, MDBG/Zdic for Chinese, Jisho, Naver, Larousse, RAE, Duden…; every URL checked) and `NER_DICTS_ALL` (Google Translate, Wiktionary, Reverso, Forvo, Ask ChatGPT). Almaany and Longdo were dropped (Cloudflare walls).
 - HSK levels in the zh/yue packs (`tools/build_zh_pack.py`, complete-hsk-vocabulary, MIT; 2026 syllabus with 2021 fallback). `Dict.lookup` returns `hsk`, `chars` (per-character reading + gloss for zh/yue/ja) and the other script form.
 - `LinkSheet.java` — native in-app sheet (WebView dialog, 85% height, close/share/open in browser). `Ner.openSheet(url)`; web reader uses `ner://sheet?url=`. Web reader word panel has dictionary chips.
@@ -15,12 +15,20 @@ The user recorded the Sluka reader (two videos on their Desktop, `Screenrecorder
 - Several learning languages: `settings.learnLangs` (migrated from `settings.lang`, which stays the language read now; `normalizeLangs()` keeps it in the list) and `settings.autoLang`. Settings → Languages (`#view-languages`) has Learning (tick grid), Options (switch to the text's language), Dictionary (base language, pack status) and Interface tabs; the top-bar picker lists only the learnt languages. `detectLang(text, candidates)` (script, then kana/simplified/traditional, Cyrillic letters, common words for 16 Latin-script languages) and `langFromUrl()` (language subdomain or country domain) give new pasted/imported/web articles their language when the user learns it; `followLang()` switches to an article's language before it opens. The Read shelf shows the current language's books and articles.
 - Read screen: "Your next <language> book" heading, "Recently opened" with a count chip, a toolbar (paste, Web, add book). Each book card has a progress line and "Page x of y · z%" (`article.pageInfo`, saved when the reader closes; older books fall back to `pdfPages` + `readOffset`, then the percentage) and a word-stats card: % new, new, frequent (new among the 3000 most common), learning · known. `Ner.vocabStats(lang, articleId, knownJson)` reads the book file or the inline text from the saved state (first 2 MB, `capped` in the answer), counts unique keys as a tap would save them (`Dict.vocabStats`: dictionary segments for CJK runs, ICU word breaks elsewhere, `lemmaKey`) on its own executor and answers `NerApp.onVocabStats(id, json)`. Only the counts are cached, on `article.vocab` with a timestamp, refreshed when the book is opened and closed. ~2 s for 400k Chinese characters, <1 s for a 2 MB French book on the emulator.
 
-**Left to build (specs are in the workflow script, `~/.claude/projects/-Users-windecker-Desktop-projects/963483fe-…/workflows/scripts/shoresh-reader-like-videos-wf_7b4a3299-6ec.js`):**
-1. Review all changes (JS flows, i18n/RTL, Java lifecycle/threading), fix, test on the emulator, bump to 1.7.0, update README "New in", build, commit locally (the user pushes), and ask before publishing to the site.
+**Added in the 1.7.0 review (cloud session, no emulator):**
+- `ShareActivity` — invisible trampoline that owns the SEND / PROCESS_TEXT / VIEW filters and forwards to MainActivity with NEW_TASK|CLEAR_TOP|SINGLE_TOP. Filters on MainActivity itself started a second MainActivity in the sharing app's task (two copies saving `state.json`). MainActivity queues `NerApp.onShare`/`onFile` until the page is up (`deliver`), and ignores the launch intent when recreated or opened from Recents.
+- `wordLang()` — a shared selection opens in the learnt language whose dictionary knows it (same script, current first); a shared link takes `langFromUrl`.
+- `tools/add_phrases.py` + `data/phrases-extra/<lang>.tsv` — curated sayings merged into the phrase packs after `build_phrases.py` (Korean: +113). Korean phrase matching lets a word carry up to `KO_TAIL` (3) trailing syllables (버릇이, 낫다는, 먹기야).
+- Korean `들` plural: 친구들과 → 친구들 | 과, lookups of 친구들 resolve to 친구.
+- CJK `.ner-w` is `white-space: nowrap`; any navigation closes an open word card; the full sheet takes the reader paper.
 
-**Known open issues from the builders:** the full word sheet follows the app theme, not the reader paper; number keys grade only from the full sheet; `otherScript()` scans the forms map per lookup; the sheet header follows the system locale's direction, not the UI language; the Japanese and Cantonese packs are weak (IPA instead of kana, missing readings). The APK in `out/` named 1.6.1 was rebuilt from this work in progress — rebuild from the commit before publishing 1.6.1 again.
+**Not done:** the APK was not built or run on a device in the 1.7.0 review session (no Android SDK in that container); build with `./build.sh`, install over 1.6.x, and check share from Chrome (link), from a file manager (EPUB/PDF) and text selection → Shoresh before publishing.
 
-**Testing:** `bash <scratchpad>/dbg/run.sh` built a debuggable copy, and `cdp.mjs` drove the WebView over DevTools. The method is under "Hard-won traps"; the scratchpad is temporary, so recreate the scripts from that description.
+**Known open issues:** number keys grade only from the full sheet; `otherScript()` scans the forms map per lookup; the sheet header follows the system locale's direction, not the UI language; the Japanese and Cantonese packs are weak (IPA instead of kana, missing readings). The APK in `out/` named 1.6.1 was rebuilt from this work in progress — rebuild from the commit before publishing 1.6.1 again.
+
+**Testing without an emulator:** compile `Dict.java` on the JVM against Robolectric's `android-all` jar (Maven Central; swap `AssetManager` for a file reader and drop `Log`), serve it over HTTP, and load `app/assets/www` in Playwright at 412×892 with a `window.Ner` mock that forwards `lookup`/`lookupAt`/`segment` to it. That runs the real segmenter, lemmas and phrase matching behind the real UI.
+
+**Testing on the emulator:** `bash <scratchpad>/dbg/run.sh` built a debuggable copy, and `cdp.mjs` drove the WebView over DevTools. The method is under "Hard-won traps"; the scratchpad is temporary, so recreate the scripts from that description.
 
 ## Snapshot
 
@@ -73,6 +81,7 @@ Then build, install, verify signature, and run `tools/publish.sh "one-line relea
   A tapped word opens the compact `#word-card` (inside `#view-reader`, coloured from the paper, placed above or below the word's line); expand opens the full `#word-sheet` (links, HSK/frequency, Meaning | Characters tabs, grade). Both are filled by `showWordSheet()`.
 - `ReaderActivity.java` + `js/inject.js` — injected web-page reader.
 - `WatchActivity.java` + `js/watch.js` — focused YouTube viewer.
+- `ShareActivity.java` — share/Process Text intake, forwards to MainActivity.
 - `LinkSheet.java` — dictionary links in a sheet over the app (`Ner.openSheet`) and the web reader (`ner://sheet?url=`).
 - `Store.java` — atomic local `state.json`; SharedPreferences intentionally avoided.
 - `Dict.java` — 25 gzipped offline packs, lookup, CJK segmenter.

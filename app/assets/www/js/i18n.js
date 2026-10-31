@@ -224,3 +224,25 @@ Object.assign(window.NER_I18N, {"es":{"נר — מילים נדלקות":"Ner - 
     Object.assign(m[code], pack);
   });
 })();
+// 1.7.0: messages added with the new reader, library and share intake.
+(function () {
+  var m = window.NER_I18N;
+  var fix = {
+    'הספר לא נמצא': {en:'Book not found', hu:'A könyv nem található', es:'No se encontró el libro', fr:'Livre introuvable', de:'Buch nicht gefunden', ru:'Книга не найдена', ar:'لم يُعثر على الكتاب'},
+    'לא ניתן לפתוח את הספר': {en:'Couldn’t open the book', hu:'A könyvet nem lehet megnyitni', es:'No se pudo abrir el libro', fr:'Impossible d’ouvrir le livre', de:'Das Buch lässt sich nicht öffnen', ru:'Не удалось открыть книгу', ar:'تعذّر فتح الكتاب'},
+    'לא ניתן לטעון את ההמשך': {en:'Couldn’t load the next part', hu:'A folytatás nem tölthető be', es:'No se pudo cargar la continuación', fr:'Impossible de charger la suite', de:'Der nächste Teil lässt sich nicht laden', ru:'Не удалось загрузить продолжение', ar:'تعذّر تحميل التتمة'},
+    'לא ניתן לקרוא את הספר': {en:'Couldn’t read the book', hu:'A könyv nem olvasható', es:'No se pudo leer el libro', fr:'Impossible de lire le livre', de:'Das Buch lässt sich nicht lesen', ru:'Не удалось прочитать книгу', ar:'تعذّرت قراءة الكتاب'},
+    'הספר נטען לקריאה': {en:'Book ready to read', hu:'A könyv olvasható', es:'Libro listo para leer', fr:'Livre prêt à lire', de:'Buch bereit zum Lesen', ru:'Книга готова к чтению', ar:'الكتاب جاهز للقراءة'},
+    'הספר נמחק': {en:'Book deleted', hu:'Könyv törölve', es:'Libro borrado', fr:'Livre supprimé', de:'Buch gelöscht', ru:'Книга удалена', ar:'حُذف الكتاب'},
+    'לא נמצאו קבצים יתומים': {en:'No leftover files', hu:'Nincs árva fájl', es:'No hay archivos sueltos', fr:'Aucun fichier orphelin', de:'Keine verwaisten Dateien', ru:'Лишних файлов нет', ar:'لا توجد ملفات يتيمة'},
+    'אין עדיין מילים בשפה כלשהי.': {en:'No words in any language yet.', hu:'Még nincs szó egyik nyelven sem.', es:'Aún no hay palabras en ningún idioma.', fr:'Pas encore de mots, dans aucune langue.', de:'Noch keine Wörter in irgendeiner Sprache.', ru:'Слов пока нет ни на одном языке.', ar:'لا توجد كلمات بأي لغة بعد.'},
+    'אין ספרים גדולים שמורים כרגע.': {en:'No large books stored right now.', hu:'Most nincs tárolt nagy könyv.', es:'No hay libros grandes guardados.', fr:'Aucun grand livre enregistré pour l’instant.', de:'Zurzeit sind keine großen Bücher gespeichert.', ru:'Больших книг сейчас нет.', ar:'لا توجد كتب كبيرة محفوظة حاليًا.'},
+    'המשמעות וההקשר נשמרים מקומית ובאים לידי ביטוי גם בייצוא.': {en:'The meaning and context are saved on this device and included in exports.', hu:'A jelentés és a szövegkörnyezet az eszközön marad, és az exportba is bekerül.', es:'El significado y el contexto se guardan en el dispositivo y se incluyen al exportar.', fr:'Le sens et le contexte restent sur l’appareil et sont inclus dans les exports.', de:'Bedeutung und Kontext bleiben auf dem Gerät und sind im Export enthalten.', ru:'Значение и контекст хранятся на устройстве и попадают в экспорт.', ar:'يُحفظ المعنى والسياق على الجهاز ويُضمَّنان في التصدير.'},
+    'הקישור לא תקין': {en:'That link isn’t valid', hu:'Érvénytelen link', es:'El enlace no es válido', fr:'Lien non valide', de:'Ungültiger Link', ru:'Неверная ссылка', ar:'الرابط غير صالح'},
+    'לא ניתן לפתוח את הקישור': {en:'Couldn’t open the link', hu:'A linket nem lehet megnyitni', es:'No se pudo abrir el enlace', fr:'Impossible d’ouvrir le lien', de:'Der Link lässt sich nicht öffnen', ru:'Не удалось открыть ссылку', ar:'تعذّر فتح الرابط'}
+  };
+  ['en','hu','es','fr','de','ru','ar'].forEach(function (code) {
+    if (!m[code]) m[code] = {};
+    Object.keys(fix).forEach(function (he) { if (!m[code][he]) m[code][he] = fix[he][code]; });
+  });
+})();
