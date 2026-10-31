@@ -1,7 +1,6 @@
 # Shoresh (שורש) — language-learning reading app
 
-Shoresh is an original Android reading app built from scratch. The name is the Hebrew word for “root”, שורש. It is inspired by the *workflow* of Sluka — tap a word, grade how well you know it, keep reading — but contains no Sluka code, assets, dictionaries, branding, or licence logic. It is not Hebrew-first: any supported language can be the learning language, and any language can be the base/translation language.
-
+Shoresh is an original Android reading app built from scratch. The name is the Hebrew word for “root”, שורש. 
 **Current build:** `out/Shoresh-1.6.1.apk` (dev-signed, Android 8+). The Android package is still `app.ner.reader`, so this installs over the earlier Ner build and keeps its data.
 
 ## New in 1.6.1
@@ -121,7 +120,7 @@ The script writes `out/Shoresh-1.6.1.apk`. The toolchain lives in `.toolchain/` 
 
 ## Data pipeline
 
-- `tools/build_zh_pack.py` builds `zh` and `yue` from CC-CEDICT (CC BY-SA 4.0) with FrequencyWords zh_cn ranks.
+- `tools/build_zh_pack.py` builds `zh` and `yue` from CC-CEDICT (CC BY-SA 4.0) with FrequencyWords zh_cn ranks and HSK 3.0 levels from complete-hsk-vocabulary (MIT).
 - `tools/build_phrases.py [codes…]` builds the phrase packs from kaikki.org; downloads are cached in `data/raw/phrases/` (multi-word lines only for the large verb/adj files).
 
 - `tools/build_he_pack.py` builds the Hebrew dictionary from:

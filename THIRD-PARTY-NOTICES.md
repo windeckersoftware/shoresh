@@ -23,6 +23,13 @@ Ner's application code is original. The following data and tools are used under 
 - Used for: Chinese headwords (simplified and traditional), pinyin and English glosses in `app/assets/dict/zh.json.gz` and `yue.json.gz`; their word list drives Chinese segmentation.
 - Changes: tone numbers converted to tone marks, variant-only and rare proper-name entries dropped, glosses trimmed to three, ranked with FrequencyWords zh_cn. Built by `tools/build_zh_pack.py`.
 
+## complete-hsk-vocabulary — HSK levels
+
+- Source: https://github.com/drkameleon/complete-hsk-vocabulary (`complete.min.json`)
+- Licence: MIT, Copyright (c) 2026 Yanis Zafirópulos (Dr.Kameleon)
+- Used for: the HSK 3.0 level (1–6, and 7 for the 7–9 band) stored as `hsk` on entries of `app/assets/dict/zh.json.gz` and `yue.json.gz`.
+- Changes: reduced to the lowest level per simplified word, 2026 syllabus first and the 2021 one for words it dropped. Built by `tools/build_zh_pack.py`.
+
 ## English Wiktionary — idioms, proverbs and sayings
 
 - Source: https://kaikki.org (per-language `phrase`, `proverb`, `prep_phrase` entries and multi-word `verb`, `adv`, `adj`, `intj` headwords)

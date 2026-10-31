@@ -55,6 +55,8 @@ public class MainActivity extends Activity {
     private Store store;
     private Dict dict;
     private AdBlock adBlock;
+    private LinkSheet sheet;
+    private boolean dark;
     private SyncServer syncServer;
     private TextToSpeech tts;
     private boolean ttsReady;
@@ -63,6 +65,8 @@ public class MainActivity extends Activity {
     private long lastBackAt;
     private boolean firstResume = true;
     private final ExecutorService io = Executors.newSingleThreadExecutor();
+    // Word counts for whole books take seconds; they must not hold up translation or OCR.
+    private final ExecutorService statsRunner = Executors.newSingleThreadExecutor();
     private final Handler main = new Handler(Looper.getMainLooper());
 
     @Override
@@ -228,6 +232,7 @@ public class MainActivity extends Activity {
     }
 
     private void applyNativeTheme(boolean dark) {
+        this.dark = dark;
         int bg = dark ? 0xFF111614 : 0xFFF7F4EE;
         if (rootView != null) rootView.setBackgroundColor(bg);
         Window w = getWindow();
@@ -257,10 +262,12 @@ public class MainActivity extends Activity {
     @Override
     protected void onDestroy() {
         if (tts != null) { tts.stop(); tts.shutdown(); }
+        if (sheet != null) sheet.dismiss();
         if (syncServer != null) syncServer.stop();
         if (bookServer != null) bookServer.stop();
         if (web != null) web.destroy();
         io.shutdownNow();
+        statsRunner.shutdownNow();
         super.onDestroy();
     }
 
@@ -549,6 +556,44 @@ public class MainActivity extends Activity {
         });
     }
 
+    // NerApp.onOcrResult(rid, json): OCR answers carry the request id first.
+    private void ocrDone(String rid, String json) {
+        main.post(() -> web.evaluateJavascript("window.NerApp && NerApp.onOcrResult(" +
+                JSONObject.quote(rid) + "," + JSONObject.quote(json) + ");", null));
+    }
+
+    private static final int STATS_CAP = 2 * 1024 * 1024;
+
+    /**
+     * vocabStats for a shelf item: a streamed book's file or the article's inline
+     * text from state, cut at STATS_CAP (bytes of a file, characters of inline text)
+     * so a huge book stays a few seconds' work. "capped" says it was cut.
+     */
+    private JSONObject vocabStatsFor(String lang, String id, String knownJson) throws Exception {
+        JSONArray articles = store.stateObject().optJSONArray("articles");
+        JSONObject a = null;
+        for (int i = 0; articles != null && i < articles.length() && a == null; i++) {
+            JSONObject x = articles.optJSONObject(i);
+            if (x != null && id.equals(x.optString("id"))) a = x;
+        }
+        if (a == null) throw new Exception("missing");
+        String bookId = a.optString("bookId");
+        String text;
+        boolean capped;
+        if (a.optBoolean("stream") && bookId.matches("[A-Za-z0-9_-]{1,80}")) {
+            File f = new File(booksDir(), bookId + ".txt");
+            byte[] buf = new byte[(int) Math.min(f.length(), STATS_CAP)];
+            try (java.io.RandomAccessFile raf = new java.io.RandomAccessFile(f, "r")) { raf.readFully(buf); }
+            text = new String(buf, StandardCharsets.UTF_8);
+            capped = f.length() > STATS_CAP;
+        } else {
+            text = a.optString("text");
+            capped = text.length() > STATS_CAP;
+            if (capped) text = text.substring(0, STATS_CAP);
+        }
+        return dict.vocabStats(lang, text, new JSONObject(knownJson)).put("capped", capped);
+    }
+
     private void callJs(String fn, String json) {
         String script = "window." + fn + " && " + fn + "(" + JSONObject.quote(json) + ");";
         web.evaluateJavascript(script, null);
@@ -632,6 +677,25 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public String segment(String lang, String text) { return dict.segment(lang, text); }
 
+        /** Word counts for a shelf item, off the UI thread; answers NerApp.onVocabStats(id, json). */
+        @JavascriptInterface
+        public void vocabStats(String lang, String id, String knownJson) {
+            statsRunner.execute(() -> {
+                String out;
+                try {
+                    out = vocabStatsFor(lang, id, knownJson).put("ok", true).toString();
+                } catch (Throwable e) {
+                    Log.w(TAG, "vocabStats failed for " + id, e);
+                    out = "{\"ok\":false}";
+                }
+                final String json = out;
+                main.post(() -> {
+                    if (!isDestroyed()) web.evaluateJavascript("window.NerApp && NerApp.onVocabStats(" +
+                            JSONObject.quote(id) + "," + JSONObject.quote(json) + ");", null);
+                });
+            });
+        }
+
         @JavascriptInterface
         public void ocrBook(String id, String lang, String rid) {
             io.execute(() -> {
@@ -641,9 +705,9 @@ public class MainActivity extends Activity {
                     String text = Ocr.ocrFile(MainActivity.this, f, lang, 80);
                     JSONObject o = new JSONObject();
                     o.put("ok", true); o.put("text", text);
-                    main.post(() -> callJs("NerApp.onOcrResult", o.toString()));
+                    ocrDone(rid, o.toString());
                 } catch (Exception e) {
-                    main.post(() -> callJs("NerApp.onOcrResult", "{\"ok\":false}"));
+                    ocrDone(rid, "{\"ok\":false}");
                 }
             });
         }
@@ -782,6 +846,15 @@ public class MainActivity extends Activity {
             });
         }
 
+        /** A dictionary or other link in a sheet over the app. */
+        @JavascriptInterface
+        public void openSheet(String url) {
+            runOnUiThread(() -> {
+                if (sheet != null) sheet.dismiss();
+                sheet = LinkSheet.open(MainActivity.this, store, adBlock, dark, url);
+            });
+        }
+
         @JavascriptInterface
         public String startSync() {
             try {
@@ -874,15 +947,13 @@ public class MainActivity extends Activity {
                     JSONObject o = new JSONObject();
                     o.put("ok", true);
                     o.put("text", text);
-                    main.post(() -> web.evaluateJavascript("window.NerApp && NerApp.onOcrResult(" +
-                            JSONObject.quote(rid) + "," + JSONObject.quote(o.toString()) + ");", null));
+                    ocrDone(rid, o.toString());
                 } catch (Exception e) {
                     try {
                         JSONObject o = new JSONObject();
                         o.put("ok", false);
                         o.put("error", e.getMessage() == null ? "OCR failed" : e.getMessage());
-                        main.post(() -> web.evaluateJavascript("window.NerApp && NerApp.onOcrResult(" +
-                                JSONObject.quote(rid) + "," + JSONObject.quote(o.toString()) + ");", null));
+                        ocrDone(rid, o.toString());
                     } catch (Exception ignored) { }
                 }
             });

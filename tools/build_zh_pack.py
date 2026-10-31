@@ -9,6 +9,10 @@ Frequency ranks come from FrequencyWords zh_cn (CC BY-SA 4.0). The pack format
 is the one Dict.java reads (entries + forms). zh is keyed by simplified
 characters with traditional forms pointing at them; yue the other way round,
 and without Mandarin pinyin, which would mislead a Cantonese reader.
+
+HSK 3.0 levels (1-6, and 7 for the 7-9 band) come from complete-hsk-vocabulary
+(MIT, https://github.com/drkameleon/complete-hsk-vocabulary): the 2026 syllabus
+first, the 2021 one for words it dropped. Stored as "hsk" on both packs.
 """
 import gzip, json, re, urllib.request
 from pathlib import Path
@@ -16,6 +20,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 URL = "https://www.mdbg.net/chinese/export/cedict/cedict_1_0_ts_utf-8_mdbg.txt.gz"
 RAW = ROOT / "data/raw/cedict_1_0_ts_utf-8_mdbg.txt.gz"
+HSK_URL = "https://raw.githubusercontent.com/drkameleon/complete-hsk-vocabulary/main/complete.min.json"
+HSK_RAW = ROOT / "data/raw/complete-hsk-vocabulary.min.json"
 LINE = re.compile(r"^(\S+) (\S+) \[([^\]]*)\] /(.*)/\s*$")
 SKIP = re.compile(r"^(old variant of|variant of|see [^ ]+$|see also|CL:|Japanese variant of|erroneous variant of|archaic variant of)", re.I)
 TONES = {"a": "āáǎà", "e": "ēéěè", "i": "īíǐì", "o": "ōóǒò", "u": "ūúǔù", "ü": "ǖǘǚǜ"}
@@ -54,10 +60,28 @@ def clean_gloss(g, traditional):
     return XREF.sub(sub, g)
 
 
+def fetch(url, path):
+    if not path.exists():
+        path.parent.mkdir(parents=True, exist_ok=True)
+        urllib.request.urlretrieve(url, path)
+
+
+def hsk_levels():
+    """Simplified word -> lowest HSK 3.0 level; "t" levels are the 2026 syllabus, "n" the 2021 one."""
+    fetch(HSK_URL, HSK_RAW)
+    out = {}
+    for e in json.loads(HSK_RAW.read_text(encoding="utf-8")):
+        for band in ("t", "n"):
+            levels = [int(l[1:]) for l in e["l"] if l[0] == band]
+            if levels:
+                out[e["s"]] = min(levels)
+                break
+    return out
+
+
 def main():
-    if not RAW.exists():
-        RAW.parent.mkdir(parents=True, exist_ok=True)
-        urllib.request.urlretrieve(URL, RAW)
+    fetch(URL, RAW)
+    hsk = hsk_levels()
     freq = {}
     for i, line in enumerate((ROOT / "data/freq/zh_cn_50k.txt").read_text(encoding="utf-8").splitlines(), 1):
         parts = line.split()
@@ -111,6 +135,8 @@ def main():
             key, other = key_of(simp), other_of(simp)
             item = {"w": key, "tr": e["tr"] if keep_tr else "", "pos": e["pos"], "g": [clean_gloss(re.sub(r"\s*\(idiom\)\s*", " ", g).strip(), not keep_tr)[:140] for g in e["g"]][:3],
                     "rank": min(rank(simp), rank(trad_of[simp]))}
+            if simp in hsk:
+                item["hsk"] = hsk[simp]
             if key in entries:
                 old = entries[key]
                 if item["rank"] < old["rank"]:

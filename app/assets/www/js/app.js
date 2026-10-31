@@ -19,6 +19,7 @@
     speak: () => {}, stopSpeak: () => {}, openFile: () => {}, setTheme: () => {},
     openUrl: (u) => window.open(u, '_blank'), openExternal: (u) => window.open(u, '_blank'),
     openWatch: (u) => window.open(u, '_blank'), openBrave: (u) => window.open(u, '_blank'),
+    openSheet: (u) => window.open(u, '_blank'),
     share: () => {}, exportBackup: () => {}, importBackup: () => {},
     addRead: () => {}, addListening: () => {}, toast: () => {}, version: () => 'web',
     startSync: () => JSON.stringify({running:false}), stopSync: () => {}, syncGet: () => {}, syncPush: () => {}, ocrPdf: () => {}, ocrBook: () => {}, translate: () => {}, exportAnki: () => {}, segment: () => '[]', readBook: () => '{"ok":false}'
@@ -34,7 +35,7 @@
   };
 
   const DEFAULT_SETTINGS = {
-    lang: 'en', baseLang: DEFAULT_BASE, ui: 'system', theme: 'auto', fontSize: 19, ttsRate: 1,
+    lang: 'en', learnLangs: [], autoLang: true, baseLang: DEFAULT_BASE, ui: 'system', theme: 'auto', fontSize: 19, ttsRate: 1,
     dailyGoal: 20, highlightNew: true, showTranslit: true,
     readerPaged: false, readerPaper: 'auto', readerFont: 'sans', readerLine: 'normal', readerPinyin: false
   };
@@ -57,12 +58,15 @@
   let currentWord = null;
   let currentLookup = null;
   let currentReader = null;
+  let wordTab = 'meaning';
+  let cardScrollTop = 0;
   let wordFilter = 'all';
   let readMode = 'books';
   let tocTab = 'contents';
   let syncHost = null;
   let pendingOcr = null;
   let langPickerMode = 'learn';
+  let langsTab = 'learn';
   let translationRid = 0;
   let i18nApplying = false;
   let i18nTimer = null;
@@ -87,6 +91,8 @@
   let reviewIndex = 0;
   let reviewAgain = new Set();
   let reviewRevealed = false;
+  let readerSel = null;
+  let countTimer = null;
 
   const todayKey = (date = new Date()) => {
     const d = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
@@ -122,11 +128,20 @@
       if (n && n !== l.id) return n;
     } catch (e) { }
     const ui = activeUiLang();
-    if (ui === 'en') return l.en || l.he || l.id;
+    if (ui === 'he') return l.he || l.en || l.id;
     if (ui === 'hu') return (window.NER_LANG_HU && window.NER_LANG_HU[l.id]) || l.en || l.he || l.id;
-    return l.he || l.en || l.id;
+    return l.en || l.he || l.id;
   }
   function lang() { return BY_LANG[state.settings.lang] || BY_LANG.he || LANGS[0]; }
+  const learnLangs = () => state.settings.learnLangs;
+  // settings.lang is the language read now; learnLangs every language the user
+  // learns (1.7, migrated from the single lang, which always stays in it).
+  function normalizeLangs() {
+    const s = state.settings;
+    if (!BY_LANG[s.lang]) s.lang = 'he';
+    const list = (Array.isArray(s.learnLangs) ? s.learnLangs : []).filter(id => BY_LANG[id]);
+    s.learnLangs = [...new Set([s.lang, ...list])];
+  }
   function baseLang() {
     const id = state.settings.baseLang || 'en';
     return BY_LANG[id] || { id, he: id, en: id, code: id.toUpperCase(), dir: 'ltr', status: 'custom' };
@@ -141,7 +156,7 @@
     if (!state.words) state.words = {};
     if (!state.stats) state.stats = {};
     if (!state.articles) state.articles = [];
-    if (!BY_LANG[state.settings.lang]) state.settings.lang = 'he';
+    normalizeLangs();
     if (raw && raw.settings && raw.onboarded === undefined) state.onboarded = true;
     if (!state.settings.readerFlow) {
       // 1.5: continuous scrolling became the default reading mode.
@@ -307,7 +322,7 @@
   function skipI18n(node) {
     const p = node.parentElement;
     if (!p) return true;
-    if (p.closest('script,style,noscript,.reader-body,.sheet-word,.sheet-meaning,.sheet-glosses,.word-main,.preview-word,.preview-meaning,.book-card > strong,.book-cover-title,.recent-copy strong,.toc-copy,.notices,#reader-title')) return true;
+    if (p.closest('script,style,noscript,.reader-body,.word-line,.word-reading,.gloss-list,.char-list,.sheet-phrase-text,.word-main,.preview-word,.preview-meaning,.book-card > strong,.book-cover-title,.book-stats,.book-meta,.recent-copy strong,.toc-copy,.notices,#reader-title,#reader-counts,.page-box')) return true;
     return false;
   }
 
@@ -484,20 +499,19 @@
   }
 
   function renderRead() {
-    const articles = [...state.articles].sort((a, b) => (b.lastOpened || b.added || 0) - (a.lastOpened || a.added || 0));
+    const id = lang().id;
+    $('#read-books-title').textContent = tf('readBooks', { lang: langName(lang()) });
+    const articles = state.articles.filter(a => !a.lang || a.lang === id)
+      .sort((a, b) => (b.lastOpened || b.added || 0) - (a.lastOpened || a.added || 0));
     const books = articles.filter(a => a.kind === 'book');
+    $('#read-books-count').textContent = books.length === 1 ? tr('ספר אחד') : tf('books', { n: fmt(books.length) });
+    $('#format-card').hidden = books.length > 0;
     const grid = $('#book-grid');
     if (grid) {
-      grid.innerHTML = books.length ? books.map((a, i) => {
-        const words = a.text ? countWords(a.text) : 0;
-        const hue = ['#2f6f5e', '#73513a', '#3f5f86', '#7c5a2e', '#4d5b43'][i % 5];
-        return `<button class="book-card" data-article-id="${escapeHtml(a.id)}">
-          <span class="book-menu" data-item-menu="${escapeHtml(a.id)}" role="button" aria-label="${escapeHtml(tr('אפשרויות'))}">⋯</span>
-          <span class="book-cover" style="--cover:${hue}"><span class="book-cover-title">${escapeHtml(a.title || 'ספר')}</span><span class="book-cover-format">${/epub/i.test(a.name || '') ? 'EPUB' : 'TXT'}</span></span>
-          <strong>${escapeHtml(a.title || 'ספר')}</strong><small>${words ? tf('words', { n: fmt(words) }) : tr('ספר')} · ${relativeDate(a.lastOpened || a.added)}</small>
-        </button>`;
-      }).join('') : `<div class="book-empty"><div class="empty-mark"><svg><use href="#i-book"></use></svg></div><h3>המדף מחכה לספר הראשון</h3><p>ייבאו קובץ EPUB או TXT, או הדביקו טקסט ארוך.</p><button class="primary" data-action="file">הוסיפו ספר</button></div>`;
+      grid.innerHTML = books.length ? books.map(bookCard).join('')
+        : `<div class="book-empty"><div class="empty-mark"><svg><use href="#i-book"></use></svg></div><h3>המדף מחכה לספר הראשון</h3><p>ייבאו קובץ EPUB או TXT, או הדביקו טקסט ארוך.</p><button class="primary" data-action="file">הוסיפו ספר</button></div>`;
     }
+    for (const a of books) if (!a.vocab && !statsAsked.has(a.id)) requestVocabStats(a);
     renderNews();
     const web = articles.filter(a => a.kind !== 'book' && a.kind !== 'watch');
     const shelf = $('#read-shelf');
@@ -505,6 +519,86 @@
       shelf.innerHTML = web.length ? web.map(a => articleRow(a)).join('') : `<div class="recent-empty">עוד אין כתבות או טקסטים. הדביקו קישור או טקסט כדי להתחיל.</div>`;
     }
     applyReadMode();
+  }
+
+  function bookCard(a, i) {
+    const hue = ['#2f6f5e', '#73513a', '#3f5f86', '#7c5a2e', '#4d5b43'][i % 5];
+    const format = a.pdfId || a.pdfPages ? 'PDF' : /epub/i.test(a.name || '') ? 'EPUB' : 'TXT';
+    const pct = Math.max(0, Math.min(100, Number(a.progress) || 0));
+    return `<button class="book-card" data-article-id="${escapeHtml(a.id)}">
+      <span class="book-cover" style="--cover:${hue}"><span class="book-cover-title">${escapeHtml(a.title || 'ספר')}</span><span class="book-cover-format">${format}</span></span>
+      <span class="book-bar"><span style="width:${pct.toFixed(1)}%"></span></span>
+      <strong>${escapeHtml(a.title || 'ספר')}</strong>
+      <span class="book-meta"><small>${escapeHtml(shelfPosition(a))}</small><span class="book-menu" data-item-menu="${escapeHtml(a.id)}" role="button" aria-label="${escapeHtml(tr('אפשרויות'))}">⋯</span></span>
+      ${bookStats(a)}
+    </button>`;
+  }
+
+  // ">99%" keeps its order inside right-to-left text.
+  const ltrRun = t => '\u2066' + t + '\u2069';
+
+  // "Page 11 of 510 · 2%" from where the book was last closed. Older books
+  // have only a percentage (a PDF also its pages), or nothing yet.
+  function shelfPosition(a) {
+    const raw = Number(a.progress) || 0;
+    const pct = raw > 0 && raw < 1 ? ltrRun('<1') : Math.round(raw);
+    let p = a.pageInfo;
+    if (!p && Array.isArray(a.pdfPages) && a.pdfPages.length) {
+      const off = Number(a.readOffset) || 0;
+      p = { cur: a.pdfPages.filter(o => o <= off).length || 1, total: a.pdfPages.length };
+    }
+    if (p && p.total) return tf('pageOf', { a: fmt(p.cur), b: fmt(p.total), p: pct });
+    return a.progress != null ? pct + '%' : relativeDate(a.lastOpened || a.added);
+  }
+
+  // "中文 >99% new / 10,216 new / 3,089 frequent / 22 learning · 2 known".
+  function bookStats(a) {
+    const v = a.vocab;
+    const l = BY_LANG[a.lang] || lang();
+    if (!v) return `<span class="book-stats"><span class="bs-wait">${escapeHtml(tr('סופרים מילים…'))}</span></span>`;
+    const share = v.unique ? v.fresh / v.unique * 100 : 0;
+    const pct = ltrRun(share > 99 && share < 100 ? '>99%' : share > 0 && share < 1 ? '<1%' : Math.round(share) + '%');
+    return `<span class="book-stats">
+      <span class="bs-head"><span class="bs-lang">${escapeHtml(l.code)}</span>${escapeHtml(tf('fresh', { n: pct }))}</span>
+      <span class="bs-row"><i class="bs-dot new"></i>${escapeHtml(tf('fresh', { n: fmt(v.fresh) }))}</span>
+      <span class="bs-row"><i class="bs-dot frequent"></i>${escapeHtml(tf('frequent', { n: fmt(v.frequent) }))}</span>
+      <span class="bs-row"><i class="bs-dot learning"></i>${escapeHtml(tf('learningKnown', { a: fmt(v.learning), b: fmt(v.known) }))}</span>
+      ${v.capped ? `<span class="bs-note">${escapeHtml(tr('לפי 2 MB הראשונים'))}</span>` : ''}
+    </span>`;
+  }
+
+  /* ---------------- shelf word stats ---------------- */
+  // A book's unique words (new, frequent, learning, known), counted natively off
+  // the UI thread. Only the counts are kept, on article.vocab with a timestamp;
+  // they are refreshed when the book is opened and closed.
+  const statsPending = new Set();
+  const statsAsked = new Set();
+
+  function requestVocabStats(a) {
+    statsAsked.add(a.id);
+    if (statsPending.has(a.id) || typeof N.vocabStats !== 'function') return;
+    const id = a.lang || lang().id;
+    const known = {};
+    for (const w of Object.values(state.words)) {
+      if (!w || w.lang !== id) continue;
+      if (w.key) known[w.key] = w.grade || 0;
+      if (w.form && !(w.form in known)) known[w.form] = w.grade || 0;
+    }
+    statsPending.add(a.id);
+    // Native code reads the text from the saved state.
+    save(true);
+    try { N.vocabStats(id, a.id, JSON.stringify(known)); } catch (e) { statsPending.delete(a.id); }
+  }
+
+  function onVocabStats(id, json) {
+    statsPending.delete(id);
+    let s = null;
+    try { s = JSON.parse(json); } catch (e) { }
+    const a = state.articles.find(x => x.id === id);
+    if (!a || !s || !s.ok) return;
+    a.vocab = { at: Date.now(), unique: s.unique, fresh: s.fresh, frequent: s.frequent, learning: s.learning, known: s.known, capped: !!s.capped };
+    save();
+    if (currentView === 'read') renderRead();
   }
 
   function renderNews() {
@@ -756,7 +850,7 @@
 
   function renderSettings() {
     const l = lang();
-    $('#setting-lang-label').textContent = langName(l);
+    $('#setting-lang-label').textContent = langList(learnLangs());
     $('#setting-lang-code').textContent = l.code;
     const uiSel = $('#ui-select');
     if (uiSel) uiSel.value = state.settings.ui || 'system';
@@ -774,17 +868,62 @@
     $('#tts-range-val').textContent = (state.settings.ttsRate || 1).toFixed(1) + '×';
     $('#app-version').textContent = boot.version || '1.6.1';
     renderSyncUI();
+    renderLanguages();
   }
 
+  // The top-bar picker lists only the languages being learnt; the base-language one lists all.
   function renderLangList() {
     const q = langSearch.trim().toLocaleLowerCase(uiLocale());
-    const activeId = langPickerMode === 'base' ? state.settings.baseLang : state.settings.lang;
-    const list = LANGS.filter(l => !q || (l.he + ' ' + l.en + ' ' + l.code).toLocaleLowerCase(uiLocale()).includes(q));
-    $('#lang-list').innerHTML = list.map(l => `<button class="lang-row${l.id === activeId ? ' active' : ''}" data-lang-id="${l.id}">
+    const learn = langPickerMode !== 'base';
+    const activeId = learn ? state.settings.lang : state.settings.baseLang;
+    const list = LANGS.filter(l => (!learn || learnLangs().includes(l.id)) &&
+      (!q || (l.he + ' ' + l.en + ' ' + l.code).toLocaleLowerCase(uiLocale()).includes(q)));
+    $('#lang-list').innerHTML = (list.map(l => `<button class="lang-row${l.id === activeId ? ' active' : ''}" data-lang-id="${l.id}">
       <span class="lang-code">${l.code}</span>
-      <span class="lang-row-copy"><strong>${langName(l)}</strong><small>${l.en} · ${l.status === 'installed' ? 'מילון מקומי' : 'מילון מקוון'}</small></span>
+      <span class="lang-row-copy"><strong>${langName(l)}</strong><small>${l.en} · ${tr(l.status === 'installed' ? 'מילון מקומי' : 'מילון מקוון')}</small></span>
       ${l.id === activeId ? '<svg class="lang-check"><use href="#i-check"></use></svg>' : ''}
-    </button>`).join('') || `<p class="recent-empty">לא נמצאה שפה.</p>`;
+    </button>`).join('') || `<p class="recent-empty">לא נמצאה שפה.</p>`) +
+      (learn ? `<button class="lang-row lang-manage" data-action="manage-langs"><span class="lang-code"><svg><use href="#i-plus"></use></svg></span><span class="lang-row-copy"><strong>ניהול שפות</strong></span></button>` : '');
+  }
+
+  /* ---------------- languages screen ---------------- */
+
+  function langList(ids) {
+    const names = ids.map(id => langName(BY_LANG[id]));
+    try { return new Intl.ListFormat(uiLocale(), { type: 'conjunction' }).format(names); } catch (e) { return names.join(', '); }
+  }
+
+  function renderLanguages() {
+    const on = learnLangs();
+    $('#langs-summary').textContent = langList(on);
+    $('#langs-grid').innerHTML = LANGS.map(l => {
+      const ticked = on.includes(l.id);
+      return `<button class="lang-tick${ticked ? ' on' : ''}" role="checkbox" aria-checked="${ticked}" data-learn-lang="${l.id}">
+        <span class="lang-box"><svg><use href="#i-check"></use></svg></span><span>${escapeHtml(langName(l))}</span></button>`;
+    }).join('');
+    const sw = $('#autolang-switch');
+    sw.classList.toggle('on', state.settings.autoLang !== false);
+    sw.setAttribute('aria-checked', state.settings.autoLang !== false ? 'true' : 'false');
+    $$('#langs-tabs button').forEach(b => b.classList.toggle('active', b.dataset.langsTab === langsTab));
+    $$('[data-langs-panel]').forEach(p => { p.hidden = p.dataset.langsPanel !== langsTab; });
+  }
+
+  // Ticking adds a language; one always stays ticked, and unticking the current
+  // one moves to another learnt language.
+  function toggleLearnLang(id) {
+    const s = state.settings;
+    if (!s.learnLangs.includes(id)) s.learnLangs = [...s.learnLangs, id];
+    else if (s.learnLangs.length === 1) { toast('לפחות שפה אחת נשארת מסומנת'); return; }
+    else s.learnLangs = s.learnLangs.filter(x => x !== id);
+    if (!s.learnLangs.includes(s.lang)) { setLearnLang(s.learnLangs[0]); return; }
+    save();
+    renderSettings();
+  }
+
+  function setLearnLang(id) {
+    state.settings.lang = id;
+    save(true);
+    renderAll();
   }
 
   /* ---------------- navigation ---------------- */
@@ -795,7 +934,7 @@
     $$('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + view));
     $$('.tab').forEach(t => t.classList.toggle('active', t.dataset.go === view));
     document.body.classList.toggle('reader-mode', view === 'reader');
-    if (view === 'settings') renderSettings();
+    if (view === 'settings' || view === 'languages') renderSettings();
     if (view === 'reader') {
       $('#reader-scroll').scrollTop = 0;
     } else {
@@ -811,15 +950,17 @@
   }
 
   function back() {
+    if ($('#reader-menu').classList.contains('open')) { closeReaderMenu(); return true; }
     if ($('#reader-toc').classList.contains('open')) { closeReaderToc(); return true; }
     if ($('#reader-settings').classList.contains('open')) { closeReaderSettings(); return true; }
-    if ($('#word-sheet').classList.contains('open')) { closeSheet(); return true; }
+    if ($('#word-sheet').classList.contains('open') || !$('#word-card').hidden) { closeSheet(); return true; }
     if ($('#item-sheet').classList.contains('open')) { closeItemSheet(); return true; }
     if (!$('#edit-word-modal').hidden) { hideModal('edit-word'); return true; }
     if (!$('#paste-modal').hidden) { hideModal('paste'); return true; }
     if (!$('#lang-modal').hidden) { hideModal('lang'); return true; }
     if (!$('#notices-modal').hidden) { hideModal('notices'); return true; }
     if (currentView === 'reader') { cleanupReader(); navigate('read'); return true; }
+    if (currentView === 'languages') { navigate('settings'); return true; }
     if (currentView !== 'home') { navigate('home'); return true; }
     return false;
   }
@@ -829,16 +970,22 @@
     flushRead();
     closeReaderSettings();
     closeReaderToc();
+    closeReaderMenu();
     if (currentReader && currentArticle) {
+      const { cur, total } = pageState();
+      currentArticle.pageInfo = { cur, total };
       if (currentReader.paged) {
         currentArticle.page = currentReader.page;
+        currentArticle.progress = Math.round((currentReader.pctShown || 0) * 1000) / 10;
         if (currentReader.stream) currentArticle.streamOffset = currentReader.stream.offset;
       } else {
         saveReadPosition();
       }
       save();
+      if (currentArticle.kind === 'book') requestVocabStats(currentArticle);
     }
     currentReader = null;
+    readerSel = null;
     if (readObserver) { readObserver.disconnect(); readObserver = null; }
     if (tokenObserver) { tokenObserver.disconnect(); tokenObserver = null; }
     clearInterval(readFlushTimer); readFlushTimer = null;
@@ -903,6 +1050,7 @@
   }
 
   function openReaderText(title, text, article, opts = {}) {
+    if (article) followLang(article.lang);
     const l = lang();
     currentArticle = article || { id: 'text-' + Date.now(), title, text, lang: l.id, kind: 'text' };
     if (!currentArticle.lang) currentArticle.lang = l.id;
@@ -912,7 +1060,7 @@
       title: title || 'קריאה', text: String(text || ''), blocks, pages: [],
       page: Math.max(0, Number(opts.page != null ? opts.page : currentArticle.page) || 0),
       chapters: Array.isArray(currentArticle.chapters) ? currentArticle.chapters : [],
-      paged, stream: opts.stream || null, streamBlocks: opts.streamBlocks || null, paras: [],
+      paged, stream: opts.stream || null, streamBlocks: opts.streamBlocks || null, paras: [], vocab: new Map(),
       wantOffset: opts.wantOffset != null ? opts.wantOffset
         : (!paged && !opts.stream && currentArticle.readOffset != null ? Number(currentArticle.readOffset) : null)
     };
@@ -923,9 +1071,11 @@
     $('#reader-meta').textContent = `${langName(l)} · ${fmt(countWords(text))} ${trWord('מילים')}`;
     $('#reader-progress').dir = l.dir;
     $('#view-reader').classList.remove('chrome-hidden');
+    $('#reader-counts').textContent = '';
     navigate('reader');
     applyReaderSettings();
     renderReaderCurrent();
+    updateGradeBar();
     window.scrollTo({ top: 0, behavior: 'instant' });
   }
 
@@ -1083,7 +1233,6 @@
     body.appendChild(paragraphs(blocks));
     r.paras = $$('#reader-body p[data-off]');
     rebuildIndex();
-    $('#reader-pagebar').hidden = true;
     updateReaderEnd();
     setupReaderObservers();
     watchParagraphs();
@@ -1179,25 +1328,30 @@
     const lastP = ps[ps.length - 1];
     const allShown = lastP.offsetTop + lastP.offsetHeight <= sc.scrollTop + sc.clientHeight;
     const atEnd = (allShown || sc.scrollTop + sc.clientHeight >= sc.scrollHeight - 8) && (!r.stream || r.stream.done);
-    const pct = atEnd ? 1 : Math.max(0, Math.min(1, (off + frac * (nextOff - off)) / Math.max(1, total)));
-    return { off, pct, index: i };
+    const at = off + frac * (nextOff - off);
+    const pct = atEnd ? 1 : Math.max(0, Math.min(1, at / Math.max(1, total)));
+    return { off, at, pct, index: i };
   }
 
   function scrollToOffset(off) {
     const r = currentReader;
     if (!r || !r.paras.length) return;
-    let pick = r.paras[0];
-    for (const p of r.paras) {
-      if (Number(p.dataset.off) <= off) pick = p; else break;
-    }
+    let i = 0;
+    while (i + 1 < r.paras.length && Number(r.paras[i + 1].dataset.off) <= off) i++;
+    const pick = r.paras[i];
+    const from = Number(pick.dataset.off);
+    const to = r.paras[i + 1] ? Number(r.paras[i + 1].dataset.off) : (r.stream ? r.stream.next : r.text.length);
+    // An offset inside a paragraph (a page jump) lands proportionally into it.
+    const frac = Math.max(0, Math.min(1, (off - from) / Math.max(1, to - from)));
     const sc = $('#reader-scroll');
     // Not the reader scrolling: keep the bars as they are.
     r.jumping = true;
-    sc.scrollTop = pick === r.paras[0] && (!r.stream || r.stream.offset === 0) ? 0 : Math.max(0, pick.offsetTop - 70);
+    sc.scrollTop = i === 0 && !frac && (!r.stream || r.stream.offset === 0) ? 0 : Math.max(0, pick.offsetTop + frac * pick.offsetHeight - 70);
     lastScrollTop = sc.scrollTop;
   }
 
   function setProgress(pct) {
+    if (currentReader) currentReader.pctShown = pct;
     const fill = $('#reader-progress span');
     if (fill) fill.style.width = (Math.max(0, Math.min(1, pct)) * 100).toFixed(2) + '%';
     const status = $('#reader-status');
@@ -1218,8 +1372,9 @@
     requestAnimationFrame(() => {
       scrollTick = false;
       const r = currentReader;
-      if (!r || r.paged) return;
       const sc = $('#reader-scroll');
+      if (!$('#word-card').hidden && Math.abs(sc.scrollTop - cardScrollTop) > 12) closeSheet();
+      if (!r || r.paged) return;
       const y = sc.scrollTop;
       const dy = y - lastScrollTop;
       lastScrollTop = y;
@@ -1231,9 +1386,11 @@
       const pos = scrollPosition();
       if (pos) {
         r.offsetNow = pos.off;
+        r.atNow = pos.at;
         r.pctNow = pos.pct;
         setProgress(pos.pct);
       }
+      updatePageBox();
       clearTimeout(readPosTimer);
       readPosTimer = setTimeout(() => { saveReadPosition(); updateBookmarkButton(); }, 400);
       if (r.stream && !r.growing) {
@@ -1334,16 +1491,13 @@
     html += blocks.map(b => `<p>${escapeHtml(b).replace(/\n/g, '<br>')}</p>`).join('');
     body.innerHTML = html;
     $$('#reader-body p').forEach((p, i) => { p.__text = blocks[i]; });
-    $('#reader-pagebar').hidden = false;
     $('#reader-end').hidden = true;
     const stream = currentReader.stream;
     const pct = stream && stream.total ? Math.min(100, Math.round(((stream.offset + (idx / Math.max(1, pages.length)) * (stream.next - stream.offset)) / stream.total) * 100)) : null;
-    $('#reader-page-count').textContent = `${fmt(idx + 1)} / ${fmt(pages.length)}`;
     setProgress(pct != null ? pct / 100 : (idx + 1) / Math.max(1, pages.length));
     $('#reader-meta').textContent = `${langName(lang())} · ${fmt(countWords(currentReader.text))} ${trWord('מילים')} · ${trWord('עמוד')} ${fmt(idx + 1)}` + (pct != null ? ` · ${pct}%` : '');
-    $('#reader-pagebar').querySelector('[data-action="page-prev"]').disabled = idx <= 0 && !(stream && stream.offset > 0);
-    $('#reader-pagebar').querySelector('[data-action="page-next"]').disabled = idx >= pages.length - 1 && !(stream && stream.next < stream.total);
     $('#reader-scroll').scrollTop = 0;
+    updatePageBox();
     body.onclick = onReaderClick;
     requestAnimationFrame(() => tokenizeReader());
     if (currentArticle) { currentArticle.page = idx; save(); }
@@ -1368,10 +1522,32 @@
     renderReaderPage();
   }
 
+  // Where each page starts in the text (characters), found once per text.
+  // Long paragraphs are cut at sentences and rejoined with spaces, so any
+  // whitespace matches any whitespace. A page is never shorter in the text
+  // than its pieces, so the next one is searched for after them.
+  function pageOffsets() {
+    const r = currentReader;
+    if (r.pageOffs) return r.pageOffs;
+    let from = 0;
+    r.pageOffs = r.pages.map(page => {
+      const head = String(page[0] || '').slice(0, 40).trim();
+      const re = new RegExp(head.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s+/g, '\\s+'), 'g');
+      re.lastIndex = from;
+      const m = head ? re.exec(r.text) : null;
+      const start = m ? m.index : from;
+      from = start + page.reduce((n, b) => n + b.length, 0);
+      return start;
+    });
+    return r.pageOffs;
+  }
+
   function pageForOffset(offset) {
     if (!currentReader || !currentReader.pages.length) return 0;
-    const total = Math.max(1, (currentReader.text || '').length);
-    return Math.max(0, Math.min(currentReader.pages.length - 1, Math.floor((offset / total) * currentReader.pages.length)));
+    const offs = pageOffsets();
+    let i = 0;
+    while (i + 1 < offs.length && offs[i + 1] <= offset) i++;
+    return i;
   }
 
   function pagePreview(index) {
@@ -1568,6 +1744,174 @@
     save();
     renderToc();
     updateBookmarkButton();
+  }
+
+  /* ---------------- page box, page turning ---------------- */
+  // "7 / 510" in the top bar. A PDF keeps its own pages: article.pdfPages holds
+  // where each starts, in the reader's position units. Otherwise page mode shows
+  // its pagination and scroll mode counts screens: pixels for inline text, an
+  // estimate from byte offsets for a streamed book.
+
+  // One screen of text between the bars. Kept while the page box has the
+  // keyboard up, so a typed page number means the same page afterwards.
+  function screenStep() {
+    const r = currentReader;
+    if (!r.step) {
+      const bars = $('.reader-topbar').offsetHeight + $('#reader-toolbar').offsetHeight;
+      r.step = Math.max(120, $('#reader-scroll').clientHeight - bars);
+    }
+    return r.step;
+  }
+
+  // Book bytes per screen, measured once per book and layout so the numbers stay put.
+  let pageMetric = null;
+  function streamPageBytes() {
+    const r = currentReader;
+    const s = r.stream;
+    const set = state.settings;
+    const key = [s.bookId, set.fontSize, set.readerLine, set.readerFont, set.readerPinyin, $('#reader-scroll').clientWidth].join('|');
+    if (pageMetric && pageMetric.key === key) return pageMetric.bytes;
+    const first = r.paras[0];
+    const last = r.paras[r.paras.length - 1];
+    const px = last.offsetTop + last.offsetHeight - first.offsetTop;
+    pageMetric = { key, bytes: Math.max(200, (s.next - s.offset) / Math.max(1, px) * screenStep()) };
+    return pageMetric.bytes;
+  }
+
+  // What is on screen, as [from, to) in the text's position units.
+  function readerSpan() {
+    const r = currentReader;
+    if (!r.paged) return [r.atNow || 0, (r.atNow || 0) + 1];
+    if (r.stream) { const b = streamBookmark(); return [b.offset, b.offset + 1]; }
+    const offs = pageOffsets();
+    return [offs[r.page], offs[r.page + 1] != null ? offs[r.page + 1] : r.text.length];
+  }
+
+  // The PDF page that starts on screen, else the one running onto it. Pages
+  // without text share the next page's start; that next page wins.
+  function pdfPageAt(starts, [from, to]) {
+    let i = starts.findIndex(o => o >= from && o < to);
+    if (i < 0) {
+      i = 0;
+      while (i + 1 < starts.length && starts[i + 1] <= from) i++;
+    }
+    while (i + 1 < starts.length && starts[i + 1] === starts[i]) i++;
+    return i;
+  }
+
+  function pdfPages() {
+    const p = currentArticle && currentArticle.pdfPages;
+    return Array.isArray(p) && p.length ? p : null;
+  }
+
+  function pageState() {
+    const r = currentReader;
+    const pdf = pdfPages();
+    if (pdf) return { cur: pdfPageAt(pdf, readerSpan()) + 1, total: pdf.length };
+    if (r.paged) return { cur: r.page + 1, total: r.pages.length };
+    if (r.stream && r.paras.length) {
+      const per = streamPageBytes();
+      const total = Math.max(1, Math.ceil(r.stream.total / per));
+      return { cur: r.pctNow >= 1 ? total : Math.min(total, Math.round((r.atNow || 0) / per) + 1), total };
+    }
+    const sc = $('#reader-scroll');
+    const step = screenStep();
+    const max = sc.scrollHeight - sc.clientHeight;
+    const total = Math.max(1, Math.ceil(max / step) + 1);
+    return { cur: sc.scrollTop >= max - 8 ? total : Math.min(total, Math.round(sc.scrollTop / step) + 1), total };
+  }
+
+  function updatePageBox() {
+    const r = currentReader;
+    if (!r) return;
+    const { cur, total } = pageState();
+    const input = $('#reader-page-input');
+    if (document.activeElement !== input) input.value = String(cur);
+    $('#reader-page-total').textContent = '/ ' + fmt(total);
+    const s = r.stream;
+    let first, last;
+    if (r.paged) {
+      first = r.page <= 0 && !(s && s.offset > 0);
+      last = r.page >= r.pages.length - 1 && !(s && s.next < s.total);
+    } else {
+      const sc = $('#reader-scroll');
+      first = sc.scrollTop <= 0 && !(s && s.offset > 0);
+      last = sc.scrollTop + sc.clientHeight >= sc.scrollHeight - 8 && !(s && !s.done);
+    }
+    $$('#view-reader [data-action="page-prev"]').forEach(b => { b.disabled = first; });
+    $$('#view-reader [data-action="page-next"]').forEach(b => { b.disabled = last; });
+  }
+
+  function goToPage(n) {
+    const r = currentReader;
+    if (!r) return;
+    n = Math.max(1, Math.min(pageState().total, Math.round(n) || 1));
+    const pdf = pdfPages();
+    if (pdf) jumpToStreamOffset(pdf[n - 1]);
+    else if (r.paged) { r.page = n - 1; renderReaderPage(); }
+    else if (r.stream) jumpToStreamOffset(Math.round((n - 1) * streamPageBytes()));
+    else { r.jumping = true; $('#reader-scroll').scrollTop = (n - 1) * screenStep(); }
+    updatePageBox();
+  }
+
+  // ‹ › and ← →: the next page, or a screen further in scroll mode.
+  function turnReader(delta) {
+    const r = currentReader;
+    if (!r) return;
+    if (r.paged) { turnPage(delta); return; }
+    r.jumping = true;
+    $('#reader-scroll').scrollTop += delta * screenStep();
+  }
+
+  /* ---------------- bottom grade bar, word counts ---------------- */
+
+  // The bar grades the word whose card is open, or else the last word tapped.
+  function updateGradeBar() {
+    const w = readerSel && readerSel.w;
+    $$('#reader-grades button').forEach(b => {
+      b.disabled = !w;
+      b.classList.toggle('active', !!w && Number(b.dataset.barGrade) === w.grade);
+    });
+  }
+
+  function gradeSelected(grade) {
+    if (!readerSel) return;
+    if (currentWord && currentWord.w === readerSel.w) { gradeWord(grade); return; }
+    schedule(readerSel.w, grade);
+    save();
+    updateSpanForWord(readerSel.w, readerSel.raw);
+    updateGradeBar();
+    updateWordCounts();
+  }
+
+  // "12 new · 3 learning" over the unique words tokenized so far.
+  function updateWordCounts() {
+    clearTimeout(countTimer);
+    countTimer = setTimeout(() => {
+      const r = currentReader;
+      if (!r) return;
+      let fresh = 0, learning = 0;
+      for (const raw of r.vocab.values()) {
+        const w = wordFor(raw);
+        const g = w ? w.grade || 0 : 0;
+        if (g === 0) fresh++;
+        else if (g >= 1 && g <= 4) learning++;
+      }
+      $('#reader-counts').textContent = tf('newLearning', { a: fmt(fresh), b: fmt(learning) });
+    }, 150);
+  }
+
+  function openReaderMenu() {
+    if (!currentReader) return;
+    $('#reader-menu').classList.add('open');
+    $('#reader-menu').setAttribute('aria-hidden', 'false');
+    $('#reader-menu-backdrop').hidden = false;
+  }
+
+  function closeReaderMenu() {
+    $('#reader-menu').classList.remove('open');
+    $('#reader-menu').setAttribute('aria-hidden', 'true');
+    $('#reader-menu-backdrop').hidden = true;
   }
 
   function applyReaderSettings() {
@@ -1786,6 +2130,7 @@
       span.insertBefore(pyEl, span.firstChild);
     }
     const w = wordFor(raw);
+    if (currentReader) currentReader.vocab.set(normalizeWord(raw), raw);
     if (w) {
       span.dataset.key = w.key || '';
       span.dataset.grade = String(w.grade);
@@ -1902,6 +2247,7 @@
       if (last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
       node.parentNode.replaceChild(frag, node);
     }
+    if (words) updateWordCounts();
   }
 
   function onReaderClick(e) {
@@ -2103,8 +2449,12 @@
     const phrase = lookup && lookup.phrase && lookup.phrase.key !== lookup.key ? phraseLookup(lookup.phrase) : null;
     $$('#reader-body .ner-w.active').forEach(x => x.classList.remove('active'));
     if (span) span.classList.add('active');
+    if (span && span.closest('#reader-body')) readerSel = { w, raw };
+    updateGradeBar();
+    updateWordCounts();
     currentWord = { w, raw, lookup, span, context, phrase };
     currentLookup = lookup;
+    wordTab = 'meaning';
     showWordSheet();
     localizeLookup(lookup, w);
     if (phrase) localizeLookup(phrase, null);
@@ -2143,7 +2493,7 @@
       rebuildIndex();
       save();
     }
-    currentWord = { w, raw: ph.display, lookup: ph, span: null, context: currentWord.context, phrase: null };
+    currentWord = { w, raw: ph.display, lookup: ph, span: currentWord.span, expanded: currentWord.expanded, context: currentWord.context, phrase: null };
     currentLookup = ph;
     showWordSheet();
     localizeLookup(ph, w);
@@ -2162,54 +2512,190 @@
     localizeLookup(lookup, w);
   }
 
+  // The word card floats by the tapped word; expanding it (or opening a word
+  // from the list) shows the full sheet. Both are filled from the same data.
   function showWordSheet() {
     if (!currentWord) return;
     const { w, raw, lookup } = currentWord;
     const display = (lookup && lookup.display) || w.display || raw;
-    const bits = [];
-    if (display && display !== raw) bits.push(display);
-    const reading = hanReading(raw) || (lang().id === 'zh' ? '' : (w.tr || (lookup && lookup.tr) || ''));
-    if (reading) bits.push(reading);
-    const pos = posLabel(w.pos || (lookup && lookup.pos));
-    if (pos) bits.push(pos);
-    $('#sheet-word').textContent = raw;
-    $('#sheet-word').classList.toggle('long', String(raw).length > 14);
-    $('#sheet-meta').textContent = bits.join(' · ') || 'מילה';
-    const ph = currentWord.phrase;
-    $('#sheet-phrase').hidden = !ph;
-    if (ph) {
-      $('#sheet-phrase-kind').textContent = posLabel(ph.kind || 'phrase');
-      $('#sheet-phrase-text').textContent = ph.display;
-      $('#sheet-phrase-meaning').textContent = ph.meaning || '';
-      // Idiom glosses translate poorly, so the English original stays in view.
-      const g0 = (ph.glosses && ph.glosses[0]) || '';
-      $('#sheet-phrase-gloss').textContent = ph.meaningLang !== 'en' && g0 && g0 !== ph.meaning ? g0 : '';
-    }
-    const meaning = w.meaning || (lookup && lookup.meaning) || '';
-    $('#sheet-meaning').textContent = meaning || (lookup && lookup.pending ? tr('מחפש…') : tr('לא נמצאה משמעות. אפשר לפתוח תרגום אונליין.'));
-    const he = lookup && Array.isArray(lookup.he) ? lookup.he.slice(1, 4).filter(g => g && g !== meaning) : [];
-    const en = lookup && Array.isArray(lookup.glosses) ? lookup.glosses.slice(0, 3).filter(g => g && g !== meaning) : [];
-    $('#sheet-glosses').innerHTML = he.map(g => `<span class="he-gloss">${escapeHtml(g)}</span>`).join('') +
-      (en.length ? `<span class="en-label">${escapeHtml(langName(BY_LANG.en))}</span>` + en.map(g => `<span class="en-gloss">${escapeHtml(g)}</span>`).join('') : '');
-    $('#sheet-rank').textContent = lookup && lookup.found
-      ? (lookup.rank ? '#' + fmt(lookup.rank) + ' ' + tr('בשכיחות') : (/wiktionary|google/i.test(lookup.source || '') ? lookup.source.replace(/\s*\(online\)/i, '') : tr('מילון מקומי')))
-      : 'לא נמצא במילון';
-    const ctx = w.context || (currentWord && currentWord.context) || '';
-    $('#sheet-context').hidden = !ctx;
-    $('#sheet-context').textContent = ctx ? (activeUiLang() === 'he' ? '״' + ctx + '״' : '“' + ctx + '”') : '';
-    $('#sheet-context').dir = lang().dir;
-    $$('#grade-grid button').forEach(b => b.classList.toggle('active', Number(b.dataset.grade) === Number(w.grade)));
-    const tl = lang().id === 'he' ? 'en' : 'he';
-    $('#sheet-translate').dataset.url = `https://translate.google.com/?sl=${encodeURIComponent(lang().id)}&tl=${tl}&text=${encodeURIComponent(raw)}&op=translate`;
-    $('#sheet-translate').style.display = '';
+    // Chinese shows its other script; elsewhere the dictionary form (cordes → corde).
+    const other = lookup && lookup.alt && lookup.alt !== raw ? lookup.alt : '';
+    const head = {
+      raw, alt: other || (display !== raw ? display : ''), seen: w.seen || 0,
+      reading: hanReading(raw) || (lang().id === 'zh' ? '' : (w.tr || (lookup && lookup.tr) || ''))
+    };
+    const links = dictLinks();
+    const glosses = glossItems();
+    fillHead('card', head);
+    fillLinks($('#card-links'), [links.general[0]].concat(links.own.slice(0, 2)).filter(Boolean));
+    fillPhrase($('#card-phrase'), currentWord.phrase);
+    fillGlosses($('#card-glosses'), glosses);
+    fillHead('sheet', head);
+    fillLinks($('#sheet-links'), links.own.concat(links.general));
+    fillPhrase($('#sheet-phrase'), currentWord.phrase);
+    fillGlosses($('#sheet-glosses'), glosses);
+    fillSheetDetails();
+    if (currentWord.span && !currentWord.expanded) { placeCard(); return; }
+    hideCard();
     $('#sheet-backdrop').hidden = false;
     $('#word-sheet').classList.add('open');
     $('#word-sheet').setAttribute('aria-hidden', 'false');
     document.body.classList.add('sheet-open');
   }
 
+  function fillHead(prefix, head) {
+    const word = $('#' + prefix + '-word');
+    word.textContent = head.raw;
+    word.dir = lang().dir;
+    word.parentElement.classList.toggle('long', String(head.raw).length > 14);
+    $('#' + prefix + '-alt').textContent = head.alt;
+    $('#' + prefix + '-reading').textContent = head.reading;
+    const seen = $('#' + prefix + '-seen');
+    seen.hidden = !head.seen;
+    // The UI catalog re-applies an element's first title; keep its copy current.
+    seen.title = seen.dataset.i18nTitle = tf('seen', { n: fmt(head.seen) });
+    seen.innerHTML = `<svg><use href="#i-eye"></use></svg>${fmt(head.seen)}`;
+  }
+
+  // The language's own dictionaries and the general ones (Google Translate first).
+  function dictLinks() {
+    const { raw, lookup } = currentWord;
+    const word = (lookup && lookup.found && lookup.key) || raw;
+    const all = window.nerDictLinks ? window.nerDictLinks(lang().id, state.settings.baseLang || 'en', word) : [];
+    const own = ((window.NER_DICTS || {})[lang().id] || []).length;
+    return { own: all.slice(0, own), general: all.slice(own) };
+  }
+
+  function fillLinks(box, links) {
+    box.innerHTML = links.map(d => `<button class="dict-chip" data-dict-url="${escapeHtml(d.url)}">${escapeHtml(tr(d.name))}<svg><use href="#i-out"></use></svg></button>`).join('');
+  }
+
+  function fillPhrase(btn, ph) {
+    btn.hidden = !ph;
+    if (!ph) return;
+    btn.querySelector('.sheet-phrase-kind').textContent = posLabel(ph.kind || 'phrase');
+    btn.querySelector('.sheet-phrase-text').textContent = ph.display;
+    btn.querySelector('.sheet-phrase-meaning').textContent = ph.meaning || '';
+    // Idiom glosses translate poorly, so the English original stays in view.
+    const g0 = (ph.glosses && ph.glosses[0]) || '';
+    btn.querySelector('.sheet-phrase-gloss').textContent = ph.meaningLang !== 'en' && g0 && g0 !== ph.meaning ? g0 : '';
+  }
+
+  // Every gloss, numbered. The meaning in the base language (or the learner's
+  // own) leads, with the English gloss it came from under it; a definition in
+  // the word's own language (the Hebrew pack's) is an item of its own.
+  function glossItems() {
+    const { w, lookup } = currentWord;
+    const meaning = w.meaning || (lookup && lookup.meaning) || '';
+    const he = lookup && Array.isArray(lookup.he) ? lookup.he.filter(Boolean) : [];
+    const list = state.settings.baseLang === 'he' && he.length ? he
+      : (lookup && Array.isArray(lookup.glosses) ? lookup.glosses.filter(Boolean) : []);
+    if (!list.length) return meaning ? [{ text: meaning }] : [];
+    const items = list.map(g => ({ text: g }));
+    if (!meaning || list.some(g => g.toLowerCase() === meaning.toLowerCase())) return items;
+    if (lookup && lookup.meaningLang === lang().id && meaning === lookup.meaning) return [{ text: meaning }].concat(items);
+    items[0] = { text: meaning, sub: list[0] };
+    return items;
+  }
+
+  function fillGlosses(box, items) {
+    const pending = currentWord.lookup && currentWord.lookup.pending;
+    if (pending || !items.length) {
+      box.innerHTML = `<li class="empty">${escapeHtml(pending ? tr('מחפש…') : tr('לא נמצאה משמעות. אפשר לפתוח תרגום אונליין.'))}</li>`;
+      return;
+    }
+    box.innerHTML = items.map((it, i) => `<li dir="auto"><span class="n">${fmt(i + 1)}.</span><span class="g">${escapeHtml(it.text)}${it.sub ? `<small>${escapeHtml(it.sub)}</small>` : ''}</span></li>`).join('');
+  }
+
+  // Level, frequency, characters, context and grade: the full sheet only.
+  function fillSheetDetails() {
+    const { w, lookup } = currentWord;
+    const badges = [];
+    if (lookup && lookup.hsk) badges.push(`<span class="word-badge hsk">HSK ${fmt(lookup.hsk)}</span>`);
+    if (lookup && lookup.rank) badges.push(`<span class="word-badge">${escapeHtml(tf('mostCommon', { n: fmt(lookup.rank) }))}</span>`);
+    const pos = posLabel(w.pos || (lookup && lookup.pos));
+    if (pos) badges.push(`<span class="word-badge">${escapeHtml(pos)}</span>`);
+    $('#sheet-badges').innerHTML = badges.join('');
+    const chars = lookup && Array.isArray(lookup.chars) ? lookup.chars : [];
+    if (!chars.length) wordTab = 'meaning';
+    $('#word-tabs').hidden = !chars.length;
+    $$('#word-tabs button').forEach(b => b.classList.toggle('active', b.dataset.wordTab === wordTab));
+    $('#sheet-tab-meaning').hidden = wordTab !== 'meaning';
+    $('#sheet-tab-chars').hidden = wordTab !== 'chars';
+    $('#sheet-tab-chars').innerHTML = chars.map(c => `<div class="char-row"><span class="char-cell"><small>${escapeHtml(hanReading(c.c) || c.tr)}</small><b>${escapeHtml(c.c)}</b></span><span class="char-gloss">${escapeHtml(c.g)}</span></div>`).join('');
+    const ctx = w.context || currentWord.context || '';
+    $('#sheet-context').hidden = !ctx;
+    $('#sheet-context').textContent = ctx ? (activeUiLang() === 'he' ? '״' + ctx + '״' : '“' + ctx + '”') : '';
+    $('#sheet-context').dir = lang().dir;
+    $$('#grade-grid button').forEach(b => b.classList.toggle('active', Number(b.dataset.grade) === Number(w.grade)));
+    $('#sheet-source').textContent = lookup && lookup.found
+      ? (/wiktionary|google/i.test(lookup.source || '') ? lookup.source.replace(/\s*\(online\)/i, '') : tr('מילון מקומי'))
+      : tr('לא נמצא במילון');
+  }
+
+  // Below the word's line when it sits in the upper half, above it otherwise.
+  function placeCard() {
+    const card = $('#word-card');
+    const r = currentWord.span.getBoundingClientRect();
+    const vh = window.innerHeight, gap = 8, edge = 12;
+    const below = r.top + r.bottom < vh;
+    card.dataset.side = below ? 'below' : 'above';
+    card.style.top = below ? (r.bottom + gap) + 'px' : '';
+    card.style.bottom = below ? '' : (vh - r.top + gap) + 'px';
+    card.style.maxHeight = Math.max(140, below ? vh - r.bottom - gap - edge : r.top - gap - edge) + 'px';
+    card.hidden = false;
+    card.setAttribute('aria-hidden', 'false');
+    cardScrollTop = $('#reader-scroll').scrollTop;
+  }
+
+  function hideCard() {
+    const card = $('#word-card');
+    card.hidden = true;
+    card.setAttribute('aria-hidden', 'true');
+    card.style.transform = card.style.opacity = '';
+  }
+
+  function expandWord() {
+    if (!currentWord) return;
+    currentWord.expanded = true;
+    showWordSheet();
+  }
+
+  // Swipe the card sideways, or (by its head) away from its word, to dismiss it.
+  function swipeCard(card) {
+    let x0 = 0, y0 = 0, dx = 0, dy = 0, on = false, head = false, vertical = false;
+    card.addEventListener('touchstart', e => {
+      on = e.touches.length === 1 && !e.target.closest('.dict-chips');
+      if (!on) return;
+      x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; dx = dy = 0;
+      head = !!e.target.closest('.word-card-head');
+    }, { passive: true });
+    card.addEventListener('touchmove', e => {
+      if (!on) return;
+      dx = e.touches[0].clientX - x0; dy = e.touches[0].clientY - y0;
+      const sideways = Math.abs(dx) > Math.abs(dy);
+      vertical = head && !sideways && (card.dataset.side === 'below' ? dy > 0 : dy < 0);
+      // Keep the drag on the card: the reader behind must not scroll (that closes it).
+      if (sideways || vertical || card.scrollHeight <= card.clientHeight) e.preventDefault();
+      if (!vertical && !sideways) return;
+      card.style.transition = 'none';
+      card.style.transform = vertical ? `translateY(${dy}px)` : `translateX(${dx}px)`;
+      card.style.opacity = String(1 - Math.min(.6, Math.abs(vertical ? dy : dx) / 300));
+    }, { passive: false });
+    const end = () => {
+      if (!on) return;
+      on = false;
+      card.style.transition = '';
+      if (vertical ? Math.abs(dy) > 60 : Math.abs(dx) > 90 && Math.abs(dx) > Math.abs(dy)) closeSheet();
+      else card.style.transform = card.style.opacity = '';
+    };
+    card.addEventListener('touchend', end);
+    card.addEventListener('touchcancel', end);
+  }
+
   function closeSheet() {
     $$('#reader-body .ner-w.active').forEach(x => x.classList.remove('active'));
+    hideCard();
     $('#word-sheet').classList.remove('open');
     $('#word-sheet').setAttribute('aria-hidden', 'true');
     $('#sheet-backdrop').hidden = true;
@@ -2228,7 +2714,8 @@
       if (span.dataset.raw === raw || normalizeWord(span.dataset.raw) === norm || (w.key && span.dataset.key === w.key)) {
         span.dataset.key = w.key || '';
         span.dataset.grade = String(w.grade);
-        span.className = 'ner-w ' + gradeClass(w.grade);
+        span.classList.remove('g-new', 'g-learning', 'g-known', 'g-ignored');
+        span.classList.add(gradeClass(w.grade));
       }
     }
   }
@@ -2283,6 +2770,8 @@
     schedule(w, grade);
     save();
     updateSpanForWord(w, raw);
+    updateGradeBar();
+    updateWordCounts();
     showWordSheet();
     if (grade === 5 || grade === -1) {
       setTimeout(closeSheet, 260);
@@ -2413,13 +2902,13 @@
     save();
   }
 
-  function createTextArticle(title, text, kind = 'text', chapters = []) {
+  function createTextArticle(title, text, kind = 'text', chapters = [], extra = {}) {
     text = String(text || '').trim();
     if (text.length < 10) { toast('הטקסט קצר מדי'); return; }
     const cleanTitle = String(title || '').trim() || text.split('\n')[0].slice(0, 70) || 'טקסט';
     const article = {
-      id: 'text-' + Date.now(), title: cleanTitle, text, lang: lang().id,
-      kind, chapters, added: Date.now(), lastOpened: Date.now()
+      id: 'text-' + Date.now(), title: cleanTitle, text, lang: articleLang(detectLang(text, learnLangs())),
+      kind, chapters, added: Date.now(), lastOpened: Date.now(), ...extra
     };
     addArticle(article);
     hideModal('paste');
@@ -2432,11 +2921,13 @@
     if (!article) return;
     article.lastOpened = Date.now();
     save();
+    if (article.kind === 'book') requestVocabStats(article);
     if (article.stream && article.bookId) {
       openStreamArticle(article);
     } else if (article.text) {
       openReaderText(article.title, article.text, article);
     } else if (article.url) {
+      followLang(article.lang);
       if (article.kind === 'watch') N.openWatch(article.url);
       else N.openUrl(article.url);
     }
@@ -2451,9 +2942,10 @@
     if (!/^https?:$/.test(u.protocol)) { toast('רק קישורי http או https'); return; }
     const article = {
       id: 'web-' + Date.now(), title: u.hostname.replace(/^www\./, ''), url: u.href,
-      lang: lang().id, kind: 'web', added: Date.now(), lastOpened: Date.now()
+      lang: articleLang(langFromUrl(u)), kind: 'web', added: Date.now(), lastOpened: Date.now()
     };
     addArticle(article);
+    followLang(article.lang);
     $('#url-input').value = '';
     try { N.openUrl(u.href); } catch (e) { toast('לא ניתן לפתוח את הקישור'); }
   }
@@ -2492,7 +2984,7 @@
 
   function seedArticle() {
     const page = sampleForLang(lang().id);
-    createTextArticle(page.title, page.text);
+    createTextArticle(page.title, page.text, 'text', [], { lang: lang().id });
   }
 
   function normalizeWatchUrl(raw) {
@@ -2530,12 +3022,87 @@
 
   /* ---------------- language ---------------- */
 
+  // Writing systems in the order they are tried; 'han' and 'cyr' are split further below.
+  const SCRIPTS = [
+    ['han', /[぀-ヿ㐀-鿿豈-﫿]/g], ['ko', /[가-힯ᄀ-ᇿ]/g],
+    ['he', /[֐-׿]/g], ['ar', /[؀-ۿ]/g], ['cyr', /[Ѐ-ӿ]/g],
+    ['el', /[Ͱ-Ͽ]/g], ['th', /[฀-๿]/g], ['lat', /[a-zÀ-ɏḀ-ỿ]/gi]
+  ];
+  const SIMPLIFIED = /[这们说时对会来国为过发还现开问么见长门车马东书个学后样经没点让话应从头关]/g;
+  const TRADITIONAL = /[這們說時對會來國為過發還現開問麼見長門車馬東書個學後樣經沒點讓話應從頭關嘅咗喺唔佢啲嘢冇]/g;
+  // The most common words of each Latin-script language.
+  const STOP_WORDS = Object.fromEntries(Object.entries({
+    en: 'the and of to in is that it was for on with as his he you are this be at by not have from',
+    fr: 'le la les et des est une dans que qui pour pas sur au du il elle ne avec se ce sont mais',
+    es: 'el la los las y que de en un una por con no es se del para al lo como su pero más',
+    de: 'der die das und ist nicht ein eine zu mit sich auf den dem des ich er sie es auch für von',
+    it: 'il lo la gli le di che e è un una per non con del della sono ma si al nel anche',
+    pt: 'o a os as e de que em um uma do da não para com por se no na mais é ao dos',
+    nl: 'de het een en van is dat niet op te zijn met voor ik je die er maar ook hij',
+    sv: 'och att det är som en på av för med inte jag till den har var om men ett',
+    da: 'og at det er som en på af for med ikke jeg til den har var om men et hvad efter meget',
+    no: 'og at det er som en på av for med ikke jeg til den har var om men et ble hva etter mye',
+    pl: 'i w nie na się że jest to z do co jak ale o tak po od za jego przez',
+    tr: 've bir bu da de için ile ne çok değil mi ama gibi daha o ben sen var olarak',
+    fi: 'ja on ei se että oli hän mutta kun ovat myös tai jos niin minä sinä mitä tämä',
+    hu: 'a az és hogy nem is egy van meg de már csak volt mint ez el ki fel azt',
+    id: 'dan yang di itu ini dengan untuk tidak dari ada saya akan ke juga dalam adalah',
+    vi: 'và của là có không những được một các người cho với này trong đã khi'
+  }).map(([id, words]) => [id, new Set(words.split(' '))]));
+
+  // Latin-script languages whose common words make up a good share of the text, best first.
+  function rankLatin(sample) {
+    const tokens = sample.toLowerCase().match(/\p{L}+/gu) || [];
+    const scores = Object.entries(STOP_WORDS)
+      .map(([id, set]) => [id, tokens.filter(t => set.has(t)).length / (tokens.length || 1)])
+      .sort((a, b) => b[1] - a[1]);
+    const floor = Math.max(0.05, scores[0][1] * 0.7);
+    return scores.filter(([, score]) => score >= floor).map(([id]) => id);
+  }
+
+  // The language of a text, the first of candidates (when given) that fits: the
+  // script decides, then kana/simplified/traditional for Han, letters for
+  // Cyrillic and common words for Latin.
+  function detectLang(text, candidates) {
+    const sample = String(text || '').slice(0, 5000);
+    const count = re => (sample.match(re) || []).length;
+    let script = null, most = 0;
+    for (const [id, re] of SCRIPTS) {
+      const n = count(re);
+      if (n > most) { script = id; most = n; }
+    }
+    let ranked = script ? [script] : [];
+    if (script === 'han') {
+      ranked = count(/[぀-ヿ]/g) * 10 > most ? ['ja', 'zh', 'yue']
+        : count(TRADITIONAL) > count(SIMPLIFIED) ? ['yue', 'zh', 'ja'] : ['zh', 'yue', 'ja'];
+    } else if (script === 'cyr') {
+      ranked = count(/[іїєґ]/gi) > count(/[ыэъё]/gi) ? ['uk', 'ru'] : ['ru', 'uk'];
+    } else if (script === 'lat') {
+      ranked = rankLatin(sample);
+    }
+    return (candidates ? ranked.find(id => candidates.includes(id)) : ranked[0]) || null;
+  }
+
+  // A web page's language from its address: a language subdomain (fr.wikipedia.org) or a country domain.
+  const TLD_LANG = {
+    il: 'he', fr: 'fr', de: 'de', at: 'de', es: 'es', mx: 'es', it: 'it', pt: 'pt', br: 'pt', nl: 'nl', se: 'sv',
+    dk: 'da', no: 'no', pl: 'pl', tr: 'tr', fi: 'fi', hu: 'hu', ru: 'ru', ua: 'uk', gr: 'el', cn: 'zh', tw: 'yue',
+    hk: 'yue', jp: 'ja', kr: 'ko', vn: 'vi', id: 'id', th: 'th'
+  };
+  function langFromUrl(u) {
+    const parts = u.hostname.split('.');
+    return BY_LANG[parts[0]] ? parts[0] : TLD_LANG[parts[parts.length - 1]] || null;
+  }
+
+  // A new article belongs to its detected language when the user learns it, else the current one.
+  const articleLang = id => (id && learnLangs().includes(id) ? id : lang().id);
+
   function applyCustomBase() {
     const code = ($('#custom-base-code').value || '').trim().toLowerCase();
     if (!/^[a-z]{2,3}$/.test(code)) { toast('קוד שפה לא תקין'); return; }
     state.settings.baseLang = code;
     save(); hideModal('lang'); renderSettings();
-    toast('שפת התרגום: ' + code.toUpperCase());
+    toast(tf('baseNow', { lang: code.toUpperCase() }));
     if (currentWord) localizeLookup(currentWord.lookup, currentWord.w);
   }
 
@@ -2546,17 +3113,22 @@
       save();
       hideModal('lang');
       renderSettings();
-      toast('שפת התרגום: ' + langName(BY_LANG[id]));
+      toast(tf('baseNow', { lang: langName(BY_LANG[id]) }));
       if (currentWord) localizeLookup(currentWord.lookup, currentWord.w);
       return;
     }
-    state.settings.lang = id;
-    save();
     hideModal('lang');
-    rebuildIndex();
-    renderAll();
     if (currentView === 'reader') { cleanupReader(); navigate('read'); }
-    toast('שפת הלימוד: ' + langName(BY_LANG[id]));
+    setLearnLang(id);
+    toast(tf('langNow', { lang: langName(BY_LANG[id]) }));
+  }
+
+  // Opening a text in another language the user learns switches to it first,
+  // so the reader, segmentation and dictionary follow (Languages → Options).
+  function followLang(id) {
+    if (!id || id === state.settings.lang || state.settings.autoLang === false || !learnLangs().includes(id)) return;
+    setLearnLang(id);
+    toast(tf('langNow', { lang: langName(BY_LANG[id]) }));
   }
 
   /* ---------------- modals ---------------- */
@@ -2584,13 +3156,15 @@
     $('#lang-modal-title').textContent = mode === 'base' ? 'שפת אם / תרגום' : 'שפת לימוד';
     $('#lang-modal-sub').textContent = mode === 'base'
       ? 'לאיזו שפה יתורגמו המשמעויות. ברירת המחדל היא שפת המערכת.'
-      : '25 שפות. עברית עם מילון מקומי מלא.';
+      : 'השפות שאתם לומדים. אפשר להוסיף עוד.';
     $('#custom-base-row').hidden = mode !== 'base';
+    $('#lang-search-box').hidden = mode !== 'base';
+    $('#lang-modal .lang-card').classList.toggle('short', mode !== 'base');
     langSearch = '';
     $('#lang-search').value = '';
     renderLangList();
     showModal('lang');
-    setTimeout(() => $('#lang-search').focus(), 180);
+    if (mode === 'base') setTimeout(() => $('#lang-search').focus(), 180);
   }
 
   function openNotices(kind) {
@@ -2633,7 +3207,7 @@
     if (!confirm('לייבא את הגיבוי? הנתונים הנוכחיים יוחלפו.')) return;
     state = merge(defaultState(), obj);
     state.seeded = true;
-    if (!BY_LANG[state.settings.lang]) state.settings.lang = 'he';
+    normalizeLangs();
     if (!state.stats) state.stats = {};
     if (!state.articles) state.articles = [];
     save(true);
@@ -2698,9 +3272,11 @@
     const name = payload.name || 'מסמך';
     if (payload.bookId && payload.stream) {
       const title = payload.title || name.replace(/\.[a-z0-9]+$/i, '');
+      let head = '';
+      try { head = JSON.parse(N.readBook(payload.bookId, 0, 20000)).text || ''; } catch (e) { }
       const article = {
         id: 'book-' + Date.now(), title, bookId: payload.bookId, stream: true,
-        bytes: Number(payload.bytes) || 0, lang: lang().id, kind: 'book',
+        bytes: Number(payload.bytes) || 0, lang: articleLang(detectLang(head, learnLangs())), kind: 'book',
         chapters: Array.isArray(payload.chapters) ? payload.chapters : [],
         added: Date.now(), lastOpened: Date.now()
       };
@@ -2718,6 +3294,18 @@
     if (!text.trim()) { toast('הקובץ ריק'); return; }
     const title = payload.title || name.replace(/\.[a-z0-9]+$/i, '');
     createTextArticle(title, text, 'book', Array.isArray(payload.chapters) ? payload.chapters : []);
+  }
+
+  // PDF pages (cleaned text, '' for a page without any) as one text of
+  // paragraphs, with the character offset each page starts at.
+  function joinPdfPages(pages) {
+    let text = '';
+    const starts = [];
+    for (const page of pages) {
+      starts.push(text ? text.length + 2 : 0);
+      if (page) text = text ? text + '\n\n' + page : page;
+    }
+    return { text, starts };
   }
 
   async function extractPdf(payload) {
@@ -2747,11 +3335,10 @@
           else if (!/\s$/.test(item.str)) line += ' ';
         }
         if (line.trim()) lines.push(line.trim());
-        const text = lines.join('\n').replace(/[ \t]+/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
-        if (text) pages.push(text);
+        pages.push(cleanExtractedText(lines.join('\n').replace(/[ \t]+/g, ' ').replace(/\n{3,}/g, '\n\n')));
       }
       const title = payload.title || (payload.name || 'PDF').replace(/\.pdf$/i, '');
-      const text = cleanExtractedText(pages.join('\n\n'));
+      const { text, starts } = joinPdfPages(pages);
       if (!text.trim()) {
         toast('PDF סרוק — מפעיל OCR מקומי…');
         pendingOcr = { name: payload.name || 'PDF', title, pdfId: payload.pdfId || null };
@@ -2761,9 +3348,8 @@
         } catch (e) { toast('OCR לא זמין'); }
         return;
       }
-      const art = createTextArticle(title, text, 'book');
-      if (art && payload.pdfId) { art.pdfId = payload.pdfId; save(); }
-      toast('נחלצו ' + pages.length + ' עמודי טקסט');
+      createTextArticle(title, text, 'book', [], { pdfId: payload.pdfId || undefined, pdfPages: starts });
+      toast(tf('pdfPages', { n: fmt(pages.filter(Boolean).length) }));
     } catch (e) {
       console.warn(e);
       toast('מפעיל OCR מקומי על ה-PDF…');
@@ -2809,6 +3395,7 @@
 
   function finishOnboarding() {
     state.settings.lang = $('#onboard-target').value || 'en';
+    state.settings.learnLangs = [state.settings.lang];
     state.settings.baseLang = $('#onboard-base').value || 'en';
     state.settings.ui = $('#onboard-ui').value || 'system';
     state.onboarded = true;
@@ -2903,6 +3490,9 @@
 
   function bind() {
     document.addEventListener('click', e => {
+      // A tap anywhere but the word card closes it (a tap on a word reopens it
+      // there); the bottom bar's grades act on its word first.
+      if (!$('#word-card').hidden && !e.target.closest('#word-card, #reader-grades')) closeSheet();
       const go = e.target.closest('[data-go]');
       if (go) { navigate(go.dataset.go); return; }
 
@@ -2915,8 +3505,21 @@
         return;
       }
       if (e.target.closest('#lang-pill')) { openLang('learn'); return; }
-      if (e.target.closest('#read-mode-seg button')) {
-        readMode = e.target.closest('#read-mode-seg button').dataset.readMode;
+      const tick = e.target.closest('[data-learn-lang]');
+      if (tick) { toggleLearnLang(tick.dataset.learnLang); return; }
+      if (e.target.closest('#langs-tabs button')) {
+        langsTab = e.target.closest('#langs-tabs button').dataset.langsTab;
+        renderLanguages();
+        return;
+      }
+      if (e.target.closest('#autolang-switch')) {
+        state.settings.autoLang = state.settings.autoLang === false;
+        save();
+        renderLanguages();
+        return;
+      }
+      if (e.target.closest('[data-read-mode]')) {
+        readMode = e.target.closest('[data-read-mode]').dataset.readMode;
         applyReadMode();
         return;
       }
@@ -2987,17 +3590,16 @@
         openArticle(e.target.closest('[data-article-id]').dataset.articleId);
         return;
       }
-      if (e.target.closest('#sheet-translate')) {
-        const url = e.target.closest('#sheet-translate').dataset.url;
-        if (url) N.openExternal ? N.openExternal(url) : N.openUrl(url);
-        return;
-      }
+      if (e.target.closest('[data-dict-url]')) { N.openSheet(e.target.closest('[data-dict-url]').dataset.dictUrl); return; }
+      if (e.target.closest('#card-expand')) { expandWord(); return; }
+      if (e.target.closest('#sheet-close')) { closeSheet(); return; }
+      if (e.target.closest('[data-word-tab]')) { wordTab = e.target.closest('[data-word-tab]').dataset.wordTab; fillSheetDetails(); return; }
       if (e.target.closest('#onboard-start')) { finishOnboarding(); return; }
       if (e.target.closest('[data-library-del]')) { deleteLibraryBook(e.target.closest('[data-library-del]').dataset.libraryDel); return; }
       if (e.target.closest('#sheet-edit')) { openEditWord(); return; }
-      if (e.target.closest('#sheet-phrase')) { openPhrase(); return; }
+      if (e.target.closest('#sheet-phrase, #card-phrase')) { openPhrase(); return; }
       if (e.target.closest('#edit-save')) { saveEditWord(); return; }
-      if (e.target.closest('#sheet-speak')) {
+      if (e.target.closest('#sheet-speak, #card-speak')) {
         if (currentWord) N.speak(currentWord.raw, lang().id);
         return;
       }
@@ -3009,6 +3611,7 @@
         gradeWord(Number(e.target.closest('#grade-grid button').dataset.grade));
         return;
       }
+      if (e.target.closest('[data-bar-grade]')) { gradeSelected(Number(e.target.closest('[data-bar-grade]').dataset.barGrade)); return; }
       if (e.target.closest('#recent-clear')) {
         if (!state.articles.length) return;
         if (!confirm('לנקות את הכתבות והקישורים? הספרים והמילים יישארו.')) return;
@@ -3031,10 +3634,11 @@
 
       const action = e.target.closest('[data-action]');
       if (!action) return;
+      if (action.closest('#reader-menu')) closeReaderMenu();
       switch (action.dataset.action) {
         case 'paste': openPaste(); break;
         case 'file': try { N.openFile(); } catch (err) { toast('ייבוא קבצים זמין באפליקציה'); } break;
-        case 'language': openLang('learn'); break;
+        case 'manage-langs': hideModal('lang'); navigate('languages'); break;
         case 'base-language': openLang('base'); break;
         case 'base-custom': applyCustomBase(); break;
         case 'open-brave': openBrave(($('#url-input') && $('#url-input').value.trim()) || 'https://search.brave.com'); break;
@@ -3057,8 +3661,9 @@
         case 'reader-back': cleanupReader(); navigate('read'); break;
         case 'reader-aa': openReaderSettings(); break;
         case 'reader-settings-close': closeReaderSettings(); break;
-        case 'page-next': turnPage(1); break;
-        case 'page-prev': turnPage(-1); break;
+        case 'page-next': turnReader(1); break;
+        case 'page-prev': turnReader(-1); break;
+        case 'reader-menu': openReaderMenu(); break;
         case 'font-minus': state.settings.fontSize = Math.max(15, (state.settings.fontSize || 19) - 1); save(); applyReaderSettings(); break;
         case 'font-plus': state.settings.fontSize = Math.min(32, (state.settings.fontSize || 19) + 1); save(); applyReaderSettings(); break;
         case 'read-aloud': readCurrentPageAloud(); break;
@@ -3106,6 +3711,21 @@
     });
     $('#reader-settings-backdrop').addEventListener('click', closeReaderSettings);
     swipeToClose($('#word-sheet'), closeSheet);
+    swipeCard($('#word-card'));
+    window.addEventListener('resize', () => {
+      if (currentWord && !$('#word-card').hidden) placeCard();
+      if (currentReader && document.activeElement !== $('#reader-page-input')) currentReader.step = 0;
+    });
+    const pageInput = $('#reader-page-input');
+    pageInput.addEventListener('focus', () => pageInput.select());
+    pageInput.addEventListener('blur', updatePageBox);
+    pageInput.addEventListener('keydown', e => {
+      if (e.key !== 'Enter') return;
+      e.preventDefault();
+      const n = Number(pageInput.value.replace(/\D/g, ''));
+      pageInput.blur();
+      if (n) goToPage(n);
+    });
     // Long-press a book or article for its menu.
     let pressTimer = null;
     document.addEventListener('touchstart', e => {
@@ -3119,7 +3739,9 @@
     swipeToClose($('#reader-settings'), closeReaderSettings);
     swipeToClose($('#reader-toc'), closeReaderToc);
     swipeToClose($('#item-sheet'), closeItemSheet);
+    swipeToClose($('#reader-menu'), closeReaderMenu);
     $('#item-backdrop').addEventListener('click', closeItemSheet);
+    $('#reader-menu-backdrop').addEventListener('click', closeReaderMenu);
     $('#toc-backdrop').addEventListener('click', closeReaderToc);
     $('#toc-tabs').addEventListener('click', e => {
       const b = e.target.closest('[data-toc-tab]'); if (!b) return;
@@ -3217,8 +3839,11 @@
       const w = wordFor(span.dataset.raw);
       span.dataset.grade = String(w ? w.grade : 0);
       span.dataset.key = w ? w.key : '';
-      span.className = 'ner-w ' + gradeClass(w ? w.grade : 0);
+      span.classList.remove('g-new', 'g-learning', 'g-known', 'g-ignored');
+      span.classList.add(gradeClass(w ? w.grade : 0));
     }
+    updateGradeBar();
+    updateWordCounts();
     renderHome();
     renderRead();
     toast('כל המילים בטקסט סומנו כידועות');
@@ -3244,8 +3869,9 @@
     try { data = JSON.parse(json); } catch (e) { toast('OCR נכשל'); return; }
     if (!data.ok || !data.text) { toast('לא זוהה טקסט בקובץ'); return; }
     const title = (pendingOcr && pendingOcr.title) || 'PDF';
-    const art = createTextArticle(title, cleanExtractedText(data.text), 'book');
-    if (art && pendingOcr && pendingOcr.pdfId) { art.pdfId = pendingOcr.pdfId; save(); }
+    // Native OCR separates pages with a form feed.
+    const { text, starts } = joinPdfPages(String(data.text).split('\f').map(cleanExtractedText));
+    createTextArticle(title, text, 'book', [], { pdfId: (pendingOcr && pendingOcr.pdfId) || undefined, pdfPages: starts });
     pendingOcr = null;
     toast('OCR הסתיים');
   }
@@ -3257,6 +3883,7 @@
     onSpeakFail,
     onOcrResult,
     onTranslateResult,
+    onVocabStats,
     onBookChunk,
     buildAnkiTsv,
     onFile,
@@ -3271,7 +3898,7 @@
         if (!fresh) return;
         state = merge(defaultState(), JSON.parse(fresh));
         state.seeded = true;
-        if (!BY_LANG[state.settings.lang]) state.settings.lang = 'he';
+        normalizeLangs();
         rebuildIndex();
         applyTheme();
         renderAll();

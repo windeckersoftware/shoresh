@@ -455,14 +455,14 @@ Do not ship with `android:debuggable="true"` or `setWebContentsDebuggingEnabled(
 
 ## 9. Do-not list
 
-- Do not copy Sluka code, assets, dictionaries or branding.
+
 - Do not put `innerHTML` into YouTube-injected code.
 - Do not concatenate `segment.js` and `watch.js`.
 - Do not remove the Watch watchdog or Trusted Types-safe DOM creation.
 - Do not ship debug builds.
 - Do not bump one version file and forget the others.
 - Do not change the package id without a data migration.
-- Do not add 190 MB of decorative assets to match Sluka.
+
 - Do not remove the offline dictionary packs without a replacement.
 - Do not rely on `Intl.Segmenter('zh')`; Android WebView splits Han characters.
 

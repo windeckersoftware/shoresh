@@ -1,6 +1,26 @@
 # Shoresh (שורש) — Handoff for Future Agents
 
-Updated 2026-10-30. Current version **1.6.1** (`versionCode 118`). The visible name is Shoresh, written שורש. The Android package stays `app.ner.reader` so an update keeps the existing vocabulary.
+Updated 2026-10-31. Current version **1.6.1** (+ uncommitted work, see below) (`versionCode 118`). The visible name is Shoresh, written שורש. The Android package stays `app.ner.reader` so an update keeps the existing vocabulary.
+
+## In progress (2026-10-31) — reader like the user's two screen recordings
+
+The user recorded the Sluka reader (two videos on their Desktop, `Screenrecorder-2026-10-31-13-0*.mp4`) and wants every feature in Shoresh. Build them in Shoresh's own design (clean-room: no Sluka text, icons or branding). Uncommitted on `main` on top of 1.6.1 (`be301d9`); the tree builds.
+
+**Done (uncommitted, tested on the emulator by the builders):**
+- `js/dictlinks.js` — `NER_DICTS` (2–3 specialised dictionaries per language: Pealim/Morfix/Milog for Hebrew, MDBG/Zdic for Chinese, Jisho, Naver, Larousse, RAE, Duden…; every URL checked) and `NER_DICTS_ALL` (Google Translate, Wiktionary, Reverso, Forvo, Ask ChatGPT). Almaany and Longdo were dropped (Cloudflare walls).
+- HSK levels in the zh/yue packs (`tools/build_zh_pack.py`, complete-hsk-vocabulary, MIT; 2026 syllabus with 2021 fallback). `Dict.lookup` returns `hsk`, `chars` (per-character reading + gloss for zh/yue/ja) and the other script form.
+- `LinkSheet.java` — native in-app sheet (WebView dialog, 85% height, close/share/open in browser). `Ner.openSheet(url)`; web reader uses `ner://sheet?url=`. Web reader word panel has dictionary chips.
+- Word card in the app reader: tap → the word gets an outline and a compact card opens next to it (above/below), with other script, reading, seen-count, speak, expand, link chips, phrase card and numbered meanings. Expand → full sheet with HSK badge, frequency rank, all link chips, Meaning | Characters tabs, "+ Your meaning", grades.
+- Reader bars: top — back, ‹ editable "page / total" ›, contents, bookmark, ≡ menu (title, share, read aloud, mark all known, reading view), Aa. Bottom — ← 1 2 3 4 I K → grades the open or last tapped word (`readerSel`) and turns pages. In scroll mode a page is one screen between the bars (`screenStep`); streamed books estimate pages from bytes per screen (`streamPageBytes`, measured once per book and layout). "n new · n learning" chip over the unique words tokenized so far (`currentReader.vocab`), % badge. PDFs keep their pages: `article.pdfPages` holds each page's start in the reader's position units (characters; PDFs are always stored inline today, a streamed one would need bytes). Native OCR separates pages with `\f`; `ocrBook` now passes its request id (the result used to be dropped).
+- Several learning languages: `settings.learnLangs` (migrated from `settings.lang`, which stays the language read now; `normalizeLangs()` keeps it in the list) and `settings.autoLang`. Settings → Languages (`#view-languages`) has Learning (tick grid), Options (switch to the text's language), Dictionary (base language, pack status) and Interface tabs; the top-bar picker lists only the learnt languages. `detectLang(text, candidates)` (script, then kana/simplified/traditional, Cyrillic letters, common words for 16 Latin-script languages) and `langFromUrl()` (language subdomain or country domain) give new pasted/imported/web articles their language when the user learns it; `followLang()` switches to an article's language before it opens. The Read shelf shows the current language's books and articles.
+- Read screen: "Your next <language> book" heading, "Recently opened" with a count chip, a toolbar (paste, Web, add book). Each book card has a progress line and "Page x of y · z%" (`article.pageInfo`, saved when the reader closes; older books fall back to `pdfPages` + `readOffset`, then the percentage) and a word-stats card: % new, new, frequent (new among the 3000 most common), learning · known. `Ner.vocabStats(lang, articleId, knownJson)` reads the book file or the inline text from the saved state (first 2 MB, `capped` in the answer), counts unique keys as a tap would save them (`Dict.vocabStats`: dictionary segments for CJK runs, ICU word breaks elsewhere, `lemmaKey`) on its own executor and answers `NerApp.onVocabStats(id, json)`. Only the counts are cached, on `article.vocab` with a timestamp, refreshed when the book is opened and closed. ~2 s for 400k Chinese characters, <1 s for a 2 MB French book on the emulator.
+
+**Left to build (specs are in the workflow script, `~/.claude/projects/-Users-windecker-Desktop-projects/963483fe-…/workflows/scripts/shoresh-reader-like-videos-wf_7b4a3299-6ec.js`):**
+1. Review all changes (JS flows, i18n/RTL, Java lifecycle/threading), fix, test on the emulator, bump to 1.7.0, update README "New in", build, commit locally (the user pushes), and ask before publishing to the site.
+
+**Known open issues from the builders:** the full word sheet follows the app theme, not the reader paper; number keys grade only from the full sheet; `otherScript()` scans the forms map per lookup; the sheet header follows the system locale's direction, not the UI language; the Japanese and Cantonese packs are weak (IPA instead of kana, missing readings). The APK in `out/` named 1.6.1 was rebuilt from this work in progress — rebuild from the commit before publishing 1.6.1 again.
+
+**Testing:** `bash <scratchpad>/dbg/run.sh` built a debuggable copy, and `cdp.mjs` drove the WebView over DevTools. The method is under "Hard-won traps"; the scratchpad is temporary, so recreate the scripts from that description.
 
 ## Snapshot
 
@@ -50,8 +70,10 @@ Then build, install, verify signature, and run `tools/publish.sh "one-line relea
 
 - `MainActivity.java` — WebView shell, JS bridge, file picker, TTS, OCR, PDF import, sync.
 - `app/assets/www/index.html` + `js/app.js` — main app UI and reader.
+  A tapped word opens the compact `#word-card` (inside `#view-reader`, coloured from the paper, placed above or below the word's line); expand opens the full `#word-sheet` (links, HSK/frequency, Meaning | Characters tabs, grade). Both are filled by `showWordSheet()`.
 - `ReaderActivity.java` + `js/inject.js` — injected web-page reader.
 - `WatchActivity.java` + `js/watch.js` — focused YouTube viewer.
+- `LinkSheet.java` — dictionary links in a sheet over the app (`Ner.openSheet`) and the web reader (`ner://sheet?url=`).
 - `Store.java` — atomic local `state.json`; SharedPreferences intentionally avoided.
 - `Dict.java` — 25 gzipped offline packs, lookup, CJK segmenter.
 - `Epub.java` — EPUB extraction and chapter offsets.
@@ -77,9 +99,11 @@ Then build, install, verify signature, and run `tools/publish.sh "one-line relea
 - **Never load a pack with `org.json`.** `Dict` stream-parses packs with `android.util.JsonReader` into small objects. The 12 MB CEDICT pack read into a `JSONObject` ran out of a 192 MB heap.
 - **Phrase matching rules live in the phrase pack's `meta`** (`elision`, `poss`, `refl`, `unspaced`), written by `tools/build_phrases.py`. Change them there, not in Java.
 - **Inflected forms are often entries of their own** in the Wiktionary packs ("pleuvait: …imperfect indicative of pleuvoir"). `Dict.lemmaOf` follows the "… of X" gloss; lookup shows the lemma's meaning and keeps the form note.
+- **`Dict` is used from two threads.** Taps look words up on the JavaBridge thread while `vocabStats` runs on its own executor: `lemmaCache` is concurrent, and `vocabStats` gives up if another language's pack loads halfway through.
 - **Segmentation cost is log(rank) + a per-word charge.** A linear rank cost splits 生词 into 生 + 词.
 - **Testing on the emulator:** build a throwaway debuggable copy (manifest with `android:debuggable="true"`, built into a scratch dir), forward `localabstract:webview_devtools_remote_<pid>` and drive the WebView over the DevTools protocol (`Runtime.evaluate`). Never ship that build.
 
+- **Java cannot use `R`.** `build.sh` compiles `R.java` after the sources; look drawables up by name (`getIdentifier`), as `LinkSheet` does.
 - **WebView debugging must be off in release.** Manifest must not contain `android:debuggable="true"`. `setWebContentsDebuggingEnabled` is conditional on `FLAG_DEBUGGABLE` in all activities.
 - **Do not concatenate `segment.js` and `inject.js`.** It is ~592 KB and the injected script gets dropped. Inject them in two separate `evaluateJavascript` calls, in order.
 - **`dictSegment` must be inside the same IIFE** as its caller. It exists separately in `inject.js` and `watch.js`; moving one does not move the other.

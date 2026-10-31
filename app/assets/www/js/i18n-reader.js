@@ -4,6 +4,15 @@
   var m = window.NER_I18N = window.NER_I18N || {};
   var LANGS = ['en', 'hu', 'es', 'fr', 'de', 'ru', 'ar'];
   var rows = {
+    'הרחבה': ['Expand', 'Kibontás', 'Ampliar', 'Agrandir', 'Erweitern', 'Развернуть', 'توسيع'],
+    'סגירה': ['Close', 'Bezárás', 'Cerrar', 'Fermer', 'Schließen', 'Закрыть', 'إغلاق'],
+    'תווים': ['Characters', 'Írásjegyek', 'Caracteres', 'Caractères', 'Schriftzeichen', 'Иероглифы', 'الرموز'],
+    'המשמעות שלכם': ['Your meaning', 'Saját jelentés', 'Tu significado', 'Votre sens', 'Deine Bedeutung', 'Своё значение', 'معناك الخاص'],
+    'נפתחו לאחרונה': ['Recently opened', 'Nemrég megnyitott', 'Abiertos recientemente', 'Ouverts récemment', 'Zuletzt geöffnet', 'Недавно открытые', 'فُتحت مؤخرًا'],
+    'ספר אחד': ['1 book', '1 könyv', '1 libro', '1 livre', '1 Buch', '1 книга', 'كتاب واحد'],
+    'סופרים מילים…': ['Counting words…', 'Szavak számolása…', 'Contando palabras…', 'Comptage des mots…', 'Wörter werden gezählt…', 'Считаем слова…', 'جارٍ عدّ الكلمات…'],
+    'לפי 2 MB הראשונים': ['From the first 2 MB', 'Az első 2 MB alapján', 'Según los primeros 2 MB', 'D’après les 2 premiers Mo', 'Aus den ersten 2 MB', 'По первым 2 МБ', 'من أول 2 ميغابايت'],
+    'שאלו את ChatGPT': ['Ask ChatGPT', 'Kérdezd a ChatGPT-t', 'Preguntar a ChatGPT', 'Demander à ChatGPT', 'ChatGPT fragen', 'Спросить ChatGPT', 'اسأل ChatGPT'],
     'פתגם': ['Proverb', 'Közmondás', 'Refrán', 'Proverbe', 'Sprichwort', 'Пословица', 'مثل'],
     'ניב': ['Idiom', 'Szólás', 'Modismo', 'Expression idiomatique', 'Redewendung', 'Идиома', 'تعبير اصطلاحي'],
     'צירוף': ['Expression', 'Kifejezés', 'Expresión', 'Expression', 'Wendung', 'Выражение', 'عبارة'],
@@ -44,8 +53,26 @@
     'לא נמצאה משמעות. אפשר לפתוח תרגום אונליין.': ['No meaning found. Try the online translation.', 'Nem található jelentés. Próbáld az online fordítást.', 'No se encontró significado. Prueba la traducción en línea.', 'Aucun sens trouvé. Essayez la traduction en ligne.', 'Keine Bedeutung gefunden. Versuche die Online-Übersetzung.', 'Значение не найдено. Попробуйте онлайн-перевод.', 'لم يُعثر على معنى. جرّب الترجمة عبر الإنترنت.'],
     'ביטול': ['Cancel', 'Mégse', 'Cancelar', 'Annuler', 'Abbrechen', 'Отмена', 'إلغاء'],
     'נמחק': ['Deleted', 'Törölve', 'Eliminado', 'Supprimé', 'Gelöscht', 'Удалено', 'تم الحذف'],
-    'בשכיחות': ['by frequency', 'gyakoriság szerint', 'por frecuencia', 'par fréquence', 'nach Häufigkeit', 'по частоте', 'حسب التكرار'],
-    'מילון מקומי': ['Offline dictionary', 'Offline szótár', 'Diccionario sin conexión', 'Dictionnaire hors ligne', 'Offline-Wörterbuch', 'Офлайн-словарь', 'قاموس دون اتصال']
+    'מילון מקומי': ['Offline dictionary', 'Offline szótár', 'Diccionario sin conexión', 'Dictionnaire hors ligne', 'Offline-Wörterbuch', 'Офлайн-словарь', 'قاموس دون اتصال'],
+    'תפריט': ['Menu', 'Menü', 'Menú', 'Menu', 'Menü', 'Меню', 'القائمة'],
+    'מספר עמוד': ['Page number', 'Oldalszám', 'Número de página', 'Numéro de page', 'Seitenzahl', 'Номер страницы', 'رقم الصفحة'],
+    'שיתוף': ['Share', 'Megosztás', 'Compartir', 'Partager', 'Teilen', 'Поделиться', 'مشاركة'],
+    'הקראה בקול': ['Read aloud', 'Felolvasás', 'Leer en voz alta', 'Lire à voix haute', 'Vorlesen', 'Читать вслух', 'القراءة بصوت عالٍ'],
+    'סמן הכל כידוע': ['Mark all as known', 'Mind ismertnek jelölése', 'Marcar todo como conocido', 'Tout marquer comme connu', 'Alle als bekannt markieren', 'Отметить все как известные', 'وضع علامة «معروفة» على الكل'],
+    'התעלמות': ['Ignore', 'Figyelmen kívül hagyás', 'Ignorar', 'Ignorer', 'Ignorieren', 'Игнорировать', 'تجاهل'],
+    'חזרה': ['Back', 'Vissza', 'Atrás', 'Retour', 'Zurück', 'Назад', 'رجوع'],
+    'שפות': ['Languages', 'Nyelvek', 'Idiomas', 'Langues', 'Sprachen', 'Языки', 'اللغات'],
+    'לימוד': ['Learning', 'Tanulás', 'Aprendo', 'J’apprends', 'Ich lerne', 'Изучаю', 'أتعلّم'],
+    'העדפות': ['Options', 'Opciók', 'Opciones', 'Options', 'Optionen', 'Параметры', 'خيارات'],
+    'ממשק': ['Interface', 'Felület', 'Interfaz', 'Interface', 'Oberfläche', 'Интерфейс', 'الواجهة'],
+    'השפות שאתם לומדים': ['Languages you are learning', 'Nyelvek, amelyeket tanulsz', 'Idiomas que estudias', 'Langues que vous apprenez', 'Sprachen, die du lernst', 'Языки, которые вы изучаете', 'اللغات التي تتعلمها'],
+    'הקריאה, המילים וההתקדמות מוצגות לפי השפה הנוכחית, ואפשר להחליף אותה בכפתור השפה למעלה. שפה אחת תמיד נשארת מסומנת.': ['Read, Words and Progress follow the current language; switch it with the language button at the top. One language always stays ticked.', 'Az Olvasás, a Szavak és a Haladás az aktuális nyelvet mutatja; a fenti nyelvgombbal válthatsz. Egy nyelv mindig bejelölve marad.', 'Leer, Palabras y Progreso siguen el idioma actual; cámbialo con el botón de idioma de arriba. Siempre queda un idioma marcado.', 'Lire, Mots et Progrès suivent la langue actuelle ; changez-la avec le bouton de langue en haut. Une langue reste toujours cochée.', 'Lesen, Wörter und Fortschritt folgen der aktuellen Sprache; wechsle sie mit dem Sprachknopf oben. Eine Sprache bleibt immer angehakt.', 'Чтение, слова и прогресс показываются для текущего языка; сменить его можно кнопкой языка вверху. Один язык всегда остаётся отмеченным.', 'تعرض القراءة والكلمات والتقدم اللغة الحالية، ويمكنك تغييرها بزر اللغة في الأعلى. تبقى لغة واحدة محددة دائمًا.'],
+    'מעבר לשפת הטקסט': ['Switch to the text’s language', 'Váltás a szöveg nyelvére', 'Cambiar al idioma del texto', 'Passer à la langue du texte', 'Zur Sprache des Textes wechseln', 'Переключаться на язык текста', 'التبديل إلى لغة النص'],
+    'כשנפתח טקסט בשפה אחרת שאתם לומדים, שורש עובר אליה לבד': ['When a text in another language you learn opens, Shoresh switches to it', 'Ha egy másik tanult nyelvű szöveg nyílik meg, a Shoresh átvált rá', 'Al abrir un texto en otro idioma que estudias, Shoresh cambia a él', 'Quand un texte dans une autre langue que vous apprenez s’ouvre, Shoresh passe à cette langue', 'Öffnet sich ein Text in einer anderen Sprache, die du lernst, wechselt Shoresh zu ihr', 'Когда открывается текст на другом изучаемом языке, Shoresh переключается на него', 'عند فتح نص بلغة أخرى تتعلمها، ينتقل شوريش إليها'],
+    'ניהול שפות': ['Manage languages', 'Nyelvek kezelése', 'Gestionar idiomas', 'Gérer les langues', 'Sprachen verwalten', 'Управление языками', 'إدارة اللغات'],
+    'השפות שאתם לומדים. אפשר להוסיף עוד.': ['The languages you are learning. You can add more.', 'A nyelvek, amelyeket tanulsz. Továbbiakat is felvehetsz.', 'Los idiomas que estudias. Puedes añadir más.', 'Les langues que vous apprenez. Vous pouvez en ajouter.', 'Die Sprachen, die du lernst. Du kannst weitere hinzufügen.', 'Языки, которые вы изучаете. Можно добавить ещё.', 'اللغات التي تتعلمها. يمكنك إضافة المزيد.'],
+    'לפחות שפה אחת נשארת מסומנת': ['At least one language stays ticked', 'Legalább egy nyelv bejelölve marad', 'Al menos un idioma queda marcado', 'Au moins une langue reste cochée', 'Mindestens eine Sprache bleibt angehakt', 'Хотя бы один язык остаётся отмеченным', 'تبقى لغة واحدة على الأقل محددة'],
+    'לא נמצאה שפה.': ['No language found.', 'Nincs ilyen nyelv.', 'No se encontró ningún idioma.', 'Aucune langue trouvée.', 'Keine Sprache gefunden.', 'Язык не найден.', 'لم يتم العثور على لغة.']
   };
   LANGS.forEach(function (code, i) {
     if (!m[code]) m[code] = {};
@@ -59,5 +86,17 @@ window.NER_I18N_TPL = {
   words: { he: '{n} מילים', en: '{n} words', hu: '{n} szó', es: '{n} palabras', fr: '{n} mots', de: '{n} Wörter', ru: '{n} слов', ar: '{n} كلمة' },
   showing: { he: 'מוצגות {a} מתוך {b} מילים. חפשו כדי לצמצם.', en: 'Showing {a} of {b} words. Search to narrow it down.', hu: '{a} / {b} szó látható. Keress a szűkítéshez.', es: 'Se muestran {a} de {b} palabras. Busca para filtrar.', fr: '{a} mots affichés sur {b}. Cherchez pour affiner.', de: '{a} von {b} Wörtern angezeigt. Suche, um einzugrenzen.', ru: 'Показано {a} из {b} слов. Уточните поиском.', ar: 'يتم عرض {a} من {b} كلمة. ابحث للتضييق.' },
   knownLearning: { he: '{a} מילים ידועות, ועוד {b} בלימוד. כל אחת מהן התחילה בטקסט אמיתי.', en: '{a} known words and {b} still learning. Each one started in a real text.', hu: '{a} ismert szó, és még {b} tanulás alatt. Mindegyik valódi szövegből jött.', es: '{a} palabras conocidas y {b} en aprendizaje. Cada una empezó en un texto real.', fr: '{a} mots connus et {b} en cours d’apprentissage. Chacun vient d’un vrai texte.', de: '{a} bekannte Wörter und {b} im Lernen. Jedes stammt aus einem echten Text.', ru: '{a} знакомых слов и ещё {b} в изучении. Каждое пришло из настоящего текста.', ar: '{a} كلمة معروفة و{b} قيد التعلم. كل واحدة بدأت في نص حقيقي.' },
+  seen: { he: 'נראתה {n} פעמים', en: 'Seen {n} times', hu: '{n} alkalommal láttad', es: 'Vista {n} veces', fr: 'Vu {n} fois', de: '{n}-mal gesehen', ru: 'Встречалось {n} раз', ar: 'شوهدت {n} مرات' },
+  mostCommon: { he: '#{n} בשכיחות', en: '#{n} most common', hu: '{n}. leggyakoribb', es: 'n.º {n} en frecuencia', fr: 'n° {n} en fréquence', de: 'Platz {n} nach Häufigkeit', ru: '№ {n} по частоте', ar: 'رقم {n} في الشيوع' },
+  newLearning: { he: '{a} חדשות · {b} בלימוד', en: '{a} new · {b} learning', hu: '{a} új · {b} tanulás alatt', es: '{a} nuevas · {b} en aprendizaje', fr: '{a} nouveaux · {b} en cours', de: '{a} neu · {b} im Lernen', ru: '{a} новых · {b} изучается', ar: '{a} جديدة · {b} قيد التعلم' },
+  pdfPages: { he: 'נחלצו {n} עמודי טקסט', en: 'Extracted {n} pages of text', hu: '{n} oldal szöveg kinyerve', es: 'Se extrajeron {n} páginas de texto', fr: '{n} pages de texte extraites', de: '{n} Textseiten extrahiert', ru: 'Извлечено страниц с текстом: {n}', ar: 'تم استخراج {n} صفحة نصية' },
+  langNow: { he: 'שפת הלימוד: {lang}', en: 'Learning language: {lang}', hu: 'Tanult nyelv: {lang}', es: 'Idioma de estudio: {lang}', fr: 'Langue étudiée : {lang}', de: 'Lernsprache: {lang}', ru: 'Изучаемый язык: {lang}', ar: 'لغة التعلم: {lang}' },
+  baseNow: { he: 'שפת התרגום: {lang}', en: 'Translation language: {lang}', hu: 'Fordítás nyelve: {lang}', es: 'Idioma de traducción: {lang}', fr: 'Langue de traduction : {lang}', de: 'Übersetzungssprache: {lang}', ru: 'Язык перевода: {lang}', ar: 'لغة الترجمة: {lang}' },
+  readBooks: { he: 'הספר הבא שלכם ב{lang}', en: 'Your next {lang} book', hu: 'A következő {lang} könyved', es: 'Tu próximo libro en {lang}', fr: 'Votre prochain livre en {lang}', de: 'Dein nächstes Buch auf {lang}', ru: 'Следующая книга: {lang} язык', ar: 'كتابك القادم باللغة {lang}' },
+  books: { he: '{n} ספרים', en: '{n} books', hu: '{n} könyv', es: '{n} libros', fr: '{n} livres', de: '{n} Bücher', ru: 'Книг: {n}', ar: 'الكتب: {n}' },
+  pageOf: { he: 'עמוד {a} מתוך {b} · {p}%', en: 'Page {a} of {b} · {p}%', hu: '{a}. / {b} oldal · {p}%', es: 'Página {a} de {b} · {p}%', fr: 'Page {a} sur {b} · {p} %', de: 'Seite {a} von {b} · {p} %', ru: 'Стр. {a} из {b} · {p}%', ar: 'صفحة {a} من {b} · {p}٪' },
+  fresh: { he: '{n} חדשות', en: '{n} new', hu: '{n} új', es: '{n} nuevas', fr: '{n} nouveaux', de: '{n} neu', ru: '{n} новых', ar: '{n} جديدة' },
+  frequent: { he: '{n} שכיחות', en: '{n} frequent', hu: '{n} gyakori', es: '{n} frecuentes', fr: '{n} fréquents', de: '{n} häufig', ru: '{n} частых', ar: '{n} شائعة' },
+  learningKnown: { he: '{a} בלימוד · {b} ידועות', en: '{a} learning · {b} known', hu: '{a} tanulás alatt · {b} ismert', es: '{a} en aprendizaje · {b} conocidas', fr: '{a} en cours · {b} connus', de: '{a} im Lernen · {b} bekannt', ru: '{a} изучается · {b} знакомых', ar: '{a} قيد التعلم · {b} معروفة' },
   reviewDone: { he: 'עברתם על {n} מילים.', en: 'You went through {n} words.', hu: '{n} szót néztél át.', es: 'Repasaste {n} palabras.', fr: 'Vous avez révisé {n} mots.', de: 'Du hast {n} Wörter wiederholt.', ru: 'Вы повторили {n} слов.', ar: 'راجعت {n} كلمة.' }
 };

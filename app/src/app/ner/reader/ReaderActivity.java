@@ -39,6 +39,8 @@ public class ReaderActivity extends Activity {
     private Store store;
     private Dict dict;
     private AdBlock adBlock;
+    private LinkSheet sheet;
+    private boolean dark;
     private TextToSpeech tts;
     private boolean ttsReady;
     private String url;
@@ -110,15 +112,14 @@ public class ReaderActivity extends Activity {
             }
         });
         setContentView(wrapWeb(web, Color.rgb(247, 244, 238)));
-        boolean startDark = false;
         try {
             JSONObject st = new JSONObject(store.load());
             JSONObject settings = st.optJSONObject("settings");
             String theme = settings == null ? "auto" : settings.optString("theme", "auto");
             int mode = getResources().getConfiguration().uiMode & android.content.res.Configuration.UI_MODE_NIGHT_MASK;
-            startDark = "dark".equals(theme) || ("auto".equals(theme) && mode == android.content.res.Configuration.UI_MODE_NIGHT_YES);
+            dark = "dark".equals(theme) || ("auto".equals(theme) && mode == android.content.res.Configuration.UI_MODE_NIGHT_YES);
         } catch (Exception ignored) { }
-        applyNativeTheme(startDark);
+        applyNativeTheme(dark);
         if (Build.VERSION.SDK_INT < 30) {
             window.getDecorView().setSystemUiVisibility(
                     View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
@@ -215,6 +216,10 @@ public class ReaderActivity extends Activity {
                 }
                 break;
             }
+            case "sheet":
+                if (sheet != null) sheet.dismiss();
+                sheet = LinkSheet.open(this, store, adBlock, dark, uri.getQueryParameter("url"));
+                break;
             case "toast": {
                 String msg = uri.getQueryParameter("msg");
                 Toast.makeText(this, msg == null ? "" : msg, Toast.LENGTH_SHORT).show();
@@ -241,6 +246,7 @@ public class ReaderActivity extends Activity {
     private void inject() {
         String css = asset("www/css/inject.css");
         String pyJs = asset("www/js/pinyin.js");
+        String linksJs = asset("www/js/dictlinks.js");
         String js = asset("www/js/inject.js");
         String state = store.load();
         String pre = "(function(){" +
@@ -252,7 +258,8 @@ public class ReaderActivity extends Activity {
                 "return true;" +
                 "})();";
         web.evaluateJavascript(pre, value -> {
-            if ("true".equals(value)) web.evaluateJavascript(pyJs, v2 -> web.evaluateJavascript(js, null));
+            if ("true".equals(value)) web.evaluateJavascript(pyJs, v2 ->
+                    web.evaluateJavascript(linksJs, v3 -> web.evaluateJavascript(js, null)));
         });
     }
 
@@ -320,6 +327,7 @@ public class ReaderActivity extends Activity {
 
     @Override
     protected void onDestroy() {
+        if (sheet != null) sheet.dismiss();
         if (tts != null) { tts.stop(); tts.shutdown(); }
         if (web != null) web.destroy();
         io.shutdownNow();

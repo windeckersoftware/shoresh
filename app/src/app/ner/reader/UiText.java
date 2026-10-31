@@ -27,6 +27,8 @@ final class UiText {
         row("Brave לא מותקן במכשיר", "Brave isn't installed", "A Brave nincs telepítve", "Brave no está instalado", "Brave n'est pas installé", "Brave ist nicht installiert", "Brave не установлен", "Brave غير مثبت");
         row("לא ניתן לפתוח", "Can't open this", "Nem nyitható meg", "No se puede abrir", "Impossible d'ouvrir", "Kann nicht geöffnet werden", "Не удаётся открыть", "تعذر الفتح");
         row("שיתוף", "Share", "Megosztás", "Compartir", "Partager", "Teilen", "Поделиться", "مشاركة");
+        row("סגירה", "Close", "Bezárás", "Cerrar", "Fermer", "Schließen", "Закрыть", "إغلاق");
+        row("פתיחה בדפדפן", "Open in browser", "Megnyitás böngészőben", "Abrir en el navegador", "Ouvrir dans le navigateur", "Im Browser öffnen", "Открыть в браузере", "فتح في المتصفح");
         row("לא נמצא דפדפן", "No browser found", "Nincs böngésző", "No se encontró un navegador", "Aucun navigateur trouvé", "Kein Browser gefunden", "Браузер не найден", "لم يتم العثور على متصفح");
         row("EPUB לא נמצא", "EPUB not found", "Az EPUB nem található", "No se encontró el EPUB", "EPUB introuvable", "EPUB nicht gefunden", "EPUB не найден", "لم يتم العثور على EPUB");
         row("זה לא קובץ EPUB תקין", "This isn't a valid EPUB file", "Ez nem érvényes EPUB fájl", "No es un archivo EPUB válido", "Ce n'est pas un fichier EPUB valide", "Keine gültige EPUB-Datei", "Это не файл EPUB", "هذا ليس ملف EPUB صالحًا");

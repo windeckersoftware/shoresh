@@ -15,7 +15,10 @@ import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Set;
 
-/** On-device OCR for image-only PDFs. Tesseract data is copied out of assets once. */
+/**
+ * On-device OCR for image-only PDFs. Tesseract data is copied out of assets once.
+ * Pages are separated by a form feed, so the reader keeps the PDF's page numbers.
+ */
 public final class Ocr {
     private static final Set<String> ready = new HashSet<>();
 
@@ -79,17 +82,16 @@ public final class Ocr {
                             tess.setImage(bmp);
                             String text = tess.getUTF8Text();
                             bmp.recycle();
-                            if (text != null && !text.trim().isEmpty()) {
-                                all.append(text.trim()).append("\n\n");
-                            }
+                            if (i > 0) all.append('\f');
+                            if (text != null) all.append(text.trim());
                         }
                     }
                 } finally {
                     tess.recycle();
                 }
             }
-        String text = all.toString().trim();
-        if (text.isEmpty()) throw new Exception("no text");
+        String text = all.toString();
+        if (text.trim().isEmpty()) throw new Exception("no text");
         return text;
     }
 }

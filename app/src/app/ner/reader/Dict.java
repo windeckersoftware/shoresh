@@ -2,6 +2,7 @@ package app.ner.reader;
 
 import android.content.Context;
 import android.content.res.AssetManager;
+import android.icu.text.BreakIterator;
 import android.util.JsonReader;
 import android.util.JsonToken;
 import android.util.Log;
@@ -16,19 +17,22 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
 /**
  * On-device dictionary packs. A pack is gzip-compressed JSON with:
- *   entries: headword -> {w, tr, pos, g:[glosses], h:[Hebrew definitions], rank}
+ *   entries: headword -> {w, tr, pos, g:[glosses], h:[Hebrew definitions], rank, hsk}
  *   forms:   inflected form -> headword
  * A phrase pack (dict/phrases/<lang>.json.gz, from tools/build_phrases.py) adds
  * idioms, proverbs, chengyu and fixed expressions:
@@ -111,12 +115,14 @@ public final class Dict {
     private String[] elision = NO_STRINGS;
     private Set<String> possSet = new HashSet<>();
     private Set<String> reflSet = new HashSet<>();
-    private final Map<String, String> lemmaCache = new HashMap<>();
+    // Concurrent: vocabStats fills it from a background thread while taps look words up.
+    private final Map<String, String> lemmaCache = new ConcurrentHashMap<>();
 
     private static final class Entry {
         String w, tr, pos;
         String[] g = NO_STRINGS, h = NO_STRINGS;
         int rank = Integer.MAX_VALUE;
+        int hsk; // HSK 3.0 level 1-7 on zh/yue entries, 0 when not in the syllabus
     }
 
     private static final class PhraseEntry {
@@ -187,6 +193,7 @@ public final class Dict {
                 case "g": e.g = strings(r); break;
                 case "h": e.h = strings(r); break;
                 case "rank": e.rank = r.peek() == JsonToken.NUMBER ? r.nextInt() : skipInt(r); break;
+                case "hsk": if (r.peek() == JsonToken.NUMBER) e.hsk = r.nextInt(); else r.skipValue(); break;
                 default: r.skipValue();
             }
         }
@@ -429,6 +436,13 @@ public final class Dict {
         return out;
     }
 
+    /** The lemma a form is saved under when the lemma has meanings of its own (cordes → corde). */
+    private String lemmaKey(String key) {
+        String lemma = lemmaOf(key);
+        Entry base = lemma == null || lemma.equals(key) ? null : at(lemma);
+        return base != null && base.g.length > 0 ? lemma : key;
+    }
+
     private String lemmaOf(String tok) {
         if (entries == null || tok == null || tok.isEmpty()) return null;
         String cached = lemmaCache.get(tok);
@@ -502,69 +516,74 @@ public final class Dict {
      */
     public String segment(String lang, String text) {
         try {
-            ensure(lang);
-            ensurePhrases(lang);
-            Map<String, Integer> ranks;
-            int maxLen;
-            synchronized (lock) {
-                buildSegmenter();
-                ranks = segmentRank;
-                maxLen = segmentMaxLen;
-            }
-            if (ranks == null || ranks.isEmpty() || text == null || text.isEmpty()) return "[]";
-            if ("ko".equals(lang)) return koreanSegments(text, ranks);
-            int n = text.length();
-            long[] cost = new long[n + 1];
-            int[] prev = new int[n + 1];
-            Arrays.fill(cost, Long.MAX_VALUE / 4);
-            cost[0] = 0;
-            final long fallback = 30000; // a character outside the lexicon
-            for (int i = 0; i < n; i++) {
-                if (cost[i] >= Long.MAX_VALUE / 8) continue;
-                char c = text.charAt(i);
-                if (isMark(c) && i > 0) continue; // never start a token on a combining mark
-                boolean letter = Character.isLetterOrDigit(c);
-                // A base character and its combining marks (Thai ึ, ั…) form one unit.
-                int unit = i + 1;
-                while (unit < n && isMark(text.charAt(unit))) unit++;
-                Integer single = letter ? ranks.get(text.substring(i, unit)) : null;
-                long fc = !letter ? 1 : single != null ? wordCost(single) : fallback;
-                if (cost[i] + fc < cost[unit]) { cost[unit] = cost[i] + fc; prev[unit] = i; }
-                int max = Math.min(maxLen, n - i);
-                for (int len = 2; len <= max; len++) {
-                    if (i + len < n && isMark(text.charAt(i + len))) continue;
-                    Integer rank = ranks.get(text.substring(i, i + len));
-                    if (rank == null) continue;
-                    long wc = wordCost(rank);
-                    if (cost[i] + wc < cost[i + len]) {
-                        cost[i + len] = cost[i] + wc;
-                        prev[i + len] = i;
-                    }
-                }
-            }
-            List<String> out = new ArrayList<>();
-            int at = n;
-            while (at > 0) {
-                int p = prev[at];
-                if (p < 0) p = at - 1;
-                out.add(text.substring(p, at));
-                at = p;
-            }
             JSONArray arr = new JSONArray();
-            for (int i = out.size() - 1; i >= 0; i--) arr.put(out.get(i));
+            for (String t : segments(lang, text)) arr.put(t);
             return arr.toString();
         } catch (Exception e) {
             return "[]";
         }
     }
 
+    private List<String> segments(String lang, String text) throws Exception {
+        ensure(lang);
+        ensurePhrases(lang);
+        Map<String, Integer> ranks;
+        int maxLen;
+        synchronized (lock) {
+            buildSegmenter();
+            ranks = segmentRank;
+            maxLen = segmentMaxLen;
+        }
+        List<String> out = new ArrayList<>();
+        if (ranks == null || ranks.isEmpty() || text == null || text.isEmpty()) return out;
+        if ("ko".equals(lang)) return koreanSegments(text, ranks);
+        int n = text.length();
+        long[] cost = new long[n + 1];
+        int[] prev = new int[n + 1];
+        Arrays.fill(cost, Long.MAX_VALUE / 4);
+        cost[0] = 0;
+        final long fallback = 30000; // a character outside the lexicon
+        for (int i = 0; i < n; i++) {
+            if (cost[i] >= Long.MAX_VALUE / 8) continue;
+            char c = text.charAt(i);
+            if (isMark(c) && i > 0) continue; // never start a token on a combining mark
+            boolean letter = Character.isLetterOrDigit(c);
+            // A base character and its combining marks (Thai ึ, ั…) form one unit.
+            int unit = i + 1;
+            while (unit < n && isMark(text.charAt(unit))) unit++;
+            Integer single = letter ? ranks.get(text.substring(i, unit)) : null;
+            long fc = !letter ? 1 : single != null ? wordCost(single) : fallback;
+            if (cost[i] + fc < cost[unit]) { cost[unit] = cost[i] + fc; prev[unit] = i; }
+            int max = Math.min(maxLen, n - i);
+            for (int len = 2; len <= max; len++) {
+                if (i + len < n && isMark(text.charAt(i + len))) continue;
+                Integer rank = ranks.get(text.substring(i, i + len));
+                if (rank == null) continue;
+                long wc = wordCost(rank);
+                if (cost[i] + wc < cost[i + len]) {
+                    cost[i + len] = cost[i] + wc;
+                    prev[i + len] = i;
+                }
+            }
+        }
+        int at = n;
+        while (at > 0) {
+            int p = prev[at];
+            if (p < 0) p = at - 1;
+            out.add(text.substring(p, at));
+            at = p;
+        }
+        Collections.reverse(out);
+        return out;
+    }
+
     /** Korean: each word (eojeol) whole, or stem + particle: 학교에서 → 학교 | 에서. */
-    private String koreanSegments(String text, Map<String, Integer> ranks) {
-        JSONArray arr = new JSONArray();
+    private List<String> koreanSegments(String text, Map<String, Integer> ranks) {
+        List<String> arr = new ArrayList<>();
         Matcher m = HANGUL_RUN.matcher(text);
         int last = 0;
         while (m.find()) {
-            if (m.start() > last) arr.put(text.substring(last, m.start()));
+            if (m.start() > last) arr.add(text.substring(last, m.start()));
             String w = m.group();
             String stem = null, particle = null;
             if (!ranks.containsKey(w)) {
@@ -581,11 +600,11 @@ public final class Dict {
                     }
                 }
             }
-            if (stem != null) { arr.put(stem); arr.put(particle); } else arr.put(w);
+            if (stem != null) { arr.add(stem); arr.add(particle); } else arr.add(w);
             last = m.end();
         }
-        if (last < text.length()) arr.put(text.substring(last));
-        return arr.toString();
+        if (last < text.length()) arr.add(text.substring(last));
+        return arr;
     }
 
     /* ---------------- lookup ---------------- */
@@ -594,6 +613,34 @@ public final class Dict {
         JSONArray a = new JSONArray();
         for (String v : values) a.put(v);
         return a;
+    }
+
+    /** Each Han character of a Chinese/Cantonese/Japanese word with its reading and first meaning. */
+    private JSONArray chars(String lang, String word) throws JSONException {
+        JSONArray out = new JSONArray();
+        if (!("zh".equals(lang) || "yue".equals(lang) || "ja".equals(lang))
+                || word.codePointCount(0, word.length()) < 2) return out;
+        for (int i = 0; i < word.length(); ) {
+            int cp = word.codePointAt(i);
+            i += Character.charCount(cp);
+            if (Character.UnicodeScript.of(cp) != Character.UnicodeScript.HAN) continue;
+            String c = new String(Character.toChars(cp));
+            Entry e = at(c);
+            if (e == null) e = at(form(c));
+            String[] g = e == null ? NO_STRINGS : ordered(e.g);
+            if (g.length == 0) continue;
+            out.put(new JSONObject().put("c", c).put("tr", e.tr == null ? "" : e.tr).put("g", g[0]));
+        }
+        return out;
+    }
+
+    /** zh/yue: the headword in the other script (traditional for zh, simplified for yue), from the pack's forms. */
+    private String otherScript(String lang, String key) {
+        if (forms == null || !("zh".equals(lang) || "yue".equals(lang))) return "";
+        for (Map.Entry<String, String> me : forms.entrySet()) {
+            if (key.equals(me.getValue()) && me.getKey().length() == key.length()) return me.getKey();
+        }
+        return "";
     }
 
     public String lookup(String lang, String raw) {
@@ -632,6 +679,8 @@ public final class Dict {
                 root.put("tr", phrase.optString("tr"));
                 root.put("pos", phrase.optString("kind"));
                 root.put("rank", 0);
+                root.put("hsk", 0);
+                root.put("chars", chars(lang, phrase.optString("w")));
                 root.put("glosses", phrase.optJSONArray("g"));
                 root.put("he", new JSONArray());
                 root.put("meaning", phrase.optJSONArray("g").optString(0));
@@ -646,12 +695,11 @@ public final class Dict {
             }
             // "cordes: plural of corde" — show corde's meaning and keep the note.
             String note = null;
-            String lemma = lemmaOf(key);
-            Entry base = lemma == null || lemma.equals(key) ? null : at(lemma);
-            if (base != null && base.g.length > 0) {
+            String lemma = lemmaKey(key);
+            if (!lemma.equals(key)) {
                 note = ordered(e.g).length > 0 ? ordered(e.g)[0] : null;
                 key = lemma;
-                e = base;
+                e = at(lemma);
             }
             root.put("found", true);
             root.put("key", key);
@@ -659,6 +707,9 @@ public final class Dict {
             root.put("tr", e.tr == null ? "" : e.tr);
             root.put("pos", e.pos == null ? "" : e.pos);
             root.put("rank", e.rank == Integer.MAX_VALUE ? 0 : e.rank);
+            root.put("hsk", e.hsk);
+            root.put("chars", chars(lang, root.getString("display")));
+            root.put("alt", otherScript(lang, key));
             String[] senses = ordered(e.g);
             JSONArray glosses = new JSONArray();
             for (String g : senses) {
@@ -708,6 +759,90 @@ public final class Dict {
         } catch (Exception e) {
             return base;
         }
+    }
+
+    /* ---------------- vocabulary stats ---------------- */
+
+    private static final int FREQUENT_RANK = 3000;
+    // The runs the reader segments with the dictionary (scriptRunRe in app.js).
+    private static final Pattern HAN_RUN = Pattern.compile("[\u3400-\u9fff]+");
+    private static final Pattern KANA_HAN_RUN = Pattern.compile("[\u3040-\u30ff\u3400-\u9fff]+");
+
+    /**
+     * Counts the unique words of a text against the user's grades ({key or form: grade}).
+     * A word counts once, under the key a tap saves it as; "frequent" are the new
+     * ones among the language's 3000 most common words. Ignored words count only
+     * towards "unique".
+     */
+    public JSONObject vocabStats(String lang, String text, JSONObject known) throws Exception {
+        ensure(lang);
+        ensurePhrases(lang);
+        Map<String, String> keyOf = new HashMap<>();
+        Set<String> counted = new HashSet<>();
+        int[] n = new int[5]; // unique, new, frequent, learning, known
+        eachWord(lang, text, tok -> {
+            if (keyOf.containsKey(tok)) return;
+            String key = wordKey(lang, tok);
+            keyOf.put(tok, key);
+            if (!counted.add(key)) return;
+            n[0]++;
+            int grade = known.optInt(key, known.optInt(tok, known.optInt(normal(lang, tok), 0)));
+            if (grade == 0) {
+                n[1]++;
+                if (rank(at(key)) <= FREQUENT_RANK) n[2]++;
+            } else if (grade >= 1 && grade <= 4) n[3]++;
+            else if (grade == 5) n[4]++;
+        });
+        // Another language loaded halfway through: these counts are mixed.
+        if (!lang.equals(loadedLang)) throw new Exception("language changed");
+        return new JSONObject().put("unique", n[0]).put("fresh", n[1]).put("frequent", n[2])
+                .put("learning", n[3]).put("known", n[4]);
+    }
+
+    /** The key a tap on this word saves it under (see lookup), else its normalized form. */
+    private String wordKey(String lang, String tok) {
+        if (PARTICLES.containsKey(lang + ":" + tok)) return tok;
+        String key = resolve(lang, tok);
+        if (key != null) return lemmaKey(key);
+        String phrase = phraseKey(tok);
+        return phraseUnspaced && phrases.containsKey(phrase) ? phrase : normal(lang, tok);
+    }
+
+    // normalizeWord in app.js.
+    private static String normal(String lang, String tok) {
+        return "he".equals(lang) ? stripNiqqud(tok) : tok.trim().toLowerCase(Locale.forLanguageTag(lang));
+    }
+
+    /** Every word of the text, cut as the reader cuts it: dictionary segments for CJK runs, ICU word breaks elsewhere. */
+    private void eachWord(String lang, String text, Consumer<String> out) throws Exception {
+        Pattern run = "ja".equals(lang) ? KANA_HAN_RUN
+                : "zh".equals(lang) || "yue".equals(lang) ? HAN_RUN
+                : "ko".equals(lang) ? HANGUL_RUN : null;
+        BreakIterator bi = BreakIterator.getWordInstance(Locale.forLanguageTag(lang));
+        int last = 0;
+        if (run != null) {
+            Matcher m = run.matcher(text);
+            while (m.find()) {
+                icuWords(bi, text.substring(last, m.start()), out);
+                for (String t : segments(lang, m.group())) if (hasLetter(t)) out.accept(t);
+                last = m.end();
+            }
+        }
+        icuWords(bi, text.substring(last), out);
+    }
+
+    private static void icuWords(BreakIterator bi, String s, Consumer<String> out) {
+        if (s.isEmpty()) return;
+        bi.setText(s);
+        for (int a = bi.first(), b = bi.next(); b != BreakIterator.DONE; a = b, b = bi.next()) {
+            String t = s.substring(a, b);
+            if (hasLetter(t)) out.accept(t);
+        }
+    }
+
+    private static boolean hasLetter(String s) {
+        for (int i = 0; i < s.length(); i++) if (Character.isLetter(s.charAt(i))) return true;
+        return false;
     }
 
     /* ---------------- phrases ---------------- */
