@@ -2933,6 +2933,36 @@
     }
   }
 
+  function openSharedUrl(raw, title) {
+    let u;
+    try { u = new URL(raw); } catch (e) { toast('הקישור לא תקין'); return; }
+    if (!/^https?:$/.test(u.protocol)) { toast('רק קישורי http או https'); return; }
+    const article = {
+      id: 'web-' + Date.now(), title: title || u.hostname.replace(/^www\./, ''), url: u.href,
+      lang: articleLang(detectLang(u.href, learnLangs())), kind: 'web', added: Date.now(), lastOpened: Date.now()
+    };
+    addArticle(article);
+    try { N.openUrl(u.href); } catch (e) { toast('לא ניתן לפתוח את הקישור'); }
+  }
+
+  function onShare(json) {
+    let data;
+    try { data = JSON.parse(json); } catch (e) { return; }
+    const text = String(data.text || '').trim();
+    if (!text) return;
+    if (data.kind === 'selection' && text.split(/\s+/).length <= 4 && text.length <= 80) {
+      openWord(text, null, true);
+      return;
+    }
+    const url = text.match(/https?:\/\/[^\s<>"']+/i);
+    if (url && data.kind !== 'selection') {
+      openSharedUrl(url[0], data.title);
+      return;
+    }
+    const title = data.title || text.split('\n')[0].slice(0, 70) || 'Shared text';
+    createTextArticle(title, text, 'text');
+  }
+
   function openUrlFromInput() {
     let raw = $('#url-input').value.trim();
     if (!raw) { toast('הדביקו קישור קודם'); return; }
@@ -3887,6 +3917,7 @@
     onBookChunk,
     buildAnkiTsv,
     onFile,
+    onShare,
     onBackup,
     openSample: seedArticle,
     navigate,

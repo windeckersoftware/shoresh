@@ -61,6 +61,7 @@ public class MainActivity extends Activity {
     private TextToSpeech tts;
     private boolean ttsReady;
     private String pendingExport;
+    private String pendingShare;
     private BookServer bookServer;
     private long lastBackAt;
     private boolean firstResume = true;
@@ -133,6 +134,11 @@ public class MainActivity extends Activity {
                 }
                 return null;
             }
+
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                flushPendingShare();
+            }
         });
         web.setWebChromeClient(new WebChromeClient() {
             @Override
@@ -173,6 +179,71 @@ public class MainActivity extends Activity {
         });
 
         web.loadUrl("file:///android_asset/www/index.html");
+        handleShareIntent(getIntent());
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        handleShareIntent(intent);
+    }
+
+    private void handleShareIntent(Intent intent) {
+        if (intent == null) return;
+        String action = intent.getAction();
+        if (Intent.ACTION_PROCESS_TEXT.equals(action)) {
+            CharSequence selected = intent.getCharSequenceExtra(Intent.EXTRA_PROCESS_TEXT);
+            if (selected != null && selected.toString().trim().length() > 0) {
+                queueShare("selection", selected.toString().trim(), null);
+            }
+            return;
+        }
+        if (Intent.ACTION_SEND.equals(action)) {
+            Uri stream = intent.getParcelableExtra(Intent.EXTRA_STREAM);
+            if (stream == null && intent.getClipData() != null && intent.getClipData().getItemCount() > 0) {
+                stream = intent.getClipData().getItemAt(0).getUri();
+            }
+            if (stream != null) {
+                Intent data = new Intent();
+                data.setData(stream);
+                onActivityResult(REQ_OPEN_TEXT, RESULT_OK, data);
+                return;
+            }
+            CharSequence text = intent.getCharSequenceExtra(Intent.EXTRA_TEXT);
+            if (text != null && text.toString().trim().length() > 0) {
+                String title = intent.getStringExtra(Intent.EXTRA_SUBJECT);
+                queueShare("text", text.toString().trim(), title);
+            }
+            return;
+        }
+        if (Intent.ACTION_VIEW.equals(action) && intent.getData() != null) {
+            Intent data = new Intent();
+            data.setData(intent.getData());
+            onActivityResult(REQ_OPEN_TEXT, RESULT_OK, data);
+        }
+    }
+
+    private void queueShare(String kind, String text, String title) {
+        try {
+            JSONObject o = new JSONObject();
+            o.put("kind", kind);
+            o.put("text", text);
+            if (title != null && !title.isEmpty()) o.put("title", title);
+            pendingShare = o.toString();
+            flushPendingShare();
+        } catch (Exception ignored) { }
+    }
+
+    private void flushPendingShare() {
+        if (pendingShare == null || web == null) return;
+        final String json = pendingShare;
+        web.evaluateJavascript("(window.NerApp && typeof NerApp.onShare === 'function')", value -> {
+            if ("true".equals(value)) {
+                pendingShare = null;
+                callJs("NerApp.onShare", json);
+            }
+        });
     }
 
     @Override
@@ -450,11 +521,17 @@ public class MainActivity extends Activity {
             try {
                 Uri uri = data.getData();
                 String name = UiText.t(store, "מסמך");
-                android.database.Cursor c = getContentResolver().query(uri, null, null, null, null);
-                if (c != null) {
-                    int idx = c.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME);
-                    if (idx >= 0 && c.moveToFirst()) name = c.getString(idx);
-                    c.close();
+                try {
+                    android.database.Cursor c = getContentResolver().query(uri, null, null, null, null);
+                    if (c != null) {
+                        int idx = c.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME);
+                        if (idx >= 0 && c.moveToFirst()) name = c.getString(idx);
+                        c.close();
+                    }
+                } catch (Exception ignored) { }
+                if (name == null || name.isEmpty() || UiText.t(store, "מסמך").equals(name)) {
+                    String last = uri.getLastPathSegment();
+                    if (last != null && !last.isEmpty()) name = last;
                 }
                 final String fileName = name;
                 if (requestCode == REQ_IMPORT) {
