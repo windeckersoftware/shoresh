@@ -450,6 +450,7 @@
     } catch (e) { return null; }
   }
   function dictSegment(text, langId) {
+    if (langId === 'th') return null; // ICU (Intl.Segmenter) has a full Thai dictionary
     var marker = scriptRe(langId);
     if (marker && marker.test(text)) {
       var rx = scriptRe(langId), out = [], last = 0, m, saw = false;

@@ -40,6 +40,8 @@
     'מחיקה': ['Delete', 'Törlés', 'Eliminar', 'Supprimer', 'Löschen', 'Удалить', 'حذف'],
     'לחצו שוב למחיקה': ['Tap again to delete', 'Koppints újra a törléshez', 'Toca otra vez para eliminar', 'Touchez encore pour supprimer', 'Zum Löschen nochmal tippen', 'Нажмите ещё раз, чтобы удалить', 'اضغط مرة أخرى للحذف'],
     'ניקוי': ['Clear', 'Törlés', 'Borrar', 'Effacer', 'Leeren', 'Очистить', 'مسح'],
+    'מחפש…': ['Looking up…', 'Keresés…', 'Buscando…', 'Recherche…', 'Suche…', 'Поиск…', 'جارٍ البحث…'],
+    'לא נמצאה משמעות. אפשר לפתוח תרגום אונליין.': ['No meaning found. Try the online translation.', 'Nem található jelentés. Próbáld az online fordítást.', 'No se encontró significado. Prueba la traducción en línea.', 'Aucun sens trouvé. Essayez la traduction en ligne.', 'Keine Bedeutung gefunden. Versuche die Online-Übersetzung.', 'Значение не найдено. Попробуйте онлайн-перевод.', 'لم يُعثر على معنى. جرّب الترجمة عبر الإنترنت.'],
     'ביטול': ['Cancel', 'Mégse', 'Cancelar', 'Annuler', 'Abbrechen', 'Отмена', 'إلغاء'],
     'נמחק': ['Deleted', 'Törölve', 'Eliminado', 'Supprimé', 'Gelöscht', 'Удалено', 'تم الحذف'],
     'בשכיחות': ['by frequency', 'gyakoriság szerint', 'por frecuencia', 'par fréquence', 'nach Häufigkeit', 'по частоте', 'حسب التكرار'],

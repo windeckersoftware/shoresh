@@ -772,7 +772,7 @@
     $('#goal-range-val').textContent = state.settings.dailyGoal;
     $('#tts-range').value = Math.round((state.settings.ttsRate || 1) * 100);
     $('#tts-range-val').textContent = (state.settings.ttsRate || 1).toFixed(1) + '×';
-    $('#app-version').textContent = boot.version || '1.6.0';
+    $('#app-version').textContent = boot.version || '1.6.1';
     renderSyncUI();
   }
 
@@ -1734,7 +1734,8 @@
     beginAloud();
   }
 
-  const DICT_SEG_LANGS = new Set(['zh', 'yue', 'ja', 'ko', 'th']);
+  // Thai uses the WebView's ICU word breaks, which carry a full Thai dictionary.
+  const DICT_SEG_LANGS = new Set(['zh', 'yue', 'ja', 'ko']);
   function scriptRunRe(langId) {
     if (langId === 'th') return /[\u0e00-\u0e7f]+/g;
     if (langId === 'ko') return /[\uac00-\ud7af]+/g;
@@ -1827,6 +1828,7 @@
     const l = lang();
     body.dataset.cjk = ['zh', 'yue', 'ja', 'th'].includes(l.id) ? 'true' : 'false';
     body.dataset.py = l.id === 'zh' && state.settings.readerPinyin ? 'on' : 'off';
+    body.dataset.lang = l.id;
     const segmenter = wordSegmenter(l.id);
     const elide = l.id === 'fr' || l.id === 'it';
     const addWord = (frag, token) => {
@@ -1957,12 +1959,36 @@
     try { N.translate(source, target, rid); } catch (e) { }
   }
 
+  // Neither dictionary knows the word: machine-translate the word itself.
+  function translateWord(raw, lookup, w) {
+    if (typeof N.translateFrom !== 'function') return;
+    const target = state.settings.baseLang || 'en';
+    const rid = 'tw' + (++translationRid);
+    lookup.pending = true;
+    lookup.glosses = [raw];
+    lookup.meaningLang = lang().id;
+    pendingTranslations.set(rid, { lookup, w, word: true });
+    try { N.translateFrom(raw, lang().id, target, rid); } catch (e) { }
+    showWordSheet();
+  }
+
   function onTranslateResult(rid, json) {
     const pending = pendingTranslations.get(rid);
     if (!pending) return;
     pendingTranslations.delete(rid);
     let data;
-    try { data = JSON.parse(json); } catch (e) { return; }
+    try { data = JSON.parse(json); } catch (e) { data = null; }
+    if (pending.word) {
+      delete pending.lookup.pending;
+      if (data && data.ok && data.text && data.text.toLowerCase() !== String(pending.lookup.glosses[0]).toLowerCase()) {
+        pending.lookup.found = true;
+        pending.lookup.source = 'Google Translate';
+        applyTranslatedMeaning(pending.lookup, pending.w, data.text);
+      } else if (currentWord && currentWord.lookup === pending.lookup) {
+        showWordSheet();
+      }
+      return;
+    }
     if (!data || !data.ok || !data.text) return;
     if (!state.translations) state.translations = {};
     const source = (pending.lookup.meaningLang === 'en' && pending.lookup.meaning)
@@ -2031,10 +2057,10 @@
         ? N.lookupAt(lang().id, raw, ctx.text, ctx.offset)
         : N.lookup(lang().id, raw));
     } catch (e) { lookup = { found: false, word: raw }; }
-    if (!lookup.found && lang().id !== 'he') {
-      const remote = await onlineLookup(raw);
-      if (remote) lookup = remote;
-    }
+    // Not in the offline pack: open the card now and fill it in from the
+    // online dictionary when (if) it answers.
+    const online = !lookup.found && lang().id !== 'he';
+    if (online) lookup.pending = true;
     const norm = normalizeWord(raw);
     let key = lookup && lookup.found ? lookup.key : norm;
     let w = lookup && lookup.found ? state.words[lang().id + ':' + key] : null;
@@ -2082,6 +2108,21 @@
     showWordSheet();
     localizeLookup(lookup, w);
     if (phrase) localizeLookup(phrase, null);
+    if (online) {
+      const remote = await Promise.race([onlineLookup(raw), new Promise(r => setTimeout(() => r(null), 7000))]);
+      delete lookup.pending;
+      if (remote) {
+        Object.assign(lookup, remote, { phrase: lookup.phrase });
+        if (!w.meaning) w.meaning = remote.meaning;
+        if (!w.pos && remote.pos) w.pos = remote.pos;
+        save();
+      }
+      if (currentWord && currentWord.lookup === lookup) {
+        showWordSheet();
+        if (remote) localizeLookup(lookup, w);
+        else translateWord(raw, lookup, w);
+      }
+    }
     updateSpanForWord(w, raw);
   }
 
@@ -2145,13 +2186,13 @@
       $('#sheet-phrase-gloss').textContent = ph.meaningLang !== 'en' && g0 && g0 !== ph.meaning ? g0 : '';
     }
     const meaning = w.meaning || (lookup && lookup.meaning) || '';
-    $('#sheet-meaning').textContent = meaning || 'לא נמצאה משמעות במילון המקומי. אפשר לפתוח תרגום אונליין.';
+    $('#sheet-meaning').textContent = meaning || (lookup && lookup.pending ? tr('מחפש…') : tr('לא נמצאה משמעות. אפשר לפתוח תרגום אונליין.'));
     const he = lookup && Array.isArray(lookup.he) ? lookup.he.slice(1, 4).filter(g => g && g !== meaning) : [];
     const en = lookup && Array.isArray(lookup.glosses) ? lookup.glosses.slice(0, 3).filter(g => g && g !== meaning) : [];
     $('#sheet-glosses').innerHTML = he.map(g => `<span class="he-gloss">${escapeHtml(g)}</span>`).join('') +
       (en.length ? `<span class="en-label">${escapeHtml(langName(BY_LANG.en))}</span>` + en.map(g => `<span class="en-gloss">${escapeHtml(g)}</span>`).join('') : '');
     $('#sheet-rank').textContent = lookup && lookup.found
-      ? (lookup.rank ? '#' + fmt(lookup.rank) + ' ' + tr('בשכיחות') : tr('מילון מקומי'))
+      ? (lookup.rank ? '#' + fmt(lookup.rank) + ' ' + tr('בשכיחות') : (/wiktionary|google/i.test(lookup.source || '') ? lookup.source.replace(/\s*\(online\)/i, '') : tr('מילון מקומי')))
       : 'לא נמצא במילון';
     const ctx = w.context || (currentWord && currentWord.context) || '';
     $('#sheet-context').hidden = !ctx;
@@ -2430,6 +2471,19 @@
       ar: { title: "صفحة قصيرة", text: "الكلمة الجديدة ليست جدارًا. إنها باب. اقرأ مرة، واضغط كلمة لا تعرفها، وأعطها درجة. ثم غادر الصفحة. ستعود الكلمة لاحقًا.\n\nلا تحتاج أن تفهم كل شيء. فقط الكلمة التالية." },
       zh: { title: "小王学中文", text: "小王学中文已经三年了。刚开始的时候，他每天背二十个生词，可是一个月以后就想放弃。老师对他说：“学习不能半途而废，熟能生巧。”\n\n后来他开始读小故事。一边读，一边查不认识的词，既练习了阅读，又记住了生词，真是一举两得。有时候他写作文喜欢加很多形容词，老师笑着说：“别画蛇添足。”" },
       yue: { title: "小王學中文", text: "小王學中文已經三年了。剛開始的時候，他每天背二十個生詞，可是一個月以後就想放棄。老師對他說：「學習不能半途而廢，熟能生巧。」\n\n後來他開始讀小故事。一邊讀，一邊查不認識的詞，既練習了閱讀，又記住了生詞，真是一舉兩得。有時候他寫作文喜歡加很多形容詞，老師笑著說：「別畫蛇添足。」" },
+      ko: { title: "비 오는 날", text: "오늘은 비가 많이 와서 집에서 책을 읽었어요. 새로운 단어는 벽이 아니라 문이에요. 모르는 단어를 누르고 점수를 주세요.\n\n한국어를 처음 배울 때는 모든 것을 이해할 필요가 없어요. 천 리 길도 한 걸음부터." },
+      nl: { title: "Een regenachtige dag", text: "Gisteren regende het pijpenstelen, dus bleef ik thuis met een boek. Een nieuw woord is geen muur. Het is een deur. Tik op een woord dat je niet kent en geef het een cijfer.\n\nJe hoeft niet alles meteen te begrijpen. Oefening baart kunst." },
+      sv: { title: "En regnig dag", text: "I går regnade det småspik, så jag stannade hemma med en bok. Ett nytt ord är ingen mur. Det är en dörr. Tryck på ett ord du inte kan och ge det ett betyg.\n\nDu behöver inte förstå allt på en gång. Övning ger färdighet." },
+      da: { title: "En regnvejrsdag", text: "I går regnede det skomagerdrenge, så jeg blev hjemme med en bog. Et nyt ord er ikke en mur. Det er en dør. Tryk på et ord, du ikke kender, og giv det en karakter.\n\nDu behøver ikke forstå det hele på én gang. Øvelse gør mester." },
+      no: { title: "En regnværsdag", text: "I går regnet det trollkjerringer, så jeg ble hjemme med en bok. Et nytt ord er ikke en mur. Det er en dør. Trykk på et ord du ikke kan, og gi det en karakter.\n\nDu trenger ikke forstå alt med en gang. Øvelse gjør mester." },
+      pl: { title: "Deszczowy dzień", text: "Wczoraj lało jak z cebra, więc zostałem w domu z książką. Nowe słowo to nie mur. To drzwi. Dotknij słowa, którego nie znasz, i daj mu ocenę.\n\nNie musisz wszystkiego rozumieć od razu. Ćwiczenie czyni mistrza." },
+      uk: { title: "Дощовий день", text: "Учора лило як з відра, тож я залишився вдома з книжкою. Нове слово — не стіна. Це двері. Натисніть незнайоме слово і поставте йому оцінку.\n\nНе треба розуміти все одразу. Повторення — мати навчання." },
+      el: { title: "Μια βροχερή μέρα", text: "Χθες έβρεχε καρεκλοπόδαρα, οπότε έμεινα στο σπίτι με ένα βιβλίο. Μια καινούργια λέξη δεν είναι τοίχος. Είναι πόρτα. Πάτησε μια λέξη που δεν ξέρεις και βάλε της βαθμό.\n\nΔεν χρειάζεται να καταλάβεις τα πάντα αμέσως. Σιγά σιγά γίνεται η αγουρίδα μέλι." },
+      tr: { title: "Yağmurlu bir gün", text: "Dün bardaktan boşanırcasına yağmur yağdı, bu yüzden evde kitap okudum. Yeni bir kelime duvar değildir. Bir kapıdır. Bilmediğin bir kelimeye dokun ve ona bir not ver.\n\nHer şeyi hemen anlaman gerekmez. Damlaya damlaya göl olur." },
+      fi: { title: "Sateinen päivä", text: "Eilen satoi kaatamalla, joten jäin kotiin lukemaan kirjaa. Uusi sana ei ole seinä. Se on ovi. Napauta sanaa, jota et tunne, ja anna sille arvosana.\n\nKaikkea ei tarvitse ymmärtää heti. Hiljaa hyvä tulee." },
+      vi: { title: "Một ngày mưa", text: "Hôm qua trời mưa như trút nước, nên tôi ở nhà đọc sách. Một từ mới không phải là bức tường. Nó là một cánh cửa. Hãy chạm vào một từ bạn chưa biết và cho nó một điểm.\n\nBạn không cần hiểu hết mọi thứ ngay. Có công mài sắt, có ngày nên kim." },
+      id: { title: "Hari hujan", text: "Kemarin hujan turun dengan deras, jadi saya tinggal di rumah membaca buku. Kata baru bukan tembok. Kata baru adalah pintu. Ketuk kata yang belum kamu kenal dan beri nilai.\n\nKamu tidak perlu memahami semuanya sekaligus. Sedikit demi sedikit, lama-lama menjadi bukit." },
+      th: { title: "วันฝนตก", text: "เมื่อวานฝนตกหนักมาก ฉันจึงอยู่บ้านอ่านหนังสือ คำใหม่ไม่ใช่กำแพง มันคือประตู แตะคำที่คุณไม่รู้จักแล้วให้คะแนน\n\nคุณไม่จำเป็นต้องเข้าใจทุกอย่างในครั้งเดียว ช้าๆ ได้พร้าเล่มงาม" },
       ja: { title: "日本語の一年", text: "日本語の勉強を始めて一年になります。最初は漢字が多くて大変でしたが、石の上にも三年と言いますから、毎日少しずつ読んでいます。\n\n先生でも間違えることがあります。猿も木から落ちるですね。分からない言葉に出会ったら、押してみてください。" }
     };
     if (id === 'he' && SAMPLE) return SAMPLE;

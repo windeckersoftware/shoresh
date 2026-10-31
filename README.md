@@ -2,7 +2,17 @@
 
 Shoresh is an original Android reading app built from scratch. The name is the Hebrew word for “root”, שורש. It is inspired by the *workflow* of Sluka — tap a word, grade how well you know it, keep reading — but contains no Sluka code, assets, dictionaries, branding, or licence logic. It is not Hebrew-first: any supported language can be the learning language, and any language can be the base/translation language.
 
-**Current build:** `out/Shoresh-1.6.0.apk` (dev-signed, Android 8+). The Android package is still `app.ner.reader`, so this installs over the earlier Ner build and keeps its data.
+**Current build:** `out/Shoresh-1.6.1.apk` (dev-signed, Android 8+). The Android package is still `app.ner.reader`, so this installs over the earlier Ner build and keeps its data.
+
+## New in 1.6.1
+
+Tested by tapping words in the starter page of 18 languages and on French and Korean news sites.
+
+- **The word card always opens at once.** A word missing from the offline pack used to open nothing until the online dictionary answered; now the card shows "Looking up…" and fills in. If Wiktionary has nothing either, the word itself is machine-translated from the learning language (`translateFrom` bridge; the web reader does the same).
+- **Korean** — words split into stem + particle (학교 | 에서, 책 | 을, 단어 | 는); a one-syllable particle comes off only after a known word (고양이 stays whole), except 을/를. Lookup strips a particle when the whole form is unknown. Particles and Japanese particles (は, を, に…) explain their grammar instead of a homograph (은 is not "silver"). Lines break at spaces only.
+- **Thai** uses the WebView's ICU word breaks (with its Thai dictionary) instead of the small pack, so จึง, หนังสือ, ไม่ใช่ stay whole; combining vowel marks never become tokens of their own.
+- **Better senses** — alphabet-letter, ISO-code, abbreviation and affix senses move behind the everyday sense, "…of be." form notes resolve to their lemma, a short table covers words whose packs lost the common sense (French *a* = has, Italian *e* = and, English *a*, *I*), and Arabic strips و/ف/ب/ل/ك/ال before lookup (الجديدة → new, not the city El Jadida).
+- **Starter pages** for Korean, Dutch, Swedish, Danish, Norwegian, Polish, Ukrainian, Greek, Turkish, Finnish, Vietnamese, Indonesian and Thai.
 
 ## New in 1.6.0
 
@@ -107,7 +117,7 @@ The project builds without Gradle, using the Android SDK command-line tools and 
 ./build.sh
 ```
 
-The script writes `out/Shoresh-1.6.0.apk`. The toolchain lives in `.toolchain/` and is not part of the app. The dev keystore is `keystore/ner-dev.keystore` (password `nerdev`); do not ship with it.
+The script writes `out/Shoresh-1.6.1.apk`. The toolchain lives in `.toolchain/` and is not part of the app. The dev keystore is `keystore/ner-dev.keystore` (password `nerdev`); do not ship with it.
 
 ## Data pipeline
 

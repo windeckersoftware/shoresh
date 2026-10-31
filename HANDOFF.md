@@ -1,6 +1,6 @@
 # Shoresh (שורש) — Handoff for Future Agents
 
-Updated 2026-10-30. Current version **1.6.0** (`versionCode 117`). The visible name is Shoresh, written שורש. The Android package stays `app.ner.reader` so an update keeps the existing vocabulary.
+Updated 2026-10-30. Current version **1.6.1** (`versionCode 118`). The visible name is Shoresh, written שורש. The Android package stays `app.ner.reader` so an update keeps the existing vocabulary.
 
 ## Snapshot
 

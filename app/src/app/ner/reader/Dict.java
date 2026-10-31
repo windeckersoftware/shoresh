@@ -51,8 +51,56 @@ public final class Dict {
     // "third-person singular imperfect indicative of pleuvoir", "past participle of poser"
     private static final Pattern FORM_OF = Pattern.compile(
             "(?:inflection|participle|plural|singular|indicative|subjunctive|imperative|conditional|preterite|"
-                    + "infinitive|gerund|feminine|masculine|comparative|superlative|form|tense|person)\\b[^:;]*? of ([^\\s,;:()]+)$");
+                    + "infinitive|gerund|feminine|masculine|comparative|superlative|form|tense|person)\\b[^:;]*? of ([^\\s,;:().]+)\\.?$");
     private static final Pattern GRAMMAR_NOTE = Pattern.compile("^(first|second|third)[-/ ]|person (singular|plural)|^(plural|singular) of ");
+    // Senses that should not lead: "the first letter of the French alphabet",
+    // "ISO 639-3 code for…", "abbreviation of noroeste".
+    private static final Pattern MINOR_SENSE = Pattern.compile(
+            "(?i)letter of the [\\w ]*alphabet|\\balphabet\\b|\\b(script|vowel|consonant) letter\\b|name of the [\\w -]*letter|ISO 639|language code|"
+                    + "^(abbreviation|initialism|acronym|clipping|symbol|romanization)( of| for)?\\b|chemical symbol|^(prefix|suffix)\\b|"
+                    + "\\b(prefix|suffix) (forming|used|added|that)|forming (words|nouns|adjectives|verbs)|^-\\S+$");
+    // Grammatical particles: a dictionary entry of the same spelling is usually a
+    // homograph (은 "silver", を "smallness"), so the particle explanation wins.
+    private static final Map<String, String> PARTICLES = new HashMap<>();
+    static {
+        String[][] ko = {{"은", "topic particle (after a consonant): as for …"}, {"는", "topic particle (after a vowel): as for …"},
+                {"이", "subject particle (after a consonant)"}, {"가", "subject particle (after a vowel)"},
+                {"을", "object particle (after a consonant)"}, {"를", "object particle (after a vowel)"},
+                {"에", "at, in, to (a place or time)"}, {"에서", "at, in (where something happens); from"},
+                {"의", "possessive particle: 's, of"}, {"와", "and; with (after a vowel)"}, {"과", "and; with (after a consonant)"},
+                {"하고", "and; with"}, {"랑", "and; with (spoken)"}, {"이랑", "and; with (spoken)"}, {"도", "also, too; even"},
+                {"만", "only, just"}, {"로", "to, toward; by means of; as"}, {"으로", "to, toward; by means of; as"},
+                {"에게", "to (a person)"}, {"한테", "to (a person, spoken)"}, {"께서", "honorific subject particle"},
+                {"까지", "until; up to; as far as"}, {"부터", "from (a starting point)"}, {"보다", "than"},
+                {"처럼", "like, as"}, {"마다", "every, each"}, {"에는", "at/in … (topic)"}, {"에서는", "at/in … (topic)"},
+                {"에도", "also at/in"}, {"이나", "or; as many as"}, {"밖에", "nothing but, only (with a negative)"}};
+        String[][] ja = {{"は", "topic particle: as for …"}, {"が", "subject particle; but"}, {"を", "object particle"},
+                {"に", "to, at, in; by (with passive)"}, {"で", "at, in (where something happens); by means of"},
+                {"の", "possessive particle: 's, of"}, {"と", "and; with; quotation particle"}, {"も", "also, too; even"},
+                {"へ", "toward, to"}, {"から", "from; because"}, {"まで", "until; up to"}, {"より", "than; from"},
+                {"や", "and (among others)"}, {"か", "question particle; or"}, {"ね", "sentence-final: isn't it?, right?"},
+                {"よ", "sentence-final: emphasis, you know"}, {"ので", "because, so"}, {"けど", "but, although"}};
+        // Very common words whose Wiktionary entry leads with a letter, prefix or
+        // grade sense, and whose everyday sense the packs cut off.
+        String[][] core = {{"en:a", "a, an (indefinite article)"}, {"en:an", "a, an (indefinite article)"},
+                {"en:i", "I (first-person pronoun)"}, {"fr:a", "has (il/elle a, from avoir)"}, {"fr:y", "there; to it, about it"},
+                {"fr:à", "to, at, in"}, {"es:a", "to, at"}, {"es:o", "or"}, {"es:e", "and (before i-/hi-)"}, {"es:u", "or (before o-/ho-)"},
+                {"it:a", "to, at, in"}, {"it:e", "and"}, {"it:è", "is (from essere)"}, {"it:o", "or"}, {"it:i", "the (masculine plural)"},
+                {"pt:a", "the (feminine); to, at"}, {"pt:o", "the (masculine); it, him"}, {"pt:e", "and"}, {"pt:é", "is (from ser)"},
+                {"de:a", "a (letter)"}, {"nl:a", "a (letter)"}};
+        for (String[] r : core) PARTICLES.put(r[0], r[1]);
+        for (String[] r : ko) PARTICLES.put("ko:" + r[0], r[1]);
+        for (String[] r : ja) PARTICLES.put("ja:" + r[0], r[1]);
+    }
+    private static final String[] AR_PREFIXES = {"وبال", "فبال", "وال", "فال", "بال", "كال", "لل", "ال", "و", "ف", "ب", "ل", "ك"};
+    // Korean particles, longest first. A particle comes off a word only when
+    // the word itself is not in the dictionary (verb forms are, via forms).
+    private static final String[] KO_PARTICLES = {
+            "에서부터", "으로부터", "에게서", "한테서", "께서는", "에서는", "에서도", "에게는", "에게도", "으로는", "으로도",
+            "까지는", "까지도", "부터는", "보다는", "이라고", "처럼", "까지", "부터", "에서", "에게", "한테", "께서", "으로",
+            "보다", "마다", "조차", "마저", "이나", "이랑", "하고", "라고", "에는", "에도", "와는", "과는", "만큼", "밖에",
+            "의", "을", "를", "이", "가", "은", "는", "에", "와", "과", "도", "만", "로", "랑"};
+    private static final Pattern HANGUL_RUN = Pattern.compile("[\uAC00-\uD7A3]+");
     private static final String[] NO_STRINGS = new String[0];
 
     private String phraseLang;
@@ -310,6 +358,27 @@ public final class Dict {
                 .replace('’', '\'').replace('ʼ', '\'');
         if (key.isEmpty()) return null;
         String found = resolveKey(lang, key);
+        if ("ar".equals(lang)) {
+            // و/ف/ب/ل/ك and the article ال attach to the word: الجديدة → جديدة.
+            Entry direct = found == null ? null : at(found);
+            if (found == null || (direct != null && "name".equals(direct.pos))) {
+                for (String p : AR_PREFIXES) {
+                    if (key.startsWith(p) && key.length() - p.length() >= 2) {
+                        String rest = resolveKey(lang, key.substring(p.length()));
+                        if (rest == null && key.endsWith("ة")) rest = resolveKey(lang, key.substring(p.length(), key.length() - 1));
+                        if (rest != null) return rest;
+                    }
+                }
+            }
+        }
+        if (found == null && "ko".equals(lang)) {
+            for (String p : KO_PARTICLES) {
+                if (key.endsWith(p) && key.length() > p.length()) {
+                    found = resolveKey(lang, key.substring(0, key.length() - p.length()));
+                    if (found != null) return found;
+                }
+            }
+        }
         if (found != null || key.indexOf('\'') < 0) return found;
         // l'homme, dell'anno, John's: try the word without the elided article or 's.
         try { ensurePhrases(lang); } catch (Exception ignored) { }
@@ -347,6 +416,19 @@ public final class Dict {
         return null;
     }
 
+    /** Glosses with alphabet-letter, code and abbreviation senses moved to the end. */
+    private static String[] ordered(String[] g) {
+        int minor = 0;
+        for (String x : g) if (MINOR_SENSE.matcher(x).find()) minor++;
+        if (minor == 0 || minor == g.length) return g;
+        String[] out = new String[g.length];
+        int a = 0, b = g.length - minor;
+        for (String x : g) {
+            if (MINOR_SENSE.matcher(x).find()) out[b++] = x; else out[a++] = x;
+        }
+        return out;
+    }
+
     private String lemmaOf(String tok) {
         if (entries == null || tok == null || tok.isEmpty()) return null;
         String cached = lemmaCache.get(tok);
@@ -355,7 +437,8 @@ public final class Dict {
         Entry e = entries.get(tok);
         if (e != null) {
             out = tok;
-            Matcher m = e.g.length == 0 ? null : FORM_OF.matcher(e.g[0]);
+            String[] g = ordered(e.g);
+            Matcher m = g.length == 0 ? null : FORM_OF.matcher(g[0]);
             if (m != null && m.find() && entries.containsKey(m.group(1).toLowerCase(Locale.ROOT))) {
                 out = m.group(1).toLowerCase(Locale.ROOT);
             }
@@ -402,6 +485,11 @@ public final class Dict {
         segmentRank = ranks;
     }
 
+    private static boolean isMark(char c) {
+        int t = Character.getType(c);
+        return t == Character.NON_SPACING_MARK || t == Character.COMBINING_SPACING_MARK || t == Character.ENCLOSING_MARK;
+    }
+
     // Each word costs about -log(probability): log(rank) plus a fixed per-word
     // charge, so 生词 beats 生 + 词 although both halves are more frequent.
     private static long wordCost(int rank) {
@@ -424,6 +512,7 @@ public final class Dict {
                 maxLen = segmentMaxLen;
             }
             if (ranks == null || ranks.isEmpty() || text == null || text.isEmpty()) return "[]";
+            if ("ko".equals(lang)) return koreanSegments(text, ranks);
             int n = text.length();
             long[] cost = new long[n + 1];
             int[] prev = new int[n + 1];
@@ -433,12 +522,17 @@ public final class Dict {
             for (int i = 0; i < n; i++) {
                 if (cost[i] >= Long.MAX_VALUE / 8) continue;
                 char c = text.charAt(i);
+                if (isMark(c) && i > 0) continue; // never start a token on a combining mark
                 boolean letter = Character.isLetterOrDigit(c);
-                Integer single = letter ? ranks.get(String.valueOf(c)) : null;
+                // A base character and its combining marks (Thai ึ, ั…) form one unit.
+                int unit = i + 1;
+                while (unit < n && isMark(text.charAt(unit))) unit++;
+                Integer single = letter ? ranks.get(text.substring(i, unit)) : null;
                 long fc = !letter ? 1 : single != null ? wordCost(single) : fallback;
-                if (cost[i] + fc < cost[i + 1]) { cost[i + 1] = cost[i] + fc; prev[i + 1] = i; }
+                if (cost[i] + fc < cost[unit]) { cost[unit] = cost[i] + fc; prev[unit] = i; }
                 int max = Math.min(maxLen, n - i);
                 for (int len = 2; len <= max; len++) {
+                    if (i + len < n && isMark(text.charAt(i + len))) continue;
                     Integer rank = ranks.get(text.substring(i, i + len));
                     if (rank == null) continue;
                     long wc = wordCost(rank);
@@ -464,6 +558,36 @@ public final class Dict {
         }
     }
 
+    /** Korean: each word (eojeol) whole, or stem + particle: 학교에서 → 학교 | 에서. */
+    private String koreanSegments(String text, Map<String, Integer> ranks) {
+        JSONArray arr = new JSONArray();
+        Matcher m = HANGUL_RUN.matcher(text);
+        int last = 0;
+        while (m.find()) {
+            if (m.start() > last) arr.put(text.substring(last, m.start()));
+            String w = m.group();
+            String stem = null, particle = null;
+            if (!ranks.containsKey(w)) {
+                for (String p : KO_PARTICLES) {
+                    if (!w.endsWith(p) || w.length() <= p.length()) continue;
+                    String s = w.substring(0, w.length() - p.length());
+                    // A one-syllable particle needs a known stem (고양이 is not 고양 + 이),
+                    // except 을/를, which practically never end a noun.
+                    boolean unambiguous = p.length() > 1 || "을".equals(p) || "를".equals(p);
+                    if (ranks.containsKey(s) || (unambiguous && s.length() >= 2)) {
+                        stem = s;
+                        particle = p;
+                        break;
+                    }
+                }
+            }
+            if (stem != null) { arr.put(stem); arr.put(particle); } else arr.put(w);
+            last = m.end();
+        }
+        if (last < text.length()) arr.put(text.substring(last));
+        return arr.toString();
+    }
+
     /* ---------------- lookup ---------------- */
 
     private static JSONArray array(String[] values) {
@@ -478,6 +602,22 @@ public final class Dict {
             JSONObject root = new JSONObject();
             root.put("word", raw);
             root.put("lang", lang);
+            String particle = PARTICLES.get(lang + ":" + raw.trim());
+            if (particle == null) particle = PARTICLES.get(lang + ":" + raw.trim().toLowerCase(Locale.ROOT));
+            if (particle != null) {
+                root.put("found", true);
+                root.put("key", raw.trim());
+                root.put("display", raw.trim());
+                root.put("tr", "");
+                root.put("pos", "ko".equals(lang) || "ja".equals(lang) ? "particle" : "");
+                root.put("rank", 0);
+                root.put("glosses", new JSONArray().put(particle));
+                root.put("he", new JSONArray());
+                root.put("meaning", particle);
+                root.put("meaningLang", "en");
+                root.put("source", "Shoresh");
+                return root.toString();
+            }
             String key = resolve(lang, raw);
             JSONObject phrase = null;
             try {
@@ -509,7 +649,7 @@ public final class Dict {
             String lemma = lemmaOf(key);
             Entry base = lemma == null || lemma.equals(key) ? null : at(lemma);
             if (base != null && base.g.length > 0) {
-                note = e.g.length > 0 ? e.g[0] : null;
+                note = ordered(e.g).length > 0 ? ordered(e.g)[0] : null;
                 key = lemma;
                 e = base;
             }
@@ -519,8 +659,9 @@ public final class Dict {
             root.put("tr", e.tr == null ? "" : e.tr);
             root.put("pos", e.pos == null ? "" : e.pos);
             root.put("rank", e.rank == Integer.MAX_VALUE ? 0 : e.rank);
+            String[] senses = ordered(e.g);
             JSONArray glosses = new JSONArray();
-            for (String g : e.g) {
+            for (String g : senses) {
                 // Grammar notes merged in from other entries are not meanings.
                 if (glosses.length() > 0 && (FORM_OF.matcher(g).find() || GRAMMAR_NOTE.matcher(g).find())) continue;
                 glosses.put(g);
@@ -532,7 +673,7 @@ public final class Dict {
                 root.put("meaning", e.h[0]);
                 root.put("meaningLang", "he");
             } else {
-                root.put("meaning", e.g.length > 0 ? e.g[0] : "");
+                root.put("meaning", senses.length > 0 ? senses[0] : "");
                 root.put("meaningLang", "en");
             }
             root.put("source", "zh".equals(lang) || "yue".equals(lang) ? "CC-CEDICT" : "Wiktionary / FrequencyWords");

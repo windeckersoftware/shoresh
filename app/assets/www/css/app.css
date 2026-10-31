@@ -971,3 +971,6 @@ html[dir="ltr"] .sheet-glosses .en-gloss { text-align: left; }
 .item-btn.danger { color: var(--red); }
 .item-btn.danger.confirm { background: var(--red); color: #fff; }
 .item-btn.ghost { background: transparent; color: var(--muted); }
+
+/* Korean breaks lines at spaces only, never inside a word (필요가, not 필 / 요가). */
+.reader-body[data-lang="ko"] { word-break: keep-all; overflow-wrap: anywhere; }

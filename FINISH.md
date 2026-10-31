@@ -1,7 +1,7 @@
 # Shoresh — Finish Spec
 
 **For:** Grok 4.7 (engineering), Claude (product/design polish), and any future agent  
-**Current version:** 1.6.0 (`versionCode 117`)  
+**Current version:** 1.6.1 (`versionCode 118`)  
 **Status:** strong beta / near-finished. Core features work. Remaining work is localization, activation, polish, release hygiene and size reduction.  
 **This file supersedes `HANDOFF.md`.**
 

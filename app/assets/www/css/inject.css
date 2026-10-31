@@ -1,3 +1,5 @@
 .ner-w{cursor:pointer;border-radius:4px;-webkit-box-decoration-break:clone;box-decoration-break:clone;transition:background .12s,box-shadow .12s}
 .ner-w.active{background:rgba(201,148,63,.25)!important}
 html.ner-reading,html.ner-reading body{overflow:hidden!important}
+
+html:lang(ko) body{word-break:keep-all}

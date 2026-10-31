@@ -286,6 +286,7 @@
     return out;
   }
   function dictSegment(text, langId) {
+    if (langId === 'th') return null; // ICU (Intl.Segmenter) has a full Thai dictionary
     var marker = scriptRe(langId);
     if (marker && marker.test(text)) {
       var rx = scriptRe(langId), out = [], last = 0, m, saw = false;
@@ -551,9 +552,26 @@
     var meta = root.querySelector('.meta');
     var rank = root.querySelector('.rank');
     if (!data || !data.found) {
-      meaning.textContent = t('missing');
-      more.textContent = t('tryOnline');
+      // Not in the offline pack: machine-translate the word itself.
+      meaning.textContent = t('translating');
+      more.textContent = '';
       rank.textContent = t('notFound');
+      var word = current, trid = 'wm' + (++reqId);
+      panel.__tr = trid;
+      fetch('https://translate.googleapis.com/translate_a/single?client=gtx&sl=' + encodeURIComponent(lang) + '&tl=' + encodeURIComponent(normLang(baseLang) || 'en') + '&dt=t&q=' + encodeURIComponent(word || ''))
+        .then(function (r) { return r.json(); })
+        .then(function (payload) {
+          if (panel.__tr !== trid) return;
+          var text = (payload && payload[0] ? payload[0] : []).map(function (p) { return p && p[0] ? p[0] : ''; }).join('').trim();
+          if (!text || text.toLowerCase() === String(word).toLowerCase()) throw new Error('same');
+          meaning.textContent = text;
+          rank.textContent = 'Google Translate';
+        })
+        .catch(function () {
+          if (panel.__tr !== trid) return;
+          meaning.textContent = t('missing');
+          more.textContent = t('tryOnline');
+        });
       return;
     }
     currentKey = data.key;

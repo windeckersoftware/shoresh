@@ -607,11 +607,11 @@ public class MainActivity extends Activity {
             try {
                 JSONObject o = new JSONObject();
                 o.put("state", new JSONObject(store.load()));
-                o.put("version", "1.6.0");
+                o.put("version", "1.6.1");
                 o.put("platform", "android");
                 return o.toString();
             } catch (Exception e) {
-                return "{\"state\":{},\"version\":\"1.6.0\",\"platform\":\"android\"}";
+                return "{\"state\":{},\"version\":\"1.6.1\",\"platform\":\"android\"}";
             }
         }
 
@@ -818,17 +818,22 @@ public class MainActivity extends Activity {
         }
 
         @JavascriptInterface
-        public void translate(String text, String to, String rid) {
+        public void translate(String text, String to, String rid) { translateFrom(text, "en", to, rid); }
+
+        /** Machine translation from a given source language ("auto" detects it). */
+        @JavascriptInterface
+        public void translateFrom(String text, String from, String to, String rid) {
             io.execute(() -> {
                 String result = "{\"ok\":false}";
                 try {
                     String q = URLEncoder.encode(text == null ? "" : text, "UTF-8");
-                    URL url = new URL("https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl="
+                    String sl = from == null || !from.matches("[a-z]{2,3}|auto") ? "en" : from;
+                    URL url = new URL("https://translate.googleapis.com/translate_a/single?client=gtx&sl=" + sl + "&tl="
                             + URLEncoder.encode(to == null ? "en" : to, "UTF-8") + "&dt=t&q=" + q);
                     HttpURLConnection c = (HttpURLConnection) url.openConnection();
                     c.setConnectTimeout(4000);
                     c.setReadTimeout(8000);
-                    c.setRequestProperty("User-Agent", "Shoresh/1.6.0");
+                    c.setRequestProperty("User-Agent", "Shoresh/1.6.1");
                     int code = c.getResponseCode();
                     if (code == 200) {
                         InputStream in = c.getInputStream();
@@ -920,6 +925,6 @@ public class MainActivity extends Activity {
         public void toast(String msg) { runOnUiThread(() -> Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show()); }
 
         @JavascriptInterface
-        public String version() { return "1.6.0"; }
+        public String version() { return "1.6.1"; }
     }
 }
