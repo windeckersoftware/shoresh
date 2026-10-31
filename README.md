@@ -1,7 +1,11 @@
 # Shoresh (שורש) — language-learning reading app
 
 Shoresh is an original Android reading app built from scratch. The name is the Hebrew word for “root”, שורש. 
-**Current build:** `out/Shoresh-1.6.1.apk` (dev-signed, Android 8+). The Android package is still `app.ner.reader`, so this installs over the earlier Ner build and keeps its data.
+**Current build:** `out/Shoresh-1.6.2.apk` (dev-signed, Android 8+). The Android package is still `app.ner.reader`, so this installs over the earlier Ner build and keeps its data.
+
+## New in 1.6.2
+
+- **Send to Shoresh** — share a URL from Brave/Chrome or another app, select text and choose Shoresh, or share a PDF/EPUB/TXT from Drive. URLs open in the web reader, selections open the word card, and files reuse the existing import pipeline.
 
 ## New in 1.6.1
 

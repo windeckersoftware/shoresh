@@ -2,6 +2,15 @@
 
 Updated 2026-10-31. Current version **1.6.1** (+ uncommitted work, see below) (`versionCode 118`). The visible name is Shoresh, written שורש. The Android package stays `app.ner.reader` so an update keeps the existing vocabulary.
 
+## Share target (1.6.2, merged to main)
+
+- `ACTION_SEND` for `text/plain`, PDF, EPUB and `text/*`.
+- `ACTION_PROCESS_TEXT` for selected words.
+- `ACTION_VIEW` for content URIs.
+- URL shares open the web reader; short selections open the word card; longer text opens a text article; files reuse the existing import pipeline.
+- File imports are queued until the app WebView is ready.
+- Tested by adb: URL share opened `ReaderActivity`; selected `hello` opened the word card. A real Drive content-URI test and the Brave share sheet still need device QA.
+
 ## In progress (2026-10-31) — reader like the user's two screen recordings
 
 The user recorded the Sluka reader (two videos on their Desktop, `Screenrecorder-2026-10-31-13-0*.mp4`) and wants every feature in Shoresh. Build them in Shoresh's own design (clean-room: no Sluka text, icons or branding). Uncommitted on `main` on top of 1.6.1 (`be301d9`); the tree builds.
