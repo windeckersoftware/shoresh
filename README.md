@@ -16,6 +16,10 @@ A reader built after the owner's two screen recordings, plus share-to-Shoresh.
 - **Chinese words never break across lines** (结 | 果 at a line end read as two words).
 - Hebrew left in the English UI: book errors, empty states, library messages, bookmark titles; the voice test speaks the learning language.
 
+## New in 1.6.2
+
+- **Send to Shoresh** — share a URL from Brave/Chrome or another app, select text and choose Shoresh, or share a PDF/EPUB/TXT from Drive. URLs open in the web reader, selections open the word card, and files reuse the existing import pipeline.
+
 ## New in 1.6.1
 
 Tested by tapping words in the starter page of 18 languages and on French and Korean news sites.
