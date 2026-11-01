@@ -61,8 +61,9 @@ public class MainActivity extends Activity {
     private TextToSpeech tts;
     private boolean ttsReady;
     private String pendingExport;
-    private String pendingShare;
-    private String pendingImport;
+    /** NerApp calls made before the page finished loading (a share that started the app). */
+    private final java.util.List<String[]> pendingCalls = new java.util.ArrayList<>();
+    private boolean jsReady;
     private BookServer bookServer;
     private long lastBackAt;
     private boolean firstResume = true;
@@ -138,8 +139,7 @@ public class MainActivity extends Activity {
 
             @Override
             public void onPageFinished(WebView view, String url) {
-                flushPendingShare();
-                flushPendingImport();
+                flushPendingCalls();
             }
         });
         web.setWebChromeClient(new WebChromeClient() {
@@ -181,7 +181,13 @@ public class MainActivity extends Activity {
         });
 
         web.loadUrl("file:///android_asset/www/index.html");
-        handleShareIntent(getIntent());
+        // A recreated activity, or one reopened from Recents, carries the old
+        // share again: import it only the first time.
+        Intent first = getIntent();
+        if (savedInstanceState == null && first != null
+                && (first.getFlags() & Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY) == 0) {
+            handleShareIntent(first);
+        }
     }
 
     @Override
@@ -232,35 +238,28 @@ public class MainActivity extends Activity {
             o.put("kind", kind);
             o.put("text", text);
             if (title != null && !title.isEmpty()) o.put("title", title);
-            pendingShare = o.toString();
-            flushPendingShare();
+            deliver("NerApp.onShare", o.toString());
         } catch (Exception ignored) { }
     }
 
-    private void flushPendingShare() {
-        if (pendingShare == null || web == null) return;
-        final String json = pendingShare;
+    /** Call into the page now if NerApp is up, otherwise when the page has loaded. */
+    private void deliver(String fn, String json) {
+        if (jsReady && web != null) { callJs(fn, json); return; }
+        // Two shares while the app starts: only the newest opens, as it would
+        // once the app runs (CLEAR_TOP closes the first one's reader).
+        if ("NerApp.onShare".equals(fn)) pendingCalls.removeIf(c -> fn.equals(c[0]));
+        pendingCalls.add(new String[] { fn, json });
+        flushPendingCalls();
+    }
+
+    private void flushPendingCalls() {
+        if (web == null) return;
         web.evaluateJavascript("(window.NerApp && typeof NerApp.onShare === 'function')", value -> {
-            if ("true".equals(value)) {
-                pendingShare = null;
-                callJs("NerApp.onShare", json);
-            }
-        });
-    }
-
-    private void queueImport(String json) {
-        pendingImport = json;
-        flushPendingImport();
-    }
-
-    private void flushPendingImport() {
-        if (pendingImport == null || web == null) return;
-        final String json = pendingImport;
-        web.evaluateJavascript("(window.NerApp && typeof NerApp.onFile === 'function')", value -> {
-            if ("true".equals(value)) {
-                pendingImport = null;
-                callJs("NerApp.onFile", json);
-            }
+            if (!"true".equals(value)) return;
+            jsReady = true;
+            java.util.List<String[]> calls = new java.util.ArrayList<>(pendingCalls);
+            pendingCalls.clear();
+            for (String[] c : calls) callJs(c[0], c[1]);
         });
     }
 
@@ -638,7 +637,7 @@ public class MainActivity extends Activity {
                                 payload.put("pdfId", finalPdfId);
                                 payload.put("bytes", finalBookBytes);
                             } else payload.put("text", finalText);
-                            queueImport(payload.toString());
+                            deliver("NerApp.onFile", payload.toString());
                         } catch (Exception ignored) { }
                     });
                 }
@@ -747,11 +746,11 @@ public class MainActivity extends Activity {
             try {
                 JSONObject o = new JSONObject();
                 o.put("state", new JSONObject(store.load()));
-                o.put("version", "1.6.2");
+                o.put("version", "1.7.0");
                 o.put("platform", "android");
                 return o.toString();
             } catch (Exception e) {
-                return "{\"state\":{},\"version\":\"1.6.2\",\"platform\":\"android\"}";
+                return "{\"state\":{},\"version\":\"1.7.0\",\"platform\":\"android\"}";
             }
         }
 
@@ -1001,7 +1000,7 @@ public class MainActivity extends Activity {
                     HttpURLConnection c = (HttpURLConnection) url.openConnection();
                     c.setConnectTimeout(4000);
                     c.setReadTimeout(8000);
-                    c.setRequestProperty("User-Agent", "Shoresh/1.6.2");
+                    c.setRequestProperty("User-Agent", "Shoresh/1.7.0");
                     int code = c.getResponseCode();
                     if (code == 200) {
                         InputStream in = c.getInputStream();
@@ -1091,6 +1090,6 @@ public class MainActivity extends Activity {
         public void toast(String msg) { runOnUiThread(() -> Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show()); }
 
         @JavascriptInterface
-        public String version() { return "1.6.2"; }
+        public String version() { return "1.7.0"; }
     }
 }

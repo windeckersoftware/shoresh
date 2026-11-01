@@ -48,6 +48,17 @@
     dusk: ['#23201c', '#e6d9c3', true], inkgreen: ['#1b211e', '#dde3d8', true],
     black: ['#000000', '#d4d1ca', true]
   };
+  // Voice test in the language being learnt: "Hello. Happy reading."
+  const VOICE_SAMPLE = {
+    he: 'שלום. זה הקול של שורש. קריאה טובה.', en: 'Hello. Happy reading.', ar: 'مرحبًا. قراءة ممتعة.',
+    es: 'Hola. Feliz lectura.', fr: 'Bonjour. Bonne lecture.', de: 'Hallo. Viel Spaß beim Lesen.',
+    it: 'Ciao. Buona lettura.', pt: 'Olá. Boa leitura.', nl: 'Hallo. Veel leesplezier.', sv: 'Hej. Trevlig läsning.',
+    da: 'Hej. God læselyst.', no: 'Hei. God lesing.', fi: 'Hei. Mukavia lukuhetkiä.', pl: 'Cześć. Miłej lektury.',
+    ru: 'Привет. Приятного чтения.', uk: 'Привіт. Приємного читання.', el: 'Γεια σας. Καλή ανάγνωση.',
+    tr: 'Merhaba. İyi okumalar.', zh: '你好。祝你阅读愉快。', yue: '你好。祝你睇書開心。', ja: 'こんにちは。楽しい読書を。',
+    ko: '안녕하세요. 즐거운 독서 되세요.', vi: 'Xin chào. Chúc bạn đọc vui.', id: 'Halo. Selamat membaca.',
+    th: 'สวัสดี ขอให้สนุกกับการอ่าน', hu: 'Szia. Jó olvasást.'
+  };
   const LINE_HEIGHTS = { tight: 1.6, normal: 1.95, airy: 2.3 };
   const STREAM_CHUNK = 300000;
   const utf8 = new TextEncoder();
@@ -442,7 +453,12 @@
     const l = lang();
     const t = dayStats();
     $('#today-read').textContent = fmt(t.read || 0);
-    $('#today-known').textContent = fmt(t.added || 0);
+    // Words first saved today and being learnt, from the timestamp every word
+    // keeps: the page's saves overwrite the native stats.added counter.
+    const dayStart = new Date().setHours(0, 0, 0, 0);
+    const addedToday = Object.values(state.words)
+      .filter(w => (w.added || 0) >= dayStart && w.grade >= 1 && w.grade <= 4).length;
+    $('#today-known').textContent = fmt(Math.max(t.added || 0, addedToday));
     $('#streak-mini').textContent = fmt(streak());
     const dueN = dueWords().length;
     const dueEl = $('#review-due');
@@ -866,7 +882,7 @@
     $('#goal-range-val').textContent = state.settings.dailyGoal;
     $('#tts-range').value = Math.round((state.settings.ttsRate || 1) * 100);
     $('#tts-range-val').textContent = (state.settings.ttsRate || 1).toFixed(1) + '×';
-    $('#app-version').textContent = boot.version || '1.6.2';
+    $('#app-version').textContent = boot.version || '1.7.0';
     renderSyncUI();
     renderLanguages();
   }
@@ -929,6 +945,8 @@
   /* ---------------- navigation ---------------- */
 
   function navigate(view) {
+    // A word card belongs to the text it was opened in: close it on any move.
+    if (currentWord || !$('#word-card').hidden) closeSheet();
     if (view !== 'reader' && currentView === 'reader') cleanupReader();
     currentView = view;
     $$('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + view));
@@ -1665,7 +1683,7 @@
       if (stream) {
         items = marks.filter(m => m && typeof m === 'object').sort((a, b) => Number(a.offset) - Number(b.offset)).map(m => ({
           offset: Number(m.offset) || 0,
-          title: 'סימנייה · ' + Math.max(1, Math.round((Number(m.offset) || 0) / Math.max(1, stream.total) * 100)) + '%',
+          title: tf('bookmarkAt', { p: Math.max(1, Math.round((Number(m.offset) || 0) / Math.max(1, stream.total) * 100)) }),
           sub: m.preview || '',
           bookmark: true,
           bookmarkKey: 's' + (Number(m.offset) || 0),
@@ -1676,7 +1694,7 @@
         items = marks.filter(m => typeof m === 'number').sort((a, b) => a - b).map(page => ({ page, title: 'עמוד ' + (page + 1), sub: pagePreview(page), bookmark: true }))
           .concat(marks.filter(m => m && typeof m === 'object').sort((a, b) => Number(a.offset) - Number(b.offset)).map(m => ({
             offset: Number(m.offset) || 0,
-            title: 'סימנייה · ' + Math.max(1, Math.round((Number(m.offset) || 0) / total * 100)) + '%',
+            title: tf('bookmarkAt', { p: Math.max(1, Math.round((Number(m.offset) || 0) / total * 100)) }),
             sub: m.preview || '', bookmark: true, bookmarkKey: 's' + (Number(m.offset) || 0), current: bookmarkCovered(m)
           })));
       }
@@ -1925,6 +1943,12 @@
       view.style.setProperty('--reader-paper-bg', bg);
       view.style.setProperty('--reader-paper-ink', ink);
       view.dataset.paperTone = dark ? 'dark' : 'light';
+    }
+    // The full word sheet sits outside the reader view: give it the same paper.
+    const sheet = $('#word-sheet');
+    if (sheet) {
+      sheet.style.setProperty('--reader-paper-bg', bg);
+      sheet.style.setProperty('--reader-paper-ink', ink);
     }
     try { if (N.setTheme) N.setTheme(dark); } catch (e) { }
     const body = $('#reader-body');
@@ -2936,12 +2960,13 @@
   function openSharedUrl(raw, title) {
     let u;
     try { u = new URL(raw); } catch (e) { toast('הקישור לא תקין'); return; }
-    if (!/^https?:$/.test(u.protocol)) { toast('רק קישורי http או https'); return; }
+    if (!/^https?:$/.test(u.protocol)) { toast('הקישור לא תקין'); return; }
     const article = {
       id: 'web-' + Date.now(), title: title || u.hostname.replace(/^www\./, ''), url: u.href,
-      lang: articleLang(detectLang(u.href, learnLangs())), kind: 'web', added: Date.now(), lastOpened: Date.now()
+      lang: articleLang(langFromUrl(u) || detectLang(title || '', learnLangs())), kind: 'web', added: Date.now(), lastOpened: Date.now()
     };
     addArticle(article);
+    followLang(article.lang);
     try { N.openUrl(u.href); } catch (e) { toast('לא ניתן לפתוח את הקישור'); }
   }
 
@@ -2951,6 +2976,8 @@
     const text = String(data.text || '').trim();
     if (!text) return;
     if (data.kind === 'selection' && text.split(/\s+/).length <= 4 && text.length <= 80) {
+      // A word selected in another app: look it up in its own language.
+      followLang(wordLang(text));
       openWord(text, null, true);
       return;
     }
@@ -2969,7 +2996,7 @@
     if (!/^https?:\/\//i.test(raw)) raw = 'https://' + raw;
     let u;
     try { u = new URL(raw); } catch (e) { toast('הקישור לא תקין'); return; }
-    if (!/^https?:$/.test(u.protocol)) { toast('רק קישורי http או https'); return; }
+    if (!/^https?:$/.test(u.protocol)) { toast('הקישור לא תקין'); return; }
     const article = {
       id: 'web-' + Date.now(), title: u.hostname.replace(/^www\./, ''), url: u.href,
       lang: articleLang(langFromUrl(u)), kind: 'web', added: Date.now(), lastOpened: Date.now()
@@ -3111,6 +3138,30 @@
       ranked = rankLatin(sample);
     }
     return (candidates ? ranked.find(id => candidates.includes(id)) : ranked[0]) || null;
+  }
+
+  function scriptOf(text) {
+    let script = null, most = 0;
+    for (const [id, re] of SCRIPTS) {
+      const n = (String(text).match(re) || []).length;
+      if (n > most) { script = id; most = n; }
+    }
+    return script;
+  }
+
+  // The language of a word or two selected in another app. Too short for
+  // common-word detection, so try the dictionaries of the learnt languages
+  // written in the same script, the current one first.
+  function wordLang(text) {
+    const learn = learnLangs();
+    const detected = detectLang(text, learn);
+    const script = scriptOf(text);
+    const cands = [...new Set([detected, lang().id, ...learn])]
+      .filter(id => id && VOICE_SAMPLE[id] && scriptOf(VOICE_SAMPLE[id]) === script);
+    for (const id of cands.slice(0, 4)) {
+      try { if (JSON.parse(N.lookup(id, text)).found) return id; } catch (e) { }
+    }
+    return detected;
   }
 
   // A web page's language from its address: a language subdomain (fr.wikipedia.org) or a country domain.
@@ -3515,7 +3566,7 @@
     try { removed = Number(N.cleanupBooks(JSON.stringify(keep))) || 0; } catch (e) { }
     save(true);
     openLibrary();
-    toast(removed ? 'נמחקו ' + removed + ' קבצים יתומים' : 'לא נמצאו קבצים יתומים');
+    toast(removed ? tf('orphansRemoved', { n: removed }) : 'לא נמצאו קבצים יתומים');
   }
 
   function bind() {
@@ -3650,7 +3701,7 @@
         return;
       }
       if (e.target.closest('#test-voice')) {
-        N.speak('שלום. זה הקול של שורש. קריאה טובה.', lang().id);
+        N.speak(VOICE_SAMPLE[lang().id] || VOICE_SAMPLE.en, lang().id);
         return;
       }
       if (e.target.closest('#paste-create')) {
@@ -3948,6 +3999,7 @@
   if (!state.onboarded) showOnboarding();
   startI18nObserver();
   bind();
+  document.documentElement.classList.remove('booting');
   if (boot.platform === 'web') {
     // Browser preview: make the sample available without native file access.
     setTimeout(() => { if (!state.articles.length) { /* keep the empty state */ } }, 0);

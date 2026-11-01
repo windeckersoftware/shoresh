@@ -99,6 +99,8 @@ public final class Dict {
     private static final String[] AR_PREFIXES = {"وبال", "فبال", "وال", "فال", "بال", "كال", "لل", "ال", "و", "ف", "ب", "ل", "ك"};
     // Korean particles, longest first. A particle comes off a word only when
     // the word itself is not in the dictionary (verb forms are, via forms).
+    /** Longest particle or ending (낫다는, 먹기야, 버릇이) a Korean proverb's word may carry in running text. */
+    private static final int KO_TAIL = 3;
     private static final String[] KO_PARTICLES = {
             "에서부터", "으로부터", "에게서", "한테서", "께서는", "에서는", "에서도", "에게는", "에게도", "으로는", "으로도",
             "까지는", "까지도", "부터는", "보다는", "이라고", "처럼", "까지", "부터", "에서", "에게", "한테", "께서", "으로",
@@ -378,10 +380,16 @@ public final class Dict {
                 }
             }
         }
+        if (found == null && "ko".equals(lang) && key.length() >= 2 && key.endsWith("들")) {
+            found = resolveKey(lang, key.substring(0, key.length() - 1));
+            if (found != null) return found;
+        }
         if (found == null && "ko".equals(lang)) {
             for (String p : KO_PARTICLES) {
                 if (key.endsWith(p) && key.length() > p.length()) {
-                    found = resolveKey(lang, key.substring(0, key.length() - p.length()));
+                    String stem = key.substring(0, key.length() - p.length());
+                    found = resolveKey(lang, stem);
+                    if (found == null && stem.length() >= 2 && stem.endsWith("들")) found = resolveKey(lang, stem.substring(0, stem.length() - 1));
                     if (found != null) return found;
                 }
             }
@@ -593,7 +601,9 @@ public final class Dict {
                     // A one-syllable particle needs a known stem (고양이 is not 고양 + 이),
                     // except 을/를, which practically never end a noun.
                     boolean unambiguous = p.length() > 1 || "을".equals(p) || "를".equals(p);
-                    if (ranks.containsKey(s) || (unambiguous && s.length() >= 2)) {
+                    // 친구들과: the plural 들 hides the noun from the rank table.
+                    boolean plural = s.length() >= 2 && s.endsWith("들") && ranks.containsKey(s.substring(0, s.length() - 1));
+                    if (ranks.containsKey(s) || plural || (unambiguous && s.length() >= 2)) {
                         stem = s;
                         particle = p;
                         break;
@@ -975,6 +985,13 @@ public final class Dict {
             if (a != null) cands.addAll(a);
             List<Phrase> b = t.lemma.equals(t.canon) ? null : phraseIndex.get(t.lemma);
             if (b != null) cands.addAll(b);
+            if ("ko".equals(phraseLang)) {
+                // 버릇이 starts 세 살 버릇…: a particle or ending can follow the phrase's word.
+                for (int cut = 1; cut <= KO_TAIL && t.canon.length() - cut >= 1; cut++) {
+                    List<Phrase> c = phraseIndex.get(t.canon.substring(0, t.canon.length() - cut));
+                    if (c != null) cands.addAll(c);
+                }
+            }
             for (Phrase ph : cands) {
                 if (!match(ph, 0, toks, i, end) || end[0] <= at) continue;
                 if (best == null || ph.toks.length > best.toks.length
@@ -1002,7 +1019,8 @@ public final class Dict {
         if (ti >= toks.size()) return false;
         Tok t = toks.get(ti);
         if (pi > 0 && t.brk) return false;
-        boolean same = p.equals(t.canon) || (ph.lemmas[pi] != null && ph.lemmas[pi].equals(t.lemma));
+        boolean same = p.equals(t.canon) || (ph.lemmas[pi] != null && ph.lemmas[pi].equals(t.lemma))
+                || ("ko".equals(phraseLang) && t.canon.startsWith(p) && t.canon.length() - p.length() <= KO_TAIL);
         return same && match(ph, pi + 1, toks, ti + 1, end);
     }
 }

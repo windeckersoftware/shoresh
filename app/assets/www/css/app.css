@@ -463,6 +463,15 @@ html[dir="ltr"] .turn-btn.next svg { transform: none; }
   border: 1px solid var(--line); border-bottom: 0;
 }
 .word-sheet.open { transform: translate(-50%, 0); }
+/* In the reader the sheet takes the reading paper, like the compact card. */
+body.reader-mode .word-sheet {
+  --ink: var(--reader-paper-ink);
+  --muted: color-mix(in srgb, var(--reader-paper-ink) 58%, transparent);
+  --line: color-mix(in srgb, var(--reader-paper-ink) 14%, transparent);
+  --surface: color-mix(in srgb, var(--reader-paper-ink) 5%, var(--reader-paper-bg));
+  --surface-2: color-mix(in srgb, var(--reader-paper-ink) 9%, var(--reader-paper-bg));
+  background: var(--surface); color: var(--ink);
+}
 .sheet-grab { width: 38px; height: 4px; border-radius: 4px; background: var(--line); margin: 4px auto 14px; }
 .sheet-head { display: flex; align-items: flex-start; gap: 8px; }
 .sheet-word-wrap { min-width: 0; flex: 1; }
@@ -903,7 +912,8 @@ html[dir="ltr"] .module-cta svg { transform: rotate(0deg); }
 .edit-context { min-height: 76px; }
 html[lang="ar"] body { font-family: "Noto Naskh Arabic", "Noto Sans Arabic", "Noto Sans Hebrew", system-ui, sans-serif; }
 
-.reader-body[data-cjk="true"] .ner-w { margin: 0 2px; padding: 0 1px; }
+/* Keep a CJK word on one line: a line break inside 结果 reads as two words. */
+.reader-body[data-cjk="true"] .ner-w { margin: 0 2px; padding: 0 1px; white-space: nowrap; }
 #reader-body[data-py="on"] .ner-w.has-py {
   display: inline-flex; flex-direction: column; align-items: center;
   vertical-align: bottom; line-height: 1.05; margin: 0 1px;

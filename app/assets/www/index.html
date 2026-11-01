@@ -1,11 +1,13 @@
 <!doctype html>
-<html lang="he" dir="rtl" data-theme="light">
+<html lang="he" dir="rtl" data-theme="light" class="booting">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5">
 <meta name="theme-color" content="#f6f2e9">
 <title>שורש — שורש המילה</title>
 <link rel="stylesheet" href="css/app.css">
+<!-- Hidden until app.js has rendered in the user's language; shown after 4 s whatever happens. -->
+<style>html.booting body{visibility:hidden;animation:ner-shown 0s 4s forwards}@keyframes ner-shown{to{visibility:visible}}</style>
 </head>
 <body>
 <svg class="svg-sprite" aria-hidden="true">
