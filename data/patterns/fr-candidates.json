@@ -1,0 +1,1234 @@
+[
+ {
+  "id": "ne-pas",
+  "fr": "ne … pas",
+  "en": "not (don't / doesn't …)",
+  "function": "negation",
+  "cefr": "A1",
+  "regex": "\\bn(?:e |')[^.?!]{0,40}?\\bpas\\b"
+ },
+ {
+  "id": "c-est",
+  "fr": "c'est + N/adj",
+  "en": "it's / this is …",
+  "function": "presentation",
+  "cefr": "A1",
+  "regex": "\\bc'est\\b"
+ },
+ {
+  "id": "il-y-a",
+  "fr": "il y a + N",
+  "en": "there is / there are …",
+  "function": "existence",
+  "cefr": "A1",
+  "regex": "\\bil y a\\b"
+ },
+ {
+  "id": "il-y-a-duree",
+  "fr": "il y a + durée",
+  "en": "… ago",
+  "function": "time-ago",
+  "cefr": "A2",
+  "regex": "\\bil y a (\\d+|un|une|deux|trois|quatre|cinq|six|sept|huit|dix|quelques|plusieurs) (\\w+ )?(an|ans|année|années|mois|semaine|semaines|jour|jours|heure|heures|minute|minutes|seconde|secondes|siècle|siècles|instant|moment)\\b|\\bil y a (longtemps|peu)\\b"
+ },
+ {
+  "id": "est-ce-que",
+  "fr": "est-ce que …?",
+  "en": "yes/no question (do you …? / is it …?)",
+  "function": "question",
+  "cefr": "A1",
+  "regex": "(?<!qu')\\best-ce qu(e |')"
+ },
+ {
+  "id": "qu-est-ce-que",
+  "fr": "qu'est-ce que …?",
+  "en": "what …? (object)",
+  "function": "question",
+  "cefr": "A1",
+  "regex": "\\bqu'est-ce qu(e |')"
+ },
+ {
+  "id": "qu-est-ce-qui",
+  "fr": "qu'est-ce qui …?",
+  "en": "what …? (subject)",
+  "function": "question",
+  "cefr": "A2",
+  "regex": "\\bqu'est-ce qui\\b"
+ },
+ {
+  "id": "aller-inf",
+  "fr": "aller + infinitif",
+  "en": "be going to + verb",
+  "function": "near-future",
+  "cefr": "A1",
+  "regex": "\\b(vais|vas|va|allons|allez|vont|allais|allait|allions|alliez|allaient) (\\w+ )?\\w+(?:er|ir|re|oir)\\b"
+ },
+ {
+  "id": "venir-de-inf",
+  "fr": "venir de + infinitif",
+  "en": "have just + past participle",
+  "function": "recent-past",
+  "cefr": "A2",
+  "regex": "\\b(viens|vient|venons|venez|viennent|venais|venait|venions|veniez|venaient) (de |d')(\\w+ )?\\w+(?:er|ir|re|oir)\\b"
+ },
+ {
+  "id": "il-faut",
+  "fr": "il faut + infinitif/N",
+  "en": "you have to / it takes …",
+  "function": "obligation",
+  "cefr": "A1",
+  "regex": "\\bil (me |te |lui |nous |vous |leur )?(faut|fallait|faudra|faudrait|a fallu)\\b"
+ },
+ {
+  "id": "il-faut-que",
+  "fr": "il faut que + subjonctif",
+  "en": "someone has to …",
+  "function": "obligation",
+  "cefr": "B1",
+  "regex": "\\bil (faut|fallait|faudra|faudrait|a fallu) qu(e |')"
+ },
+ {
+  "id": "pouvoir-inf",
+  "fr": "pouvoir + infinitif",
+  "en": "can / could + verb",
+  "function": "ability",
+  "cefr": "A1",
+  "regex": "\\b(peux|peut|pouvons|pouvez|peuvent|pourrais|pourrait|pourrions|pourriez|pourraient|pouvais|pouvait|pourrai|pourra)\\b"
+ },
+ {
+  "id": "vouloir-inf",
+  "fr": "vouloir + infinitif",
+  "en": "want to + verb",
+  "function": "desire",
+  "cefr": "A1",
+  "regex": "\\b(veux|veut|voulons|voulez|veulent|voulais|voulait|voudrai|voudra) (\\w+ )?\\w+(?:er|ir|re|oir)\\b"
+ },
+ {
+  "id": "je-voudrais",
+  "fr": "je voudrais / j'aimerais + N/inf",
+  "en": "I would like …",
+  "function": "polite-request",
+  "cefr": "A1",
+  "regex": "\\b(voudrais|voudrait|voudrions|voudriez|aimerais|aimerait|aimerions|aimeriez)\\b"
+ },
+ {
+  "id": "devoir-inf",
+  "fr": "devoir + infinitif",
+  "en": "must / have to + verb",
+  "function": "obligation",
+  "cefr": "A2",
+  "regex": "\\b(dois|doit|devons|devez|doivent|devais|devait|devrai|devra) (\\w+ )?\\w+(?:er|ir|re|oir)\\b"
+ },
+ {
+  "id": "tu-devrais",
+  "fr": "tu devrais + infinitif",
+  "en": "you should + verb",
+  "function": "advice",
+  "cefr": "A2",
+  "regex": "\\b(devrais|devrait|devriez|devrions|devraient)\\b"
+ },
+ {
+  "id": "aurais-du",
+  "fr": "j'aurais dû / pu + infinitif",
+  "en": "I should / could have + past participle",
+  "function": "regret",
+  "cefr": "B1",
+  "regex": "\\b(aurais|aurait|aurions|auriez|auraient) (dû|pu)\\b"
+ },
+ {
+  "id": "ne-plus",
+  "fr": "ne … plus",
+  "en": "not anymore / no longer",
+  "function": "negation",
+  "cefr": "A2",
+  "regex": "\\bn(?:e |')[^.?!]{0,30}?\\bplus\\b"
+ },
+ {
+  "id": "ne-jamais",
+  "fr": "ne … jamais",
+  "en": "never",
+  "function": "negation",
+  "cefr": "A2",
+  "regex": "\\bn(?:e |')[^.?!]{0,30}?\\bjamais\\b"
+ },
+ {
+  "id": "ne-rien",
+  "fr": "ne … rien / rien ne",
+  "en": "nothing / not anything",
+  "function": "negation",
+  "cefr": "A2",
+  "regex": "\\bn(?:e |')[^.?!]{0,30}?\\brien\\b|\\brien n(?:e |')"
+ },
+ {
+  "id": "ne-personne",
+  "fr": "ne … personne / personne ne",
+  "en": "nobody / not anyone",
+  "function": "negation",
+  "cefr": "A2",
+  "regex": "\\bn(?:e |')[^.?!]{0,30}?\\bpersonne\\b|\\bpersonne n(?:e |')"
+ },
+ {
+  "id": "ne-que",
+  "fr": "ne … que",
+  "en": "only",
+  "function": "restriction",
+  "cefr": "B1",
+  "regex": "\\bn(?:e |')(?:(?!\\bpas\\b|\\bplus\\b|\\bjamais\\b|\\brien\\b)[^.?!]){0,30}?\\bqu(e |')"
+ },
+ {
+  "id": "ne-pas-de",
+  "fr": "pas de + N",
+  "en": "no … / not any …",
+  "function": "negation-quantity",
+  "cefr": "A1",
+  "regex": "\\bpas (de |d')(?!\\w+(?:er|ir|re|oir)\\b)"
+ },
+ {
+  "id": "pas-encore",
+  "fr": "pas encore",
+  "en": "not yet",
+  "function": "negation-time",
+  "cefr": "A2",
+  "regex": "\\bpas encore\\b"
+ },
+ {
+  "id": "ne-pas-inf",
+  "fr": "ne pas + infinitif",
+  "en": "not to + verb",
+  "function": "negation",
+  "cefr": "B1",
+  "regex": "\\bne pas \\w+(?:er|ir|re|oir)\\b"
+ },
+ {
+  "id": "parce-que",
+  "fr": "… parce que …",
+  "en": "… because …",
+  "function": "cause",
+  "cefr": "A1",
+  "regex": "\\bparce qu(e |')"
+ },
+ {
+  "id": "puisque",
+  "fr": "puisque …",
+  "en": "since (as we know) …",
+  "function": "cause",
+  "cefr": "B1",
+  "regex": "\\bpuisqu"
+ },
+ {
+  "id": "comme-cause",
+  "fr": "Comme + proposition, …",
+  "en": "As / Since …, …",
+  "function": "cause",
+  "cefr": "B1",
+  "regex": "^comme (je|j'|tu|il|elle|on|nous|vous|ils|elles)\\b[^.?!]*,"
+ },
+ {
+  "id": "a-cause-de",
+  "fr": "à cause de / grâce à + N",
+  "en": "because of / thanks to …",
+  "function": "cause",
+  "cefr": "B1",
+  "regex": "\\bà cause (de|d'|du|des)\\b|\\bgrâce (à|au|aux)\\b"
+ },
+ {
+  "id": "si-condition",
+  "fr": "si + présent, futur/impératif",
+  "en": "if + present, will …",
+  "function": "condition",
+  "cefr": "A2",
+  "regex": "\\bsi (j'|je |tu |il |elle |on |nous |vous |ils |elles |c'|ça )|\\bs'(il|ils) (?!vous pla[iî]t|te pla[iî]t)"
+ },
+ {
+  "id": "si-imparfait",
+  "fr": "si + imparfait, conditionnel",
+  "en": "if + past, would …",
+  "function": "hypothesis",
+  "cefr": "B1",
+  "regex": "\\bsi (j'|tu |il |elle |on |nous |vous |ils |elles )(\\w+ )?\\w+(ais|ait|ions|iez|aient)\\b|\\bs'(il|ils) \\w+(ait|aient)\\b"
+ },
+ {
+  "id": "si-plus-que-parfait",
+  "fr": "si + plus-que-parfait, conditionnel passé",
+  "en": "if I had …, I would have …",
+  "function": "hypothesis-past",
+  "cefr": "B2",
+  "regex": "\\bsi (j'|tu |il |elle |on |nous |vous |ils |elles )((avais|avait|avions|aviez|avaient) \\w+(é|ée|és|ées|i|ie|is|u|ue|us|it|ert)|(étais|était|étions|étiez|étaient) \\w{3,}(é|ée|és|ées|u|ue|us))\\b"
+ },
+ {
+  "id": "comme-si",
+  "fr": "comme si + imparfait",
+  "en": "as if …",
+  "function": "comparison",
+  "cefr": "B1",
+  "regex": "\\bcomme si\\b"
+ },
+ {
+  "id": "au-cas-ou",
+  "fr": "au cas où + conditionnel",
+  "en": "in case …",
+  "function": "precaution",
+  "cefr": "B1",
+  "regex": "\\bau cas où\\b"
+ },
+ {
+  "id": "a-condition-que",
+  "fr": "à condition que / pourvu que / à moins que",
+  "en": "provided that / unless …",
+  "function": "condition",
+  "cefr": "B2",
+  "regex": "\\b(à condition qu|pourvu qu|à moins qu)"
+ },
+ {
+  "id": "avoir-besoin-de",
+  "fr": "avoir besoin de + N/inf",
+  "en": "need …",
+  "function": "need",
+  "cefr": "A2",
+  "regex": "\\bbesoin (de|d')"
+ },
+ {
+  "id": "avoir-envie-de",
+  "fr": "avoir envie de + inf/N",
+  "en": "feel like / want …",
+  "function": "desire",
+  "cefr": "A2",
+  "regex": "\\benvie (de|d')"
+ },
+ {
+  "id": "aimer-inf",
+  "fr": "aimer / adorer / détester + infinitif",
+  "en": "like / love / hate + -ing",
+  "function": "liking",
+  "cefr": "A1",
+  "regex": "\\b(aime|aimes|aimons|aimez|aiment|aimais|aimait|adore|adores|adorons|adorez|adorent|déteste|détestes|détestez|détestent) (\\w+ )?\\w+(?:er|ir|re|oir)\\b"
+ },
+ {
+  "id": "penser-que",
+  "fr": "je pense / crois / trouve que …",
+  "en": "I think / believe / find that …",
+  "function": "opinion",
+  "cefr": "A2",
+  "regex": "\\b(pense|penses|pensons|pensez|pensent|pensais|pensait|crois|croit|croyons|croyez|croient|trouve|trouves|trouvez) qu"
+ },
+ {
+  "id": "ne-pas-penser-que",
+  "fr": "je ne pense pas que + subjonctif",
+  "en": "I don't think that …",
+  "function": "doubt",
+  "cefr": "B2",
+  "regex": "\\bne (pense|penses|pensez|crois|crois|croyez) pas qu"
+ },
+ {
+  "id": "a-mon-avis",
+  "fr": "à mon avis / selon moi",
+  "en": "in my opinion",
+  "function": "opinion",
+  "cefr": "A2",
+  "regex": "\\b(à mon avis|selon moi|d'après moi)\\b"
+ },
+ {
+  "id": "dire-que",
+  "fr": "dire que …",
+  "en": "say that …",
+  "function": "reported-speech",
+  "cefr": "A2",
+  "regex": "\\b(dit|dis|disent|dites|disons|disait|disais|dira|dire) qu(e |')"
+ },
+ {
+  "id": "on-dit-que",
+  "fr": "on dit que …",
+  "en": "people say that / they say …",
+  "function": "hearsay",
+  "cefr": "B1",
+  "regex": "\\bon dit qu"
+ },
+ {
+  "id": "demander-si",
+  "fr": "demander si …",
+  "en": "ask whether …",
+  "function": "reported-question",
+  "cefr": "B1",
+  "regex": "\\bdemand\\w* (\\w+ )?s(i |')"
+ },
+ {
+  "id": "savoir-si",
+  "fr": "(ne pas) savoir si / où / ce que …",
+  "en": "I don't know if / where / what …",
+  "function": "indirect-question",
+  "cefr": "A2",
+  "regex": "\\bsai[st]? (pas )?(si|s'|où|quoi|comment|pourquoi|quand|qui|ce qu|combien)\\b"
+ },
+ {
+  "id": "savoir-inf",
+  "fr": "savoir + infinitif",
+  "en": "know how to + verb",
+  "function": "skill",
+  "cefr": "A2",
+  "regex": "\\b(sais|sait|savons|savez|savent) (\\w+ )?\\w+(?:er|ir|re|oir)\\b"
+ },
+ {
+  "id": "ca-fait-que",
+  "fr": "ça fait + durée + que …",
+  "en": "it's been … since / for …",
+  "function": "duration",
+  "cefr": "B1",
+  "regex": "\\b(ça|cela) fait \\S+ \\S+ qu"
+ },
+ {
+  "id": "depuis",
+  "fr": "depuis + durée/date",
+  "en": "for / since … (still true)",
+  "function": "duration",
+  "cefr": "A2",
+  "regex": "\\bdepuis\\b"
+ },
+ {
+  "id": "pendant",
+  "fr": "pendant + durée/N",
+  "en": "for / during …",
+  "function": "duration",
+  "cefr": "A2",
+  "regex": "\\bpendant (?!qu)"
+ },
+ {
+  "id": "pendant-que",
+  "fr": "pendant que …",
+  "en": "while …",
+  "function": "simultaneity",
+  "cefr": "B1",
+  "regex": "\\bpendant qu"
+ },
+ {
+  "id": "quand",
+  "fr": "quand …",
+  "en": "when …",
+  "function": "time",
+  "cefr": "A1",
+  "regex": "\\bquand\\b"
+ },
+ {
+  "id": "lorsque",
+  "fr": "lorsque …",
+  "en": "when …",
+  "function": "time",
+  "cefr": "B1",
+  "regex": "\\blorsqu"
+ },
+ {
+  "id": "des-que",
+  "fr": "dès que …",
+  "en": "as soon as …",
+  "function": "time",
+  "cefr": "B1",
+  "regex": "\\bdès qu(e |')"
+ },
+ {
+  "id": "tant-que",
+  "fr": "tant que …",
+  "en": "as long as …",
+  "function": "condition-duration",
+  "cefr": "B2",
+  "regex": "\\btant qu(e |')"
+ },
+ {
+  "id": "avant-de",
+  "fr": "avant de + infinitif",
+  "en": "before + -ing",
+  "function": "sequence",
+  "cefr": "A2",
+  "regex": "\\bavant (de |d')"
+ },
+ {
+  "id": "avant-que",
+  "fr": "avant que + subjonctif",
+  "en": "before … (clause)",
+  "function": "sequence",
+  "cefr": "B2",
+  "regex": "\\bavant qu(e |')"
+ },
+ {
+  "id": "apres-avoir",
+  "fr": "après avoir/être + participe passé",
+  "en": "after having + past participle",
+  "function": "sequence",
+  "cefr": "B1",
+  "regex": "\\baprès (avoir|être|s'être)\\b"
+ },
+ {
+  "id": "d-abord",
+  "fr": "d'abord …, ensuite / puis …",
+  "en": "first …, then …",
+  "function": "sequence",
+  "cefr": "A2",
+  "regex": "\\bd'abord\\b"
+ },
+ {
+  "id": "a-quelle-heure",
+  "fr": "à quelle heure …?",
+  "en": "what time …?",
+  "function": "question",
+  "cefr": "A1",
+  "regex": "\\bà quelle heure\\b"
+ },
+ {
+  "id": "pourquoi",
+  "fr": "pourquoi …?",
+  "en": "why …?",
+  "function": "question",
+  "cefr": "A1",
+  "regex": "\\bpourquoi\\b"
+ },
+ {
+  "id": "comment",
+  "fr": "comment …?",
+  "en": "how …?",
+  "function": "question",
+  "cefr": "A1",
+  "regex": "\\bcomment\\b"
+ },
+ {
+  "id": "ou",
+  "fr": "où …?",
+  "en": "where …?",
+  "function": "question",
+  "cefr": "A1",
+  "regex": "\\boù\\b"
+ },
+ {
+  "id": "combien",
+  "fr": "combien (de) …?",
+  "en": "how much / how many …?",
+  "function": "question",
+  "cefr": "A1",
+  "regex": "\\bcombien\\b"
+ },
+ {
+  "id": "quel-n",
+  "fr": "quel(le)(s) + N ?",
+  "en": "which / what + N?",
+  "function": "question",
+  "cefr": "A1",
+  "regex": "\\bquel(le)?s?\\b"
+ },
+ {
+  "id": "inversion",
+  "fr": "verbe-sujet ? (pouvez-vous …?)",
+  "en": "inverted question (can you …?)",
+  "function": "question",
+  "cefr": "A2",
+  "regex": "\\b(?!rendez)\\w+-(t-)?(je|tu|il|elle|on|nous|vous|ils|elles)\\b"
+ },
+ {
+  "id": "pourriez-vous",
+  "fr": "pourriez-vous / pourrais-tu + inf ?",
+  "en": "could you …?",
+  "function": "polite-request",
+  "cefr": "A2",
+  "regex": "\\b(pourriez|pouvez|peux|pourrais)-(vous|tu)\\b"
+ },
+ {
+  "id": "s-il-vous-plait",
+  "fr": "…, s'il vous plaît / s'il te plaît",
+  "en": "…, please",
+  "function": "polite-request",
+  "cefr": "A1",
+  "regex": "\\bs'il (vous|te) pla[iî]t\\b"
+ },
+ {
+  "id": "imperatif-pronom",
+  "fr": "impératif + pronom (dis-moi, donne-le)",
+  "en": "imperative + me / it (tell me, give it)",
+  "function": "command",
+  "cefr": "A2",
+  "regex": "\\b\\w+-(moi|toi|le|la|les|lui|leur|en|y)\\b"
+ },
+ {
+  "id": "ca-te-dit",
+  "fr": "ça te dit de + inf ?",
+  "en": "do you feel like + -ing?",
+  "function": "suggestion",
+  "cefr": "A2",
+  "regex": "\\bça (te|vous) di(t|rait) (de |d')"
+ },
+ {
+  "id": "et-si-on",
+  "fr": "et si on + imparfait ?",
+  "en": "how about we …? / what if we …?",
+  "function": "suggestion",
+  "cefr": "B1",
+  "regex": "\\bet si (on|nous|vous|tu|j') \\w+(ait|ions|iez|ais)\\b"
+ },
+ {
+  "id": "on-pourrait",
+  "fr": "on pourrait + infinitif",
+  "en": "we could …",
+  "function": "suggestion",
+  "cefr": "A2",
+  "regex": "\\bon pourrait\\b|\\bnous pourrions\\b"
+ },
+ {
+  "id": "plus-que",
+  "fr": "plus + adj + que",
+  "en": "more … than / -er than",
+  "function": "comparison",
+  "cefr": "A2",
+  "regex": "\\bplus \\w+ qu(e |')"
+ },
+ {
+  "id": "moins-que",
+  "fr": "moins + adj + que",
+  "en": "less … than",
+  "function": "comparison",
+  "cefr": "A2",
+  "regex": "\\bmoins \\w+ qu(e |')"
+ },
+ {
+  "id": "aussi-que",
+  "fr": "aussi + adj + que",
+  "en": "as … as",
+  "function": "comparison",
+  "cefr": "A2",
+  "regex": "\\baussi \\w+ qu(e |')"
+ },
+ {
+  "id": "le-plus",
+  "fr": "le / la / les plus + adj",
+  "en": "the most … / the -est",
+  "function": "superlative",
+  "cefr": "A2",
+  "regex": "(?<!-)\\b(le|la|les) (plus|moins) \\w+|\\bl'(un|une) des plus\\b"
+ },
+ {
+  "id": "trop",
+  "fr": "trop + adj / trop de + N",
+  "en": "too … / too much / too many",
+  "function": "degree",
+  "cefr": "A2",
+  "regex": "\\btrop\\b"
+ },
+ {
+  "id": "trop-pour",
+  "fr": "trop … pour + infinitif",
+  "en": "too … to + verb",
+  "function": "degree",
+  "cefr": "B1",
+  "regex": "\\btrop \\w+( \\w+)? pour\\b"
+ },
+ {
+  "id": "assez-pour",
+  "fr": "assez … pour + infinitif",
+  "en": "… enough to + verb",
+  "function": "degree",
+  "cefr": "B1",
+  "regex": "\\bassez \\w+( \\w+)? pour\\b"
+ },
+ {
+  "id": "si-que",
+  "fr": "si / tellement + adj + que",
+  "en": "so … that",
+  "function": "consequence",
+  "cefr": "B1",
+  "regex": "\\b(si|tellement|tant) \\w+( \\w+)? qu(e |')"
+ },
+ {
+  "id": "de-plus-en-plus",
+  "fr": "de plus en plus (de)",
+  "en": "more and more",
+  "function": "progression",
+  "cefr": "B1",
+  "regex": "\\bde (plus|moins) en (plus|moins)\\b"
+ },
+ {
+  "id": "plus-plus",
+  "fr": "plus …, plus …",
+  "en": "the more …, the more …",
+  "function": "correlation",
+  "cefr": "B2",
+  "regex": "\\bplus \\w+[^.?!]{0,40}, plus\\b"
+ },
+ {
+  "id": "beaucoup-de",
+  "fr": "beaucoup de + N",
+  "en": "a lot of / many / much",
+  "function": "quantity",
+  "cefr": "A1",
+  "regex": "\\bbeaucoup (de|d')"
+ },
+ {
+  "id": "un-peu",
+  "fr": "un peu (de)",
+  "en": "a little (bit of)",
+  "function": "quantity",
+  "cefr": "A1",
+  "regex": "\\bun peu\\b"
+ },
+ {
+  "id": "avoir-ans",
+  "fr": "avoir + nombre + ans",
+  "en": "be … years old",
+  "function": "age",
+  "cefr": "A1",
+  "regex": "\\b(ai|as|a|avons|avez|ont|avait|avais|aura) \\w+ ans\\b"
+ },
+ {
+  "id": "il-fait",
+  "fr": "il fait + beau / froid / chaud",
+  "en": "it's nice / cold / hot",
+  "function": "weather",
+  "cefr": "A1",
+  "regex": "\\bil (fait|faisait|fera|va faire) (beau|froid|chaud|frais|doux|mauvais|bon|nuit|jour|soleil|du |gris|lourd|humide|sec)"
+ },
+ {
+  "id": "avoir-etat",
+  "fr": "avoir faim / soif / peur / raison …",
+  "en": "be hungry / thirsty / afraid / right …",
+  "function": "state",
+  "cefr": "A1",
+  "regex": "\\b(ai|as|a|avons|avez|ont|avais|avait|aurai|aura|avoir|eu) (faim|soif|peur|froid|chaud|sommeil|raison|tort|honte)\\b"
+ },
+ {
+  "id": "avoir-mal-a",
+  "fr": "avoir mal à + partie du corps",
+  "en": "have a … ache / my … hurts",
+  "function": "pain",
+  "cefr": "A2",
+  "regex": "\\bmal (à|au|aux)\\b"
+ },
+ {
+  "id": "avoir-l-air",
+  "fr": "avoir l'air + adj / de + inf",
+  "en": "look / seem …",
+  "function": "appearance",
+  "cefr": "B1",
+  "regex": "\\b(a|as|ont|avez|avait|avaient|avoir|ai|avais) l'air\\b"
+ },
+ {
+  "id": "sembler",
+  "fr": "sembler + adj / il semble que",
+  "en": "seem … / it seems that …",
+  "function": "appearance",
+  "cefr": "B1",
+  "regex": "\\bsembl(e|es|ent|ait|aient|é|er|era|erait)\\b"
+ },
+ {
+  "id": "en-train-de",
+  "fr": "être en train de + infinitif",
+  "en": "be + -ing (right now)",
+  "function": "progressive",
+  "cefr": "A2",
+  "regex": "\\ben train (de|d')"
+ },
+ {
+  "id": "sur-le-point",
+  "fr": "être sur le point de + infinitif",
+  "en": "be about to + verb",
+  "function": "imminent",
+  "cefr": "B1",
+  "regex": "\\bsur le point (de|d')"
+ },
+ {
+  "id": "se-mettre-a",
+  "fr": "se mettre à + infinitif",
+  "en": "start + -ing (suddenly)",
+  "function": "inception",
+  "cefr": "B1",
+  "regex": "\\b(mis|mise|mets|met|mettent|mettait|mettra|mettre|mirent|mit) à \\w+(?:er|ir|re|oir)\\b"
+ },
+ {
+  "id": "commencer-a",
+  "fr": "commencer à / de + infinitif",
+  "en": "begin to + verb",
+  "function": "inception",
+  "cefr": "A2",
+  "regex": "\\bcommenc\\w* (à|de |d')"
+ },
+ {
+  "id": "finir-par",
+  "fr": "finir par + infinitif",
+  "en": "end up + -ing",
+  "function": "outcome",
+  "cefr": "B1",
+  "regex": "\\bfini\\w* par \\w+(?:er|ir|re|oir)\\b"
+ },
+ {
+  "id": "arreter-de",
+  "fr": "arrêter de + infinitif",
+  "en": "stop + -ing",
+  "function": "cessation",
+  "cefr": "A2",
+  "regex": "\\barrêt\\w* (de |d')\\w+(er|ir|re|oir)\\b"
+ },
+ {
+  "id": "continuer-a",
+  "fr": "continuer à / de + infinitif",
+  "en": "keep + -ing",
+  "function": "continuation",
+  "cefr": "B1",
+  "regex": "\\bcontinu\\w* (à |de |d')"
+ },
+ {
+  "id": "essayer-de",
+  "fr": "essayer de + infinitif",
+  "en": "try to + verb",
+  "function": "attempt",
+  "cefr": "A2",
+  "regex": "\\bessa[yi]\\w* (de |d')"
+ },
+ {
+  "id": "reussir-a",
+  "fr": "réussir à + infinitif",
+  "en": "manage to + verb",
+  "function": "success",
+  "cefr": "B1",
+  "regex": "\\bréussi\\w* à\\b"
+ },
+ {
+  "id": "avoir-du-mal-a",
+  "fr": "avoir du mal à + infinitif",
+  "en": "have trouble + -ing",
+  "function": "difficulty",
+  "cefr": "B1",
+  "regex": "\\bdu mal à\\b"
+ },
+ {
+  "id": "il-s-agit-de",
+  "fr": "il s'agit de + N/inf",
+  "en": "it's about … / it's a matter of …",
+  "function": "topic",
+  "cefr": "B2",
+  "regex": "\\bs'agi(t|ssait|ra|rait)\\b"
+ },
+ {
+  "id": "ca-depend",
+  "fr": "ça dépend de + N",
+  "en": "it depends on …",
+  "function": "dependency",
+  "cefr": "A2",
+  "regex": "\\bdépend(s|ent|ait|ra|re)?\\b"
+ },
+ {
+  "id": "il-vaut-mieux",
+  "fr": "il vaut mieux + infinitif",
+  "en": "it's better to + verb / you'd better …",
+  "function": "advice",
+  "cefr": "B1",
+  "regex": "\\b(vaut|vaudrait|valait) mieux\\b"
+ },
+ {
+  "id": "il-suffit-de",
+  "fr": "il suffit de + infinitif",
+  "en": "all you have to do is …",
+  "function": "sufficiency",
+  "cefr": "B1",
+  "regex": "\\bsuffi(t|sait|ra|rait) (de |d')"
+ },
+ {
+  "id": "il-est-temps",
+  "fr": "il est temps de / que",
+  "en": "it's time to …",
+  "function": "timing",
+  "cefr": "B1",
+  "regex": "\\b(il est|c'est) (grand )?temps (de|d'|qu)"
+ },
+ {
+  "id": "il-reste",
+  "fr": "il (me) reste + N",
+  "en": "there is … left / I have … left",
+  "function": "remainder",
+  "cefr": "B1",
+  "regex": "\\bil (me |te |lui |nous |vous |leur )?rest(e|ait|era)\\b"
+ },
+ {
+  "id": "avoir-beau",
+  "fr": "avoir beau + infinitif",
+  "en": "no matter how much … / however much …",
+  "function": "concession",
+  "cefr": "C1",
+  "regex": "\\b(ai|as|a|avons|avez|ont|avais|avait) beau \\w+(?:er|ir|re|oir)\\b"
+ },
+ {
+  "id": "n-importe",
+  "fr": "n'importe qui / quoi / où / quel",
+  "en": "anyone / anything / anywhere / any …",
+  "function": "free-choice",
+  "cefr": "B1",
+  "regex": "\\bn'importe\\b"
+ },
+ {
+  "id": "quoi-que",
+  "fr": "quoi que / quel que soit + subjonctif",
+  "en": "whatever … / whichever …",
+  "function": "concession",
+  "cefr": "C1",
+  "regex": "\\bquoi qu(e|')|\\bquel(le)?s? que soi(t|ent)\\b"
+ },
+ {
+  "id": "faire-semblant",
+  "fr": "faire semblant de + infinitif",
+  "en": "pretend to + verb",
+  "function": "pretence",
+  "cefr": "B1",
+  "regex": "\\bsemblant (de |d')"
+ },
+ {
+  "id": "avoir-l-habitude",
+  "fr": "avoir l'habitude de + infinitif",
+  "en": "be used to + -ing",
+  "function": "habit",
+  "cefr": "B1",
+  "regex": "\\bl'habitude (de |d')"
+ },
+ {
+  "id": "etre-oblige",
+  "fr": "être obligé de + infinitif",
+  "en": "be forced to / have to + verb",
+  "function": "obligation",
+  "cefr": "B1",
+  "regex": "\\boblig(é|ée|és|ées) (de |d')"
+ },
+ {
+  "id": "avoir-le-droit",
+  "fr": "avoir le droit de + infinitif",
+  "en": "be allowed to + verb",
+  "function": "permission",
+  "cefr": "B1",
+  "regex": "\\ble droit (de |d')"
+ },
+ {
+  "id": "il-est-adj-de",
+  "fr": "il est / c'est + adj + de + infinitif",
+  "en": "it's + adj + to + verb",
+  "function": "evaluation",
+  "cefr": "B1",
+  "regex": "\\b(il est|c'est|il était|c'était|il serait|ce serait) (?!un |une |le |la |les |l'|des |du |de |d'|à |au )(\\w+ )?\\w+ (de |d')(\\w+ )?\\w+(?:er|ir|re|oir)\\b"
+ },
+ {
+  "id": "adj-a-inf",
+  "fr": "facile / difficile / prêt à + infinitif",
+  "en": "easy / hard / ready to + verb",
+  "function": "evaluation",
+  "cefr": "B1",
+  "regex": "\\b(facile|difficile|impossible|agréable|prêt|prête|prêts|prêtes|dur|dure) à \\w+(?:er|ir|re|oir)\\b"
+ },
+ {
+  "id": "ca-me-plait",
+  "fr": "ça me plaît / me manque",
+  "en": "I like it / I miss …",
+  "function": "experiencer",
+  "cefr": "A2",
+  "regex": "(?<!s'il )\\b(me|te|lui|nous|vous|leur) (plaît|plait|plaisent|plaisait|manque|manques|manquent|manquait)\\b"
+ },
+ {
+  "id": "c-est-a-moi",
+  "fr": "c'est à moi / à qui est …?",
+  "en": "it's mine / whose is …?",
+  "function": "possession",
+  "cefr": "A1",
+  "regex": "\\bc'est (à|au) (moi|toi|lui|elle|nous|vous|eux|qui)\\b|\\bà qui (est|sont)\\b"
+ },
+ {
+  "id": "se-souvenir",
+  "fr": "se souvenir de + N",
+  "en": "remember …",
+  "function": "memory",
+  "cefr": "A2",
+  "regex": "\\bsouvien\\w*|\\bsouvenir (de |d')"
+ },
+ {
+  "id": "se-rendre-compte",
+  "fr": "se rendre compte que / de",
+  "en": "realise that …",
+  "function": "realisation",
+  "cefr": "B1",
+  "regex": "\\brend\\w* compte\\b"
+ },
+ {
+  "id": "penser-a",
+  "fr": "penser à + N / infinitif",
+  "en": "think about … / remember to …",
+  "function": "thinking",
+  "cefr": "A2",
+  "regex": "\\bpens\\w* (à|au|aux)\\b"
+ },
+ {
+  "id": "au-lieu-de",
+  "fr": "au lieu de + infinitif / N",
+  "en": "instead of + -ing",
+  "function": "substitution",
+  "cefr": "B1",
+  "regex": "\\bau lieu (de |d')"
+ },
+ {
+  "id": "sans-inf",
+  "fr": "sans + infinitif",
+  "en": "without + -ing",
+  "function": "manner",
+  "cefr": "B1",
+  "regex": "\\bsans (?!danger\\b|cesse\\b|doute\\b)\\w+(?:er|ir|re|oir)\\b"
+ },
+ {
+  "id": "pour-inf",
+  "fr": "pour + infinitif",
+  "en": "(in order) to + verb",
+  "function": "purpose",
+  "cefr": "A2",
+  "regex": "\\bpour (ne pas |le |la |les |l'|lui |me |te |se |vous |nous )?\\w+(?:er|ir|re|oir)\\b"
+ },
+ {
+  "id": "pour-que",
+  "fr": "pour que + subjonctif",
+  "en": "so that …",
+  "function": "purpose",
+  "cefr": "B1",
+  "regex": "\\bpour qu(e |')"
+ },
+ {
+  "id": "gerondif",
+  "fr": "en + participe présent",
+  "en": "while / by + -ing",
+  "function": "simultaneity",
+  "cefr": "B1",
+  "regex": "\\ben (?!avant\\b|tant\\b)\\w+ant\\b"
+ },
+ {
+  "id": "bien-que",
+  "fr": "bien que + subjonctif",
+  "en": "although …",
+  "function": "concession",
+  "cefr": "B2",
+  "regex": "(?<!si )\\bbien qu(e |')"
+ },
+ {
+  "id": "meme-si",
+  "fr": "même si …",
+  "en": "even if / even though …",
+  "function": "concession",
+  "cefr": "B1",
+  "regex": "\\bmême s(i |')"
+ },
+ {
+  "id": "alors-que",
+  "fr": "alors que …",
+  "en": "whereas / while …",
+  "function": "contrast",
+  "cefr": "B1",
+  "regex": "\\balors qu(e |')"
+ },
+ {
+  "id": "pourtant",
+  "fr": "pourtant / cependant",
+  "en": "yet / however",
+  "function": "contrast",
+  "cefr": "B1",
+  "regex": "\\b(pourtant|cependant|toutefois|néanmoins)\\b"
+ },
+ {
+  "id": "donc",
+  "fr": "… donc …",
+  "en": "so / therefore",
+  "function": "consequence",
+  "cefr": "A2",
+  "regex": "\\bdonc\\b"
+ },
+ {
+  "id": "c-est-pour-ca",
+  "fr": "c'est pour ça que / c'est pourquoi",
+  "en": "that's why …",
+  "function": "consequence",
+  "cefr": "B1",
+  "regex": "\\bc'est (pour ça|pour cela|pourquoi)\\b"
+ },
+ {
+  "id": "qui-relatif",
+  "fr": "N + qui + verbe",
+  "en": "N who / that …",
+  "function": "relative",
+  "cefr": "A2",
+  "regex": "\\b(?:le|la|les|l'|un|une|cet|cette|ces|mon|ma|mes|ton|ta|tes|son|sa|ses|notre|votre|leurs?|celui|celle|ceux|celles|quelqu'un|quelque chose|tout) ?\\w* qui\\b"
+ },
+ {
+  "id": "que-relatif",
+  "fr": "N + que + sujet + verbe",
+  "en": "N (that) I …",
+  "function": "relative",
+  "cefr": "A2",
+  "regex": "\\b(?:le|la|les|l'|un|une|cet|cette|ces|mon|ma|mes|ton|ta|tes|son|sa|ses|notre|votre|leurs?|celui|celle|ceux|celles|quelqu'un|quelque chose|tout) ?\\w* qu(e |')(je|j'|tu|il|elle|on|nous|vous|ils|elles)\\b"
+ },
+ {
+  "id": "dont",
+  "fr": "N + dont …",
+  "en": "whose / of which / that … about",
+  "function": "relative",
+  "cefr": "B1",
+  "regex": "\\bdont\\b"
+ },
+ {
+  "id": "ce-qui-ce-que",
+  "fr": "ce qui / ce que …",
+  "en": "what (the thing that) …",
+  "function": "relative",
+  "cefr": "B1",
+  "regex": "\\bce qu(i|e|')"
+ },
+ {
+  "id": "celui-qui",
+  "fr": "celui / celle / ceux qui / que",
+  "en": "the one(s) who / that …",
+  "function": "relative",
+  "cefr": "B1",
+  "regex": "\\b(celui|celle|ceux|celles)(-ci|-là)? (qui|que|qu'|dont)\\b"
+ },
+ {
+  "id": "c-est-qui",
+  "fr": "c'est … qui / que (mise en relief)",
+  "en": "it's … who / that …",
+  "function": "focus",
+  "cefr": "B1",
+  "regex": "\\bc'(est|était) (\\w+ ){1,3}qu(i|e |')"
+ },
+ {
+  "id": "faire-inf",
+  "fr": "faire + infinitif",
+  "en": "make / have someone + verb",
+  "function": "causative",
+  "cefr": "B1",
+  "regex": "\\b(fais|fait|faisons|faites|font|faisait|faisais|ferai|fera|ferais|ferait|faire) (\\w+ )?(\\w+(er|ir|re)|voir)\\b"
+ },
+ {
+  "id": "se-faire-inf",
+  "fr": "se faire + infinitif",
+  "en": "get + past participle (get one's hair cut)",
+  "function": "causative",
+  "cefr": "B2",
+  "regex": "\\b(me|te|se|nous|vous) (suis |s'est )?(fais|fait|faisons|faites|font|faire|ferai|fera)\\w* \\w+(er|ir|re)\\b"
+ },
+ {
+  "id": "laisser-inf",
+  "fr": "laisser + infinitif",
+  "en": "let + verb",
+  "function": "permission",
+  "cefr": "B1",
+  "regex": "\\blaiss\\w* (\\w+ )?\\w+(?:er|ir|re|oir)\\b"
+ },
+ {
+  "id": "passif",
+  "fr": "être + participe passé + par",
+  "en": "be + past participle + by",
+  "function": "passive",
+  "cefr": "B1",
+  "regex": "\\b(est|sont|était|étaient|a été|ont été|sera|seront|été) \\w+(é|ée|és|ées|i|ie|is|ies|u|ue|us|ues|it|ite|ts) par\\b"
+ },
+ {
+  "id": "il-y-en-a",
+  "fr": "il y en a (+ nombre)",
+  "en": "there are some / there is one",
+  "function": "quantity",
+  "cefr": "B1",
+  "regex": "\\by en a\\b"
+ },
+ {
+  "id": "en-pronom",
+  "fr": "j'en ai / en + verbe",
+  "en": "some / of it / of them",
+  "function": "pronoun",
+  "cefr": "B1",
+  "regex": "\\b(j'|n'|m'|t'|s')?en (ai|as|a|avons|avez|ont|veux|veut|prends|prend|parle|parlons|sais|faut)\\b"
+ },
+ {
+  "id": "y-pronom",
+  "fr": "j'y vais / on y va",
+  "en": "there / to it",
+  "function": "pronoun",
+  "cefr": "B1",
+  "regex": "\\b(j'|n'|m'|t'|s')?y (vais|va|vas|allons|allez|vont|suis|es|sommes|êtes|pense|penses|penser|aller|crois|arrive)\\b"
+ },
+ {
+  "id": "s-en-aller",
+  "fr": "s'en aller / je m'en vais",
+  "en": "leave / go away",
+  "function": "departure",
+  "cefr": "B1",
+  "regex": "\\b(m'|t'|s'|nous |vous )en (vais|vas|va|allons|allez|vont|aller|allé|allée|allés)\\b"
+ },
+ {
+  "id": "voici-voila",
+  "fr": "voici / voilà + N",
+  "en": "here is / there is / that's …",
+  "function": "presentation",
+  "cefr": "A1",
+  "regex": "\\b(voici|voilà)\\b"
+ },
+ {
+  "id": "se-passer",
+  "fr": "qu'est-ce qui se passe ? / il se passe",
+  "en": "what's happening? / happen",
+  "function": "event",
+  "cefr": "A2",
+  "regex": "\\bse pass(e|ait|era|é)\\b"
+ },
+ {
+  "id": "ni-ni",
+  "fr": "ni … ni …",
+  "en": "neither … nor …",
+  "function": "negation",
+  "cefr": "B2",
+  "regex": "\\bni [^.?!]{1,40}\\bni\\b"
+ },
+ {
+  "id": "soit-soit",
+  "fr": "soit … soit …",
+  "en": "either … or …",
+  "function": "alternative",
+  "cefr": "B2",
+  "regex": "\\bsoit [^.?!]{1,40}\\bsoit\\b"
+ },
+ {
+  "id": "non-seulement",
+  "fr": "non seulement … mais (aussi) …",
+  "en": "not only … but also …",
+  "function": "addition",
+  "cefr": "B2",
+  "regex": "\\bnon seulement\\b"
+ },
+ {
+  "id": "pas-la-peine",
+  "fr": "ce n'est pas la peine de + inf",
+  "en": "there's no need to + verb",
+  "function": "needlessness",
+  "cefr": "B1",
+  "regex": "\\bpas la peine\\b"
+ },
+ {
+  "id": "en-avoir-marre",
+  "fr": "en avoir marre de",
+  "en": "be fed up with …",
+  "function": "annoyance",
+  "cefr": "B1",
+  "regex": "\\bmarre\\b"
+ },
+ {
+  "id": "j-ai-hate",
+  "fr": "j'ai hâte de + infinitif",
+  "en": "I can't wait to + verb",
+  "function": "anticipation",
+  "cefr": "B1",
+  "regex": "\\bhâte (de |d')"
+ },
+ {
+  "id": "tenir-a",
+  "fr": "tenir à + N / infinitif",
+  "en": "care about / insist on …",
+  "function": "attachment",
+  "cefr": "B2",
+  "regex": "(?<!se )(?<!me )(?<!te )\\bt(iens|ient|enons|enez|iennent|enais|enait) à\\b"
+ },
+ {
+  "id": "a-force-de",
+  "fr": "à force de + infinitif / N",
+  "en": "by dint of / through repeated …",
+  "function": "means",
+  "cefr": "C1",
+  "regex": "\\bà force (de|d')"
+ }
+]
