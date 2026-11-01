@@ -68,7 +68,7 @@ public final class Store {
     /** Update one word from the page reader, preserving the rest of the state. */
     public synchronized JSONObject updateWord(String lang, String key, String form,
                                               String display, String tr, String pos,
-                                              String meaning, String meaningBase, int grade) {
+                                              String meaning, String meaningBase, int grade, String context) {
         JSONObject root;
         try {
             root = new JSONObject(load());
@@ -94,6 +94,8 @@ public final class Store {
             if (meaning != null && !meaning.isEmpty()) w.put("meaning", meaning);
             if (meaningBase != null && !meaningBase.isEmpty()) w.put("meaningBase", meaningBase);
             w.put("grade", grade);
+            // The sentence it was first met in, for the back of its review card.
+            if (context != null && !context.isEmpty() && w.optString("context", "").isEmpty()) w.put("context", context);
             long now = System.currentTimeMillis();
             if (isNew) w.put("added", now);
             w.put("seen", w.optInt("seen", 0) + 1);

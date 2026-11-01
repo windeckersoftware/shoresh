@@ -525,6 +525,19 @@ html[dir="rtl"] .dict-chip svg { transform: scaleX(-1); }
 .char-cell small { font-size: 11px; font-weight: 650; color: var(--green); }
 .char-cell b { font-size: 34px; line-height: 1.12; font-weight: 600; }
 .char-gloss { flex: 1; min-width: 0; font-size: 13.5px; line-height: 1.45; color: var(--ink-2); unicode-bidi: plaintext; }
+.char-row { width: 100%; background: none; border-radius: 0; text-align: start; color: inherit; font: inherit; cursor: pointer; }
+.char-row.active .char-cell b { color: var(--green); }
+.stroke-panel { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 6px 0 12px; border-bottom: 1px solid color-mix(in srgb, var(--line) 70%, transparent); }
+.stroke-panel[hidden] { display: none; }
+.stroke-box { width: 168px; height: 168px; border-radius: 16px; background: var(--surface); border: 1px solid var(--line); cursor: pointer;
+  background-image: linear-gradient(var(--line), var(--line)), linear-gradient(var(--line), var(--line));
+  background-size: 100% 1px, 1px 100%; background-position: center; background-repeat: no-repeat; }
+/* The global svg { 1.25em } icon size must not shrink the writer. */
+.stroke-box svg { width: 100%; height: 100%; }
+.stroke-steps { display: flex; gap: 6px; width: 100%; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+.stroke-steps::-webkit-scrollbar { display: none; }
+.stroke-step { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 0; background: none; color: var(--muted); font-size: 10px; font-weight: 700; cursor: pointer; }
+.stroke-step svg { width: 46px; height: 46px; border-radius: 8px; background: var(--surface); border: 1px solid var(--line); }
 .grade-label { font-size: 10px; color: var(--muted); margin: 16px 0 7px; font-weight: 650; }
 .grade-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; }
 .grade-grid button {
@@ -976,6 +989,28 @@ html[lang="ar"] body { font-family: "Noto Naskh Arabic", "Noto Sans Arabic", "No
 .review-context { font-size: 14px; line-height: 1.55; margin: 0; }
 .review-meaning { font-size: 18px; font-weight: 750; margin: 0; }
 .review-reveal { align-self: flex-start; }
+.srs-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.srs-counts { font-size: 15px; font-weight: 700; color: var(--muted); font-variant-numeric: tabular-nums; }
+.srs-counts b { font-weight: 800; }
+.srs-counts b.cur { text-decoration: underline; text-underline-offset: 4px; }
+.srs-c-n { color: var(--ink-2); }
+.srs-c-l { color: var(--amber); }
+.srs-c-r { color: var(--green); }
+.srs-tools { display: flex; align-items: center; gap: 6px; }
+.srs-swap { height: 34px; padding: 0 12px; border-radius: 17px; background: var(--surface-2); color: var(--ink-2); font-size: 12px; font-weight: 750; }
+.srs-card { display: flex; flex-direction: column; align-items: center; gap: 10px; min-height: 230px; justify-content: center; padding: 26px 18px; border-radius: var(--radius); background: var(--surface); border: 1px solid var(--line); box-shadow: var(--shadow); text-align: center; cursor: pointer; }
+.srs-card.flipped { justify-content: flex-start; cursor: default; }
+.srs-kind { font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.srs-word { font-size: 40px; font-weight: 820; line-height: 1.15; letter-spacing: -.02em; overflow-wrap: anywhere; }
+.srs-meaning { font-size: 18px; font-weight: 700; line-height: 1.4; }
+.srs-meaning.front { font-size: 22px; }
+.srs-reading { font-size: 15px; color: var(--green); font-weight: 650; }
+.srs-rule { width: 100%; height: 1px; background: var(--line); margin: 4px 0; }
+.srs-context { font-size: 14.5px; line-height: 1.6; color: var(--ink-2); max-width: 520px; unicode-bidi: plaintext; }
+.srs-show { width: 100%; min-height: 50px; }
+.srs-grid button { min-height: 62px; }
+.srs-grid button i { font-style: normal; font-size: 10.5px; font-weight: 800; color: var(--green); }
+.srs-grid .ignore-btn i, .srs-grid .known-btn i { color: var(--muted); }
 .review-empty { text-align: center; padding: 28px 8px; display: flex; flex-direction: column; gap: 10px; align-items: center; }
 .review-empty h2 { font-size: 22px; margin: 0; }
 .review-empty p { color: var(--muted); max-width: 280px; margin: 0; }
@@ -1026,7 +1061,9 @@ html[lang="ar"] body { font-family: "Noto Naskh Arabic", "Noto Sans Arabic", "No
   background: color-mix(in srgb, var(--gold) 13%, var(--surface)); border: 1px solid color-mix(in srgb, var(--gold) 35%, transparent);
 }
 .sheet-phrase[hidden] { display: none; }
-.sheet-phrase-kind { grid-column: 1; font-size: 8.5px; letter-spacing: .1em; text-transform: uppercase; font-weight: 800; color: var(--gold); }
+.sheet-phrase-top { grid-column: 1; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.sheet-phrase-save { font-size: 10.5px; font-weight: 800; color: var(--green); white-space: nowrap; }
+.sheet-phrase-kind { font-size: 8.5px; letter-spacing: .1em; text-transform: uppercase; font-weight: 800; color: var(--gold); }
 .sheet-phrase strong { grid-column: 1; font-size: 16px; line-height: 1.3; font-weight: 800; color: var(--ink); unicode-bidi: plaintext; }
 .sheet-phrase-meaning { grid-column: 1; font-size: 12.5px; line-height: 1.45; color: var(--ink-2); unicode-bidi: plaintext; }
 .sheet-phrase svg { grid-column: 2; grid-row: 1 / span 4; width: 16px; height: 16px; color: var(--muted); transform: rotate(180deg); }
@@ -1130,3 +1167,4 @@ html[dir="ltr"] .langs-head .icon-btn svg { transform: scaleX(-1); }
 .lang-card.short { height: auto; max-height: 86dvh; }
 .search-box[hidden] { display: none; }
 .lang-manage .lang-code svg { width: 14px; height: 14px; color: var(--green); }
+.review-stage:has(.srs-card) { background: none; border: 0; box-shadow: none; padding: 4px 0 0; }

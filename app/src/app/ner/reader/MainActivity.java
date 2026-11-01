@@ -746,11 +746,11 @@ public class MainActivity extends Activity {
             try {
                 JSONObject o = new JSONObject();
                 o.put("state", new JSONObject(store.load()));
-                o.put("version", "1.7.0");
+                o.put("version", "1.8.0");
                 o.put("platform", "android");
                 return o.toString();
             } catch (Exception e) {
-                return "{\"state\":{},\"version\":\"1.7.0\",\"platform\":\"android\"}";
+                return "{\"state\":{},\"version\":\"1.8.0\",\"platform\":\"android\"}";
             }
         }
 
@@ -1000,7 +1000,7 @@ public class MainActivity extends Activity {
                     HttpURLConnection c = (HttpURLConnection) url.openConnection();
                     c.setConnectTimeout(4000);
                     c.setReadTimeout(8000);
-                    c.setRequestProperty("User-Agent", "Shoresh/1.7.0");
+                    c.setRequestProperty("User-Agent", "Shoresh/1.8.0");
                     int code = c.getResponseCode();
                     if (code == 200) {
                         InputStream in = c.getInputStream();
@@ -1089,7 +1089,22 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public void toast(String msg) { runOnUiThread(() -> Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show()); }
 
+        /** HanziWriter stroke data for one character ("" when there is none). */
         @JavascriptInterface
-        public String version() { return "1.7.0"; }
+        public String strokes(String ch) {
+            if (ch == null || ch.isEmpty()) return "";
+            String name = "hanzi/" + Integer.toHexString(ch.codePointAt(0)) + ".json";
+            try (InputStream in = getAssets().open(name)) {
+                ByteArrayOutputStream out = new ByteArrayOutputStream();
+                byte[] buf = new byte[8192];
+                for (int n; (n = in.read(buf)) > 0; ) out.write(buf, 0, n);
+                return new String(out.toByteArray(), StandardCharsets.UTF_8);
+            } catch (Exception e) {
+                return "";
+            }
+        }
+
+        @JavascriptInterface
+        public String version() { return "1.8.0"; }
     }
 }

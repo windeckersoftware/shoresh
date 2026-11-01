@@ -176,13 +176,14 @@ public class ReaderActivity extends Activity {
                 String pos = uri.getQueryParameter("pos");
                 String meaning = uri.getQueryParameter("meaning");
                 String meaningBase = uri.getQueryParameter("meaningBase");
+                String context = uri.getQueryParameter("context");
                 String g = uri.getQueryParameter("grade");
                 int grade = 0;
                 try { grade = Integer.parseInt(g == null ? "0" : g); } catch (Exception ignored) { }
                 final int fg = grade;
                 io.execute(() -> {
                     JSONObject w = store.updateWord(lang == null ? "he" : lang, key == null ? "" : key,
-                            form, display, tr, pos, meaning, meaningBase, fg);
+                            form, display, tr, pos, meaning, meaningBase, fg, context);
                     main.post(() -> eval("(window.__NerReader && __NerReader.gradeResult) && __NerReader.gradeResult(" +
                             JSONObject.quote(w == null ? "{}" : w.toString()) + ");"));
                 });

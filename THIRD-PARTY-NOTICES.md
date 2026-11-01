@@ -78,3 +78,44 @@ The dictionary pack (`app/assets/dict/he.json.gz`), the starter list (`app/asset
 - Source: https://github.com/tesseract-ocr/tessdata_fast (`eng.traineddata`, `heb.traineddata`)
 - Licence: Apache License 2.0
 - Used for: OCR language models, copied into the app's private storage on first use.
+
+## Hanzi Writer
+
+- Source: https://github.com/chanind/hanzi-writer (npm `hanzi-writer` 3.7.3)
+- Licence: MIT
+- Used for: animated Chinese stroke order in the word sheet. Shipped unchanged as `app/assets/www/vendor/hanzi-writer.min.js`.
+
+```
+The MIT License (MIT)
+
+Copyright (c) 2014 David Chanin
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+the Software, and to permit persons to whom the Software is furnished to do so,
+subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+```
+
+## Hanzi Writer data (Make Me a Hanzi)
+
+- Source: https://github.com/chanind/hanzi-writer-data (npm `hanzi-writer-data` 2.0.1), derived from Make Me a Hanzi (https://github.com/skishore/makemeahanzi), whose stroke graphics come from Arphic's AR PL fonts.
+- Licence: Arphic Public License. The licence text ships with the data as `app/assets/hanzi/ARPHICPL.TXT`.
+- Used for: stroke shapes and order of 9,574 characters. `tools/fetch_hanzi.py` downloads the package at build time (pinned by checksum) and writes one file per character, renamed by code point and with whitespace removed; the stroke data itself is unchanged.
+
+## pdf.js
+
+- Source: https://github.com/mozilla/pdf.js (3.11.174)
+- Licence: Apache License 2.0, Copyright 2023 Mozilla Foundation (notice kept at the top of `vendor/pdf.min.js` and `vendor/pdf.worker.min.js`)
+- Used for: extracting text from PDFs.

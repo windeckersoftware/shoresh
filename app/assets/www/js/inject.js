@@ -4,6 +4,7 @@
   var state = window.__NER_STATE__ || {};
   var lang = (state.settings && state.settings.lang) || 'he';
   var root = null, bar = null, panel = null, overlay = null, current = null, currentKey = null, reqId = 0;
+  var currentCtx = '', currentPhrase = null;
   var font = 20;
   var words = state.words || {};
   var index = {};
@@ -21,14 +22,14 @@
     return ISO3[code] || code;
   }
   var UI = {
-    he: { openLink: 'פתיחת הקישור', back: 'חזרה', home: 'דף הבית של האתר', read: 'מצב קריאה', close: 'סיום', loading: 'טוען…', how: 'כמה המילה מוכרת לכם?', g1: 'לא מכיר', g2: 'מזהה', g3: 'מבין', g4: 'כמעט', g5: 'ידוע', gx: 'דלג', online: 'תרגום אונליין ›', hint: 'לחצו על מילה כדי לפתוח · 1–4 / K / X', saved: 'שמור באוצר שלכם', missing: 'לא נמצאה משמעות במילון המקומי.', tryOnline: 'אפשר לפתוח תרגום אונליין.', notFound: 'לא נמצא', noMeaning: 'אין משמעות.', local: 'מילון מקומי', rank: 'בשכיחות', translating: 'מתרגם…', ask: 'שאלו את ChatGPT' },
-    en: { openLink: 'Open link', back: 'Back', home: 'Site home', read: 'Read mode', close: 'Close', loading: 'Loading…', how: 'How well do you know this word?', g1: 'new', g2: 'seen', g3: 'know', g4: 'almost', g5: 'known', gx: 'skip', online: 'Online translation ›', hint: 'Tap a word · 1–4 / K / X', saved: 'Saved', missing: 'Not in the local dictionary.', tryOnline: 'You can open an online translation.', notFound: 'Not found', noMeaning: 'No meaning.', local: 'Local dictionary', rank: 'frequency', translating: 'Translating…', ask: 'Ask ChatGPT' },
-    hu: { openLink: 'Link megnyitása', back: 'Vissza', home: 'Az oldal kezdőlapja', read: 'Olvasó', close: 'Bezár', loading: 'Betöltés…', how: 'Mennyire ismered ezt a szót?', g1: 'idegen', g2: 'ismerős', g3: 'értem', g4: 'majdnem', g5: 'tudom', gx: 'kihagy', online: 'Online fordítás ›', hint: 'Koppints egy szóra · 1–4 / K / X', saved: 'Elmentve', missing: 'Nincs a helyi szótárban.', tryOnline: 'Nyiss online fordítást.', notFound: 'Nincs találat', noMeaning: 'Nincs jelentés.', local: 'Helyi szótár', rank: 'gyakoriság', translating: 'Fordítás…', ask: 'Kérdezd a ChatGPT-t' },
-    es: { openLink: 'Abrir enlace', back: 'Atrás', home: 'Inicio del sitio', read: 'Lectura', close: 'Cerrar', loading: 'Cargando…', how: '¿Cuánto conoces esta palabra?', g1: 'nueva', g2: 'vista', g3: 'entiendo', g4: 'casi', g5: 'sé', gx: 'saltar', online: 'Traducción en línea ›', hint: 'Toca una palabra · 1–4 / K / X', saved: 'Guardada', missing: 'No está en el diccionario local.', tryOnline: 'Puedes abrir una traducción en línea.', notFound: 'No encontrada', noMeaning: 'Sin significado.', local: 'Diccionario local', rank: 'frecuencia', translating: 'Traduciendo…', ask: 'Preguntar a ChatGPT' },
-    fr: { openLink: 'Ouvrir le lien', back: 'Retour', home: 'Accueil du site', read: 'Lecture', close: 'Fermer', loading: 'Chargement…', how: 'À quel point connaissez-vous ce mot ?', g1: 'nouveau', g2: 'vu', g3: 'compris', g4: 'presque', g5: 'su', gx: 'passer', online: 'Traduction en ligne ›', hint: 'Touchez un mot · 1–4 / K / X', saved: 'Enregistré', missing: 'Absent du dictionnaire local.', tryOnline: 'Vous pouvez ouvrir une traduction en ligne.', notFound: 'Introuvable', noMeaning: 'Pas de sens.', local: 'Dictionnaire local', rank: 'fréquence', translating: 'Traduction…', ask: 'Demander à ChatGPT' },
-    de: { openLink: 'Link öffnen', back: 'Zurück', home: 'Startseite der Website', read: 'Lesen', close: 'Schließen', loading: 'Lädt…', how: 'Wie gut kennst du dieses Wort?', g1: 'neu', g2: 'gesehen', g3: 'verstanden', g4: 'fast', g5: 'bekannt', gx: 'weg', online: 'Online-Übersetzung ›', hint: 'Wort antippen · 1–4 / K / X', saved: 'Gespeichert', missing: 'Nicht im lokalen Wörterbuch.', tryOnline: 'Du kannst eine Online-Übersetzung öffnen.', notFound: 'Nicht gefunden', noMeaning: 'Keine Bedeutung.', local: 'Lokales Wörterbuch', rank: 'Häufigkeit', translating: 'Übersetze…', ask: 'ChatGPT fragen' },
-    ru: { openLink: 'Открыть ссылку', back: 'Назад', home: 'Главная сайта', read: 'Чтение', close: 'Закрыть', loading: 'Загрузка…', how: 'Насколько знакомо это слово?', g1: 'новое', g2: 'видел', g3: 'понял', g4: 'почти', g5: 'знаю', gx: 'мимо', online: 'Онлайн-перевод ›', hint: 'Нажмите слово · 1–4 / K / X', saved: 'Сохранено', missing: 'Нет в местном словаре.', tryOnline: 'Можно открыть онлайн-перевод.', notFound: 'Не найдено', noMeaning: 'Нет значения.', local: 'Местный словарь', rank: 'частота', translating: 'Перевод…', ask: 'Спросить ChatGPT' },
-    ar: { openLink: 'فتح الرابط', back: 'رجوع', home: 'الصفحة الرئيسية', read: 'وضع القراءة', close: 'إغلاق', loading: 'جارٍ التحميل…', how: 'ما مدى معرفتك بهذه الكلمة؟', g1: 'جديدة', g2: 'مألوفة', g3: 'أفهم', g4: 'تقريبًا', g5: 'أعرف', gx: 'تجاوز', online: 'ترجمة عبر الإنترنت ›', hint: 'اضغط كلمة · 1–4 / K / X', saved: 'محفوظة', missing: 'ليست في القاموس المحلي.', tryOnline: 'يمكنك فتح ترجمة عبر الإنترنت.', notFound: 'غير موجود', noMeaning: 'لا معنى.', local: 'قاموس محلي', rank: 'التكرار', translating: 'جارٍ الترجمة…', ask: 'اسأل ChatGPT' }
+    he: { openLink: 'פתיחת הקישור', back: 'חזרה', home: 'דף הבית של האתר', read: 'מצב קריאה', close: 'סיום', loading: 'טוען…', how: 'כמה המילה מוכרת לכם?', g1: 'לא מכיר', g2: 'מזהה', g3: 'מבין', g4: 'כמעט', g5: 'ידוע', gx: 'דלג', online: 'תרגום אונליין ›', hint: 'לחצו על מילה כדי לפתוח · 1–4 / K / X', save: 'שמירה', saved: 'שמור באוצר שלכם', missing: 'לא נמצאה משמעות במילון המקומי.', tryOnline: 'אפשר לפתוח תרגום אונליין.', notFound: 'לא נמצא', noMeaning: 'אין משמעות.', local: 'מילון מקומי', rank: 'בשכיחות', translating: 'מתרגם…', ask: 'שאלו את ChatGPT' },
+    en: { openLink: 'Open link', back: 'Back', home: 'Site home', read: 'Read mode', close: 'Close', loading: 'Loading…', how: 'How well do you know this word?', g1: 'new', g2: 'seen', g3: 'know', g4: 'almost', g5: 'known', gx: 'skip', online: 'Online translation ›', hint: 'Tap a word · 1–4 / K / X', save: 'Save', saved: 'Saved', missing: 'Not in the local dictionary.', tryOnline: 'You can open an online translation.', notFound: 'Not found', noMeaning: 'No meaning.', local: 'Local dictionary', rank: 'frequency', translating: 'Translating…', ask: 'Ask ChatGPT' },
+    hu: { openLink: 'Link megnyitása', back: 'Vissza', home: 'Az oldal kezdőlapja', read: 'Olvasó', close: 'Bezár', loading: 'Betöltés…', how: 'Mennyire ismered ezt a szót?', g1: 'idegen', g2: 'ismerős', g3: 'értem', g4: 'majdnem', g5: 'tudom', gx: 'kihagy', online: 'Online fordítás ›', hint: 'Koppints egy szóra · 1–4 / K / X', save: 'Mentés', saved: 'Elmentve', missing: 'Nincs a helyi szótárban.', tryOnline: 'Nyiss online fordítást.', notFound: 'Nincs találat', noMeaning: 'Nincs jelentés.', local: 'Helyi szótár', rank: 'gyakoriság', translating: 'Fordítás…', ask: 'Kérdezd a ChatGPT-t' },
+    es: { openLink: 'Abrir enlace', back: 'Atrás', home: 'Inicio del sitio', read: 'Lectura', close: 'Cerrar', loading: 'Cargando…', how: '¿Cuánto conoces esta palabra?', g1: 'nueva', g2: 'vista', g3: 'entiendo', g4: 'casi', g5: 'sé', gx: 'saltar', online: 'Traducción en línea ›', hint: 'Toca una palabra · 1–4 / K / X', save: 'Guardar', saved: 'Guardada', missing: 'No está en el diccionario local.', tryOnline: 'Puedes abrir una traducción en línea.', notFound: 'No encontrada', noMeaning: 'Sin significado.', local: 'Diccionario local', rank: 'frecuencia', translating: 'Traduciendo…', ask: 'Preguntar a ChatGPT' },
+    fr: { openLink: 'Ouvrir le lien', back: 'Retour', home: 'Accueil du site', read: 'Lecture', close: 'Fermer', loading: 'Chargement…', how: 'À quel point connaissez-vous ce mot ?', g1: 'nouveau', g2: 'vu', g3: 'compris', g4: 'presque', g5: 'su', gx: 'passer', online: 'Traduction en ligne ›', hint: 'Touchez un mot · 1–4 / K / X', save: 'Enregistrer', saved: 'Enregistré', missing: 'Absent du dictionnaire local.', tryOnline: 'Vous pouvez ouvrir une traduction en ligne.', notFound: 'Introuvable', noMeaning: 'Pas de sens.', local: 'Dictionnaire local', rank: 'fréquence', translating: 'Traduction…', ask: 'Demander à ChatGPT' },
+    de: { openLink: 'Link öffnen', back: 'Zurück', home: 'Startseite der Website', read: 'Lesen', close: 'Schließen', loading: 'Lädt…', how: 'Wie gut kennst du dieses Wort?', g1: 'neu', g2: 'gesehen', g3: 'verstanden', g4: 'fast', g5: 'bekannt', gx: 'weg', online: 'Online-Übersetzung ›', hint: 'Wort antippen · 1–4 / K / X', save: 'Speichern', saved: 'Gespeichert', missing: 'Nicht im lokalen Wörterbuch.', tryOnline: 'Du kannst eine Online-Übersetzung öffnen.', notFound: 'Nicht gefunden', noMeaning: 'Keine Bedeutung.', local: 'Lokales Wörterbuch', rank: 'Häufigkeit', translating: 'Übersetze…', ask: 'ChatGPT fragen' },
+    ru: { openLink: 'Открыть ссылку', back: 'Назад', home: 'Главная сайта', read: 'Чтение', close: 'Закрыть', loading: 'Загрузка…', how: 'Насколько знакомо это слово?', g1: 'новое', g2: 'видел', g3: 'понял', g4: 'почти', g5: 'знаю', gx: 'мимо', online: 'Онлайн-перевод ›', hint: 'Нажмите слово · 1–4 / K / X', save: 'Сохранить', saved: 'Сохранено', missing: 'Нет в местном словаре.', tryOnline: 'Можно открыть онлайн-перевод.', notFound: 'Не найдено', noMeaning: 'Нет значения.', local: 'Местный словарь', rank: 'частота', translating: 'Перевод…', ask: 'Спросить ChatGPT' },
+    ar: { openLink: 'فتح الرابط', back: 'رجوع', home: 'الصفحة الرئيسية', read: 'وضع القراءة', close: 'إغلاق', loading: 'جارٍ التحميل…', how: 'ما مدى معرفتك بهذه الكلمة؟', g1: 'جديدة', g2: 'مألوفة', g3: 'أفهم', g4: 'تقريبًا', g5: 'أعرف', gx: 'تجاوز', online: 'ترجمة عبر الإنترنت ›', hint: 'اضغط كلمة · 1–4 / K / X', save: 'حفظ', saved: 'محفوظة', missing: 'ليست في القاموس المحلي.', tryOnline: 'يمكنك فتح ترجمة عبر الإنترنت.', notFound: 'غير موجود', noMeaning: 'لا معنى.', local: 'قاموس محلي', rank: 'التكرار', translating: 'جارٍ الترجمة…', ask: 'اسأل ChatGPT' }
   };
   if (!UI[uiCode]) uiCode = 'en';
   function t(key) { return (UI[uiCode] && UI[uiCode][key]) || UI.en[key] || key; }
@@ -112,6 +113,7 @@
     .phrase[hidden]{display:none}
     .phrase small{font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;font-weight:800;color:#c9943f}
     .phrase b{font-size:15px;line-height:1.3;unicode-bidi:plaintext}
+    .ph-save{align-self:flex-start;margin-top:6px;padding:5px 10px;border:0;border-radius:9px;background:${dark ? '#3a3220' : '#ecdcb6'};color:inherit;font:inherit;font-size:11.5px;font-weight:800;cursor:pointer}
     .phrase span{font-size:12.5px;line-height:1.45;color:${dark ? '#d8d3c8' : '#3d3a33'};unicode-bidi:plaintext}
     .more{font-size:11px;line-height:1.5;color:${dark ? '#a7a69b' : '#726c60'};margin:0 0 2px}
     .label{font-size:10px;color:${dark ? '#a7a69b' : '#726c60'};margin:14px 0 6px}
@@ -158,7 +160,7 @@
         <div class="grab"></div>
         <div class="head"><div><h2 class="word">…</h2><p class="meta"></p></div><button class="speak" data-act="speak">🔊</button></div>
         <div class="dicts" hidden></div>
-        <div class="phrase" hidden><small class="ph-kind"></small><b class="ph-text"></b><span class="ph-meaning"></span></div>
+        <div class="phrase" hidden><small class="ph-kind"></small><b class="ph-text"></b><span class="ph-meaning"></span><button class="ph-save" data-act="phrase-save"></button></div>
         <p class="meaning">${t('loading')}</p>
         <button class="link-btn" data-act="link" hidden></button>
         <p class="more"></p>
@@ -195,6 +197,7 @@
         if (act === 'font') { font = font >= 26 ? 18 : font + 2; var inner = root.querySelector('.reader-inner'); if (inner) inner.style.fontSize = font + 'px'; }
         if (act === 'reader') toggleReader();
         if (act === 'speak') { if (current) speak(current); }
+        if (act === 'phrase-save') savePhrase();
         if (act === 'dict') send('sheet', { url: b.getAttribute('data-href') });
         if (act === 'translate') {
           if (current) {
@@ -487,6 +490,7 @@
     var rid = 'r' + (++reqId);
     panel.__rid = rid;
     var ctx = spanContext(span);
+    currentCtx = sentenceAt(ctx.text, ctx.offset);
     send('lookup', { lang: lang, word: raw, rid: rid, ctx: ctx.text, off: ctx.offset });
   }
 
@@ -533,9 +537,32 @@
     ru: { proverb: 'Пословица', idiom: 'Идиома', phrase: 'Выражение' }, ar: { proverb: 'مثل', idiom: 'تعبير اصطلاحي', phrase: 'عبارة' }
   };
 
+  // The sentence around offset in a paragraph's text, for the back of a review card.
+  function sentenceAt(text, offset) {
+    var head = text.slice(0, offset), tail = text.slice(offset);
+    var start = Math.max(head.search(/[^.!?。！？]*$/), 0);
+    var stop = tail.search(/[.!?。！？]/);
+    return text.slice(start, stop < 0 ? text.length : offset + stop + 1).replace(/\s+/g, ' ').trim().slice(0, 500);
+  }
+
+  // Keep a saying as a card of its own, with the sentence it was found in.
+  function savePhrase() {
+    var ph = currentPhrase;
+    if (!ph || words[lang + ':' + ph.key]) return;
+    var display = ph.w || ph.key;
+    var gloss = (ph.g && ph.g[0]) || '';
+    var meaning = root.querySelector('.ph-meaning').textContent || gloss;
+    var base = meaning !== gloss ? baseLang : 'en';
+    send('grade', { lang: lang, key: ph.key, form: display, display: display, tr: '', pos: ph.kind || 'phrase', meaning: meaning, meaningBase: base, grade: 1, context: currentCtx });
+    if (!words[lang + ':' + ph.key]) words[lang + ':' + ph.key] = { lang: lang, key: ph.key, form: display, display: display, pos: ph.kind || 'phrase', meaning: meaning, grade: 1, added: Date.now() };
+    root.querySelector('.ph-save').textContent = '✓ ' + t('saved');
+  }
+
   function showPhrase(ph) {
     var box = root.querySelector('.phrase');
+    currentPhrase = ph && ph.found ? ph : null;
     if (!ph || !ph.found) { box.hidden = true; return; }
+    box.querySelector('.ph-save').textContent = words[lang + ':' + ph.key] ? '✓ ' + t('saved') : '+ ' + t('save');
     var kinds = KIND[uiCode] || KIND.en;
     box.querySelector('.ph-kind').textContent = kinds[ph.kind] || kinds.phrase;
     box.querySelector('.ph-text').textContent = ph.w || ph.key;
@@ -571,7 +598,7 @@
     var tr = (w && w.tr) || '';
     var pos = (w && w.pos) || '';
     var meaning = (w && w.meaningBase === baseLang && w.meaning) || '';
-    send('grade', { lang: lang, key: key, form: form, display: display, tr: tr, pos: pos, meaning: meaning, meaningBase: meaning ? baseLang : '', grade: g });
+    send('grade', { lang: lang, key: key, form: form, display: display, tr: tr, pos: pos, meaning: meaning, meaningBase: meaning ? baseLang : '', grade: g, context: currentCtx });
     // Optimistic local update.
     if (!words[lang + ':' + key]) {
       words[lang + ':' + key] = { lang: lang, key: key, form: form, display: display, tr: tr, pos: pos, meaning: meaning, grade: g, added: Date.now() };
@@ -662,7 +689,7 @@
           entry.meaning = text;
           entry.meaningBase = baseLang;
         }
-        send('grade', { lang: lang, key: data.key, form: entry.form, display: entry.display, tr: entry.tr || '', pos: entry.pos || '', meaning: text, meaningBase: baseLang, grade: entry.grade || 1 });
+        send('grade', { lang: lang, key: data.key, form: entry.form, display: entry.display, tr: entry.tr || '', pos: entry.pos || '', meaning: text, meaningBase: baseLang, grade: entry.grade || 1, context: currentCtx });
         rebuild();
       })
       .catch(function () {

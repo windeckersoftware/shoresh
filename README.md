@@ -1,7 +1,16 @@
 # Shoresh (שורש) — language-learning reading app
 
 Shoresh is an original Android reading app built from scratch. The name is the Hebrew word for “root”, שורש. 
-**Current build:** `out/Shoresh-1.7.0.apk` (dev-signed, Android 8+). The Android package is still `app.ner.reader`, so this installs over the earlier Ner build and keeps its data.
+**Current build:** `out/Shoresh-1.8.0.apk` (dev-signed, Android 8+). The Android package is still `app.ner.reader`, so this installs over the earlier Ner build and keeps its data.
+
+## New in 1.8.0
+
+- **Review cards, Anki style, on your own scale.** Words you grade 1–4 (and the sayings you save) become cards with the SM-2 schedule. Show the answer, then grade it as in the reader: 1 don't know, 2 recognise, 3 understand, 4 almost (Again, Hard, Good and Easy to the scheduler), each button showing when the card comes back: minutes while you learn it, then days that grow with each answer. The number also becomes the word's reading status. K (known) and X (skip) take it out of review. New · learning · review counters and multi-step undo; new cards per day follow the daily goal.
+- **Both ways.** The ⇄ button switches the front between the word and its meaning. The back shows the reading, the meaning and the sentence the word came from.
+- **Stroke order for Chinese.** The Characters tab of a Chinese word animates each character (Hanzi Writer) and shows it stroke by stroke; tap a stroke to replay it. Works offline for 9,574 characters.
+- **Save proverbs, idioms and chengyu.** The saying card shows "+ Save" in the reader, the web reader and the video captions; a saved saying is a card of its own, with its sentence.
+- Context sentences: words saved in the web reader and from captions keep the sentence they came from.
+- Design: undo after ignoring a word, edge fades on sideways rows, readable labels, the Progress ring sweeps in, quick flick closes sheets; Hebrew left in the English review, contents and library labels is gone.
 
 ## New in 1.7.0
 
@@ -134,7 +143,7 @@ The project builds without Gradle, using the Android SDK command-line tools and 
 ./build.sh
 ```
 
-The script writes `out/Shoresh-1.7.0.apk`. The toolchain lives in `.toolchain/` and is not part of the app. The dev keystore is `keystore/ner-dev.keystore` (password `nerdev`); do not ship with it.
+The script writes `out/Shoresh-1.8.0.apk`. The toolchain lives in `.toolchain/` and is not part of the app. The dev keystore is `keystore/ner-dev.keystore` (password `nerdev`); do not ship with it.
 
 ## Data pipeline
 
