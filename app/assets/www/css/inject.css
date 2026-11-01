@@ -3,3 +3,5 @@
 html.ner-reading,html.ner-reading body{overflow:hidden!important}
 
 html:lang(ko) body{word-break:keep-all}
+/* Site rules such as "button span::after" draw icons; never on our own spans. */
+.ner-w::before,.ner-w::after,ner-t::before,ner-t::after{content:none!important;display:none!important}

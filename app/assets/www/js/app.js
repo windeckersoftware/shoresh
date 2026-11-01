@@ -453,7 +453,12 @@
     const l = lang();
     const t = dayStats();
     $('#today-read').textContent = fmt(t.read || 0);
-    $('#today-known').textContent = fmt(t.added || 0);
+    // Words first saved today and being learnt, from the timestamp every word
+    // keeps: the page's saves overwrite the native stats.added counter.
+    const dayStart = new Date().setHours(0, 0, 0, 0);
+    const addedToday = Object.values(state.words)
+      .filter(w => (w.added || 0) >= dayStart && w.grade >= 1 && w.grade <= 4).length;
+    $('#today-known').textContent = fmt(Math.max(t.added || 0, addedToday));
     $('#streak-mini').textContent = fmt(streak());
     const dueN = dueWords().length;
     const dueEl = $('#review-due');
@@ -3994,6 +3999,7 @@
   if (!state.onboarded) showOnboarding();
   startI18nObserver();
   bind();
+  document.documentElement.classList.remove('booting');
   if (boot.platform === 'web') {
     // Browser preview: make the sample available without native file access.
     setTimeout(() => { if (!state.articles.length) { /* keep the empty state */ } }, 0);

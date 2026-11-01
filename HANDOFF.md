@@ -1,6 +1,6 @@
 # Shoresh (שורש) — Handoff for Future Agents
 
-Updated 2026-10-31. Current version **1.7.0** (`versionCode 120`). The visible name is Shoresh, written שורש. The Android package stays `app.ner.reader` so an update keeps the existing vocabulary.
+Updated 2026-11-01. Current version **1.7.0** (`versionCode 120`). The visible name is Shoresh, written שורש. The Android package stays `app.ner.reader` so an update keeps the existing vocabulary.
 
 ## Share target (1.6.2, merged to main)
 
@@ -31,9 +31,23 @@ The user recorded the Sluka reader (two videos on their Desktop, `Screenrecorder
 - Korean `들` plural: 친구들과 → 친구들 | 과, lookups of 친구들 resolve to 친구.
 - CJK `.ner-w` is `white-space: nowrap`; any navigation closes an open word card; the full sheet takes the reader paper.
 
-**Not done:** the APK was not built or run on a device in the 1.7.0 review session (no Android SDK in that container); build with `./build.sh`, install over 1.6.x, and check share from Chrome (link), from a file manager (EPUB/PDF) and text selection → Shoresh before publishing.
+**Tested on the emulator (2026-11-01, Android 15, release and debuggable builds):**
+- `./build.sh` builds against the real `android-35` jar. `adb install -r` of 1.7.0 over a 1.6.2 install kept the words, grades, settings and stats.
+- Shares through `ShareActivity`, cold (app killed) and warm, with MainActivity, ReaderActivity or a word card open: a link (also inside other text) opens the web reader, PROCESS_TEXT opens the word card (pleuvait → pleuvoir), an EPUB shared from the Files app opens through its content URI. After every share `dumpsys activity activities` shows one MainActivity; CLEAR_TOP closes an open reader.
+- Real taps: 一石二鸟 / 画蛇添足 are single words with the idiom card; *petit* → "petit à petit, l'oiseau fait son nid"; *pleuvait* → "pleuvoir des cordes"; 백지장도 → "백지장도 맞들면 낫다", 친구들 → 친구; *vale* → "más vale tarde que nunca", *estaban* → estar; *cão* → "quem não tem cão, caça com gato", *foram* → ir.
 
-**Known open issues:** number keys grade only from the full sheet; `otherScript()` scans the forms map per lookup; the sheet header follows the system locale's direction, not the UI language; the Japanese and Cantonese packs are weak (IPA instead of kana, missing readings). The APK in `out/` named 1.6.1 was rebuilt from this work in progress — rebuild from the commit before publishing 1.6.1 again.
+**Fixed while testing:**
+- `ShareActivity` has `taskAffinity=""` and forwards with `setFlags` (not `addFlags`). Before, a share that started the app as a new task (am start, some file managers) left the task rooted in the trampoline or carrying its `EXCLUDE_FROM_RECENTS` flag, and Shoresh vanished from Recents.
+- `deliver()` keeps only the newest pending `NerApp.onShare`: two shares while the app starts opened two readers.
+- `inject.js`: text inside a flex/grid box is tokenized into one inline `<ner-t>` wrapper, or the spaces between word spans collapse ("Accepteretcontinuer" on Le Monde). `inject.css` switches off `::before/::after` on `.ner-w`/`ner-t`: site rules such as `button span::after` drew icons twice (RFI's consent buttons).
+- `index.html` starts as `html.booting` (hidden until `app.js` has rendered, 4 s CSS fallback): every cold start used to flash the Hebrew source page.
+- Home "new words" counts today's words in learning (grade 1–4) from `word.added`. `stats.added` was never incremented in JS, and the native `Store` increment is overwritten by the page's next save.
+- App label is "Shoresh"; `values-iw` keeps "שורש" for Hebrew phones (the share sheet showed "שורש" on English phones).
+- The main-merge kept 1.7.0's `deliver()` queue and dropped `98f1001`'s `queueImport`, which did the same for files.
+
+**Still to check on a phone:** Chrome/Brave share sheet and Drive content URIs (the Files app path is covered). An ANR seen on the emulator during a cold start with two WebViews was the software GPU (`syncAndDrawFrame`, host CPU pressure ~64%), not app code.
+
+**Known open issues:** a shared or imported text in a language you don't learn opens in the current language (`articleLang`), so a Hebrew book read while learning French is laid out left to right; number keys grade only from the full sheet; `otherScript()` scans the forms map per lookup; the sheet header follows the system locale's direction, not the UI language; the Japanese and Cantonese packs are weak (IPA instead of kana, missing readings). The APK in `out/` named 1.6.1 was rebuilt from this work in progress — rebuild from the commit before publishing 1.6.1 again.
 
 **Testing without an emulator:** compile `Dict.java` on the JVM against Robolectric's `android-all` jar (Maven Central; swap `AssetManager` for a file reader and drop `Log`), serve it over HTTP, and load `app/assets/www` in Playwright at 412×892 with a `window.Ner` mock that forwards `lookup`/`lookupAt`/`segment` to it. That runs the real segmenter, lemmas and phrase matching behind the real UI.
 

@@ -382,6 +382,16 @@
     });
     var nodes = [], count = 0;
     while (walker.nextNode()) nodes.push(walker.currentNode);
+    // In a flex or grid box every word span would become its own item and the
+    // spaces between them would vanish ("Accepteretcontinuer"); such text keeps
+    // one inline wrapper. Styles are read before the first change to the page.
+    var boxed = new Set();
+    nodes.forEach(function (node) {
+      var p = node.parentElement;
+      if (boxed.has(p)) return;
+      var d = getComputedStyle(p).display;
+      if (d.indexOf('flex') !== -1 || d.indexOf('grid') !== -1) boxed.add(p);
+    });
     nodes.forEach(function (node) {
       if (count > 30000) return;
       var text = node.nodeValue, frag = document.createDocumentFragment(), last = 0;
@@ -403,6 +413,13 @@
       }
       if (!last) return;
       if (last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+      if (boxed.has(node.parentNode)) {
+        // Not a span: site rules such as "button span::after" would style it.
+        var wrap = document.createElement('ner-t');
+        wrap.style.display = 'inline';
+        wrap.appendChild(frag);
+        frag = wrap;
+      }
       node.parentNode.replaceChild(frag, node);
     });
     setupRead(rootEl);

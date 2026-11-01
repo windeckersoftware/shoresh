@@ -245,6 +245,9 @@ public class MainActivity extends Activity {
     /** Call into the page now if NerApp is up, otherwise when the page has loaded. */
     private void deliver(String fn, String json) {
         if (jsReady && web != null) { callJs(fn, json); return; }
+        // Two shares while the app starts: only the newest opens, as it would
+        // once the app runs (CLEAR_TOP closes the first one's reader).
+        if ("NerApp.onShare".equals(fn)) pendingCalls.removeIf(c -> fn.equals(c[0]));
         pendingCalls.add(new String[] { fn, json });
         flushPendingCalls();
     }

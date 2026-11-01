@@ -15,6 +15,7 @@ A reader built after the owner's two screen recordings, plus share-to-Shoresh.
 - **Proverbs and sayings:** 113 common Korean proverbs and four-character idioms added (백지장도 맞들면 낫다, 소 잃고 외양간 고친다, 일석이조…), recognised with particles and endings attached (버릇이, 낫다는). Korean 친구들과 now splits as 친구들 | 과 and looks up 친구.
 - **Chinese words never break across lines** (结 | 果 at a line end read as two words).
 - Hebrew left in the English UI: book errors, empty states, library messages, bookmark titles; the voice test speaks the learning language.
+- **Tested on the emulator before release:** sharing keeps Shoresh in Recents and opens only the newest of two quick shares; web pages keep the spaces in their buttons ("Accepter et continuer") and no longer show site icons twice; no Hebrew flash on start; Home counts today's new words; the app is called "Shoresh" on non-Hebrew phones.
 
 ## New in 1.6.2
 
