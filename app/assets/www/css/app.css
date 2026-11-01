@@ -250,6 +250,9 @@ h1, h2, h3, p { margin: 0; }
 .search-box.compact { height: 42px; margin: 12px 0; }
 .chips { display: flex; gap: 7px; overflow-x: auto; padding: 12px 0 14px; scrollbar-width: none; }
 .chips::-webkit-scrollbar { display: none; }
+/* Fade the end edge so a sideways row reads as scrollable; the padding lets the last chip clear it. */
+.chips, .dict-chips:not(.wrap) { padding-inline-end: 28px; -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent); }
+html[dir="rtl"] .chips, html[dir="rtl"] .dict-chips:not(.wrap) { -webkit-mask-image: linear-gradient(to left, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(to left, #000 calc(100% - 28px), transparent); }
 .chip {
   flex: 0 0 auto; height: 32px; padding: 0 13px; border-radius: 20px;
   background: var(--surface); border: 1px solid var(--line); color: var(--muted);
@@ -279,8 +282,8 @@ h1, h2, h3, p { margin: 0; }
 .word-row .icon-btn { width: 32px; height: 32px; border: 0; background: transparent; color: var(--muted); }
 .word-row .icon-btn svg { width: 17px; height: 17px; }
 .empty-state { text-align: center; padding: 56px 20px; color: var(--muted); }
-.empty-state .empty-mark { width: 64px; height: 64px; border-radius: 22px; background: var(--surface-2); display: grid; place-items: center; margin: 0 auto 14px; color: var(--green); }
-.empty-state .empty-mark svg { width: 28px; height: 28px; }
+.empty-state .empty-mark, .review-empty .empty-mark { width: 64px; height: 64px; border-radius: 22px; background: var(--surface-2); display: grid; place-items: center; margin: 0 auto 14px; color: var(--green); }
+.empty-state .empty-mark svg, .review-empty .empty-mark svg { width: 28px; height: 28px; }
 .empty-state h3 { color: var(--ink); font-size: 16px; margin-bottom: 5px; }
 .empty-state p { font-size: 12px; line-height: 1.6; max-width: 280px; margin: 0 auto; }
 
@@ -295,10 +298,13 @@ h1, h2, h3, p { margin: 0; }
   background: conic-gradient(var(--green) calc(var(--p) * 1%), var(--surface-2) 0);
   display: grid; place-items: center; position: relative;
 }
+@property --p { syntax: '<number>'; inherits: false; initial-value: 0; }
+.view.active .ring { animation: ringIn .9s cubic-bezier(.2, .8, .2, 1); }
+@keyframes ringIn { from { --p: 0; } }
 .ring::before { content: ""; position: absolute; inset: 9px; border-radius: 50%; background: var(--surface); }
 .ring > div { position: relative; text-align: center; }
 .ring strong { display: block; font-size: 27px; line-height: 1; font-weight: 850; letter-spacing: -.04em; }
-.ring small { display: block; font-size: 9.5px; color: var(--muted); margin-top: 5px; }
+.ring small { display: block; font-size: 11px; color: var(--muted); margin-top: 5px; }
 .progress-copy { flex: 1; min-width: 0; }
 .progress-copy h2 { font-size: 31px; line-height: 1; margin: 4px 0 5px; letter-spacing: -.04em; }
 .progress-copy p { font-size: 11.5px; color: var(--muted); line-height: 1.55; }
@@ -312,17 +318,17 @@ h1, h2, h3, p { margin: 0; }
 }
 .stat-tile svg { width: 17px; height: 17px; color: var(--gold); margin-bottom: 4px; }
 .stat-tile strong { font-size: 21px; line-height: 1; font-weight: 800; }
-.stat-tile span { font-size: 9.5px; color: var(--muted); }
+.stat-tile span { font-size: 11px; color: var(--muted); }
 .card { margin-top: 10px; padding: 17px; border-radius: var(--radius); background: var(--surface); border: 1px solid var(--line); }
 .card-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 15px; }
 .card-head h2 { font-size: 14px; font-weight: 750; }
-.card-head span { font-size: 9.5px; color: var(--muted); }
+.card-head span { font-size: 11px; color: var(--muted); }
 .bars { display: flex; align-items: flex-end; justify-content: space-between; gap: 7px; height: 118px; }
 .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end; }
 .bar-track { width: 100%; max-width: 26px; flex: 1; border-radius: 8px; background: var(--surface-2); display: flex; align-items: flex-end; overflow: hidden; }
 .bar-fill { width: 100%; border-radius: 8px; background: linear-gradient(var(--green-2), var(--green)); min-height: 2px; transition: height .5s ease; }
 .bar-col.today .bar-fill { background: linear-gradient(var(--gold), var(--amber)); }
-.bar-col small { font-size: 9px; color: var(--muted); }
+.bar-col small { font-size: 11px; color: var(--muted); }
 .heatmap { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; direction: ltr; }
 .heat-cell { aspect-ratio: 1; border-radius: 5px; background: var(--surface-2); }
 .heat-cell.l1 { background: color-mix(in srgb, var(--green) 25%, var(--surface-2)); }
@@ -352,8 +358,8 @@ h1, h2, h3, p { margin: 0; }
 .setting-icon svg { width: 17px; height: 17px; }
 .setting-copy { flex: 1; min-width: 0; }
 .setting-copy strong { display: block; font-size: 12.5px; font-weight: 700; }
-.setting-copy small { display: block; color: var(--muted); font-size: 10px; margin-top: 2px; line-height: 1.4; }
-.setting-value { font-size: 10px; color: var(--muted); font-weight: 700; }
+.setting-copy small { display: block; color: var(--muted); font-size: 11px; margin-top: 2px; line-height: 1.4; }
+.setting-value { font-size: 11px; color: var(--muted); font-weight: 700; }
 .row-arrow { width: 15px; height: 15px; color: var(--muted); transform: rotate(180deg); flex: 0 0 auto; }
 .badge { padding: 3px 8px; border-radius: 7px; background: var(--green-soft); color: var(--green); font-size: 9px; font-weight: 800; }
 .setting-row.danger .setting-icon { background: color-mix(in srgb, var(--red) 12%, var(--surface)); color: var(--red); }
@@ -580,6 +586,8 @@ html[dir="rtl"] .dict-chip svg { transform: scaleX(-1); }
   box-shadow: var(--shadow-lg);
 }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
+.toast.show:has(.toast-act) { pointer-events: auto; }
+.toast-act { margin-inline-start: 12px; color: var(--gold); font-weight: 800; }
 
 /* ---------- responsive ---------- */
 @media (min-width: 700px) {

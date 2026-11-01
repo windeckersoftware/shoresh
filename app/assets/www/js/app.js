@@ -205,12 +205,20 @@
     document.documentElement.style.setProperty('--reader-font', (state.settings.fontSize || 19) + 'px');
   }
 
-  function toast(message) {
+  function toast(message, undo) {
     const el = $('#toast');
     el.textContent = message;
+    if (undo) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'toast-act';
+      b.textContent = 'בטלו';
+      b.onclick = () => { el.classList.remove('show'); undo(); };
+      el.appendChild(b);
+    }
     el.classList.add('show');
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => el.classList.remove('show'), 2300);
+    toastTimer = setTimeout(() => el.classList.remove('show'), undo ? 5000 : 2300);
   }
 
   function levelFor(known) {
@@ -1664,19 +1672,19 @@
           }
           items = currentReader.chapters.map((c, i) => ({
             offset: Number(c.offset) || 0,
-            title: c.title || ('פרק ' + (i + 1)),
-            sub: 'פרק ' + (i + 1) + ' · ' + Math.max(1, Math.round((Number(c.offset) || 0) / Math.max(1, stream.total) * 100)) + '%',
+            title: c.title || tf('chapterN', { n: i + 1 }),
+            sub: tf('chapterN', { n: i + 1 }) + ' · ' + Math.max(1, Math.round((Number(c.offset) || 0) / Math.max(1, stream.total) * 100)) + '%',
             current: i === currentChapter
           }));
         } else {
           items = currentReader.chapters.map((c, i) => ({
             page: pageForOffset(c.offset || 0),
-            title: c.title || ('פרק ' + (i + 1)),
+            title: c.title || tf('chapterN', { n: i + 1 }),
             sub: pagePreview(pageForOffset(c.offset || 0))
           }));
         }
       } else {
-        items = currentReader.pages.map((p, i) => ({ page: i, title: 'עמוד ' + (i + 1), sub: pagePreview(i) }));
+        items = currentReader.pages.map((p, i) => ({ page: i, title: tf('pageN', { n: i + 1 }), sub: pagePreview(i) }));
       }
     } else {
       const marks = (currentArticle && currentArticle.bookmarks) || [];
@@ -1691,7 +1699,7 @@
         }));
       } else {
         const total = Math.max(1, currentReader.text.length);
-        items = marks.filter(m => typeof m === 'number').sort((a, b) => a - b).map(page => ({ page, title: 'עמוד ' + (page + 1), sub: pagePreview(page), bookmark: true }))
+        items = marks.filter(m => typeof m === 'number').sort((a, b) => a - b).map(page => ({ page, title: tf('pageN', { n: page + 1 }), sub: pagePreview(page), bookmark: true }))
           .concat(marks.filter(m => m && typeof m === 'object').sort((a, b) => Number(a.offset) - Number(b.offset)).map(m => ({
             offset: Number(m.offset) || 0,
             title: tf('bookmarkAt', { p: Math.max(1, Math.round((Number(m.offset) || 0) / total * 100)) }),
@@ -1700,8 +1708,8 @@
       }
     }
     $('#toc-subtitle').textContent = tocTab === 'contents'
-      ? `${currentReader.chapters.length || currentReader.pages.length} ${currentReader.chapters.length ? 'פרקים' : 'עמודים'}`
-      : `${items.length} סימניות`;
+      ? (currentReader.chapters.length ? tf('chaptersN', { n: currentReader.chapters.length }) : tf('pagesN', { n: currentReader.pages.length }))
+      : tf('bookmarksN', { n: items.length });
     if (!items.length) {
       list.innerHTML = `<div class="toc-empty">${tocTab === 'bookmarks' ? 'אין סימניות עדיין. לחצו על סימנייה בסרגל העליון.' : 'אין תוכן זמין.'}</div>`;
       return;
@@ -1979,11 +1987,12 @@
   // Drag a bottom sheet down to close it (from its handle, or anywhere once
   // its content is scrolled to the top).
   function swipeToClose(sheet, close) {
-    let startY = 0, dy = 0, dragging = false;
+    let startY = 0, dy = 0, t0 = 0, dragging = false;
     sheet.addEventListener('touchstart', e => {
       if (e.touches.length !== 1 || (sheet.scrollTop > 0 && !e.target.closest('.sheet-grab'))) return;
       startY = e.touches[0].clientY;
       dy = 0;
+      t0 = performance.now();
       dragging = true;
     }, { passive: true });
     sheet.addEventListener('touchmove', e => {
@@ -1998,7 +2007,8 @@
       dragging = false;
       sheet.style.transition = '';
       sheet.style.transform = '';
-      if (dy > 80) close();
+      // A far drag, or a short fast flick (0.4 px/ms, as native sheets use).
+      if (dy > 80 || (dy > 24 && dy / (performance.now() - t0) > 0.4)) close();
     };
     sheet.addEventListener('touchend', end);
     sheet.addEventListener('touchcancel', end);
@@ -2871,18 +2881,18 @@
       const early = practiceWords().length
         ? '<button class="primary" data-action="practice-early" type="button">תרגול מוקדם</button>'
         : '<button class="primary" data-go="read" type="button">חזרה לקריאה</button>';
-      host.innerHTML = '<div class="review-empty"><h2>אין מילים שמחכות לחזרה</h2><p>1 חוזרת אחרי עשר דקות. 2 אחרי יום. 3 אחרי שלושה ימים. 4 אחרי שבוע. K ידועה, ו-X לא חוזרת.</p>' + early + '</div>';
+      host.innerHTML = '<div class="review-empty"><div class="empty-mark"><svg><use href="#i-check"></use></svg></div><h2>אין מילים שמחכות לחזרה</h2><p>1 חוזרת אחרי עשר דקות. 2 אחרי יום. 3 אחרי שלושה ימים. 4 אחרי שבוע. K ידועה, ו-X לא חוזרת.</p>' + early + '</div>';
       return;
     }
     if (reviewIndex >= reviewQueue.length) {
       if (prog) prog.textContent = fmt(reviewQueue.length);
-      host.innerHTML = `<div class="review-empty"><h2>הסתיימה החזרה</h2><p>${escapeHtml(tf('reviewDone', { n: fmt(reviewQueue.length) }))}</p><button class="primary" data-action="open-review" type="button">עוד סבב</button><button class="ghost" data-go="home" type="button">לדף הבית</button></div>`;
+      host.innerHTML = `<div class="review-empty"><div class="empty-mark"><svg><use href="#i-check"></use></svg></div><h2>הסתיימה החזרה</h2><p>${escapeHtml(tf('reviewDone', { n: fmt(reviewQueue.length) }))}</p><button class="primary" data-action="open-review" type="button">עוד סבב</button><button class="ghost" data-go="home" type="button">לדף הבית</button></div>`;
       return;
     }
     const id = reviewQueue[reviewIndex];
     const w = state.words[id];
     if (!w) { reviewIndex++; reviewRevealed = false; renderReview(); return; }
-    if (prog) prog.textContent = fmt(reviewIndex + 1) + ' מתוך ' + fmt(reviewQueue.length);
+    if (prog) prog.textContent = tf('cardOf', { a: fmt(reviewIndex + 1), b: fmt(reviewQueue.length) });
     const meaning = w.meaning || 'אין משמעות.';
     host.innerHTML = `<div class="review-word" dir="${lang().dir}">${escapeHtml(w.form || w.display || w.key)}</div>` +
       ((hanReading(w.form || w.display || w.key) || (w.lang === 'zh' ? '' : w.tr)) ? `<div class="review-tr">${escapeHtml(hanReading(w.form || w.display || w.key) || w.tr)}</div>` : '') +
@@ -3503,7 +3513,7 @@
     const host = $('#library-list');
     const files = stats.files || {};
     const books = (state.articles || []).filter(a => a.bookId || a.pdfId);
-    $('#library-summary').textContent = `${fmt(Number(stats.count) || 0)} קבצים · ${fmtBytes(stats.bytes)} בשימוש`;
+    $('#library-summary').textContent = tf('libraryUse', { n: fmt(Number(stats.count) || 0), b: fmtBytes(stats.bytes) });
     if (!books.length) {
       host.innerHTML = '<div class="library-empty">אין ספרים גדולים שמורים כרגע.</div>';
     } else {
@@ -3631,7 +3641,11 @@
       if (e.target.closest('[data-ignore-word]')) {
         e.stopPropagation();
         const id = e.target.closest('[data-ignore-word]').dataset.ignoreWord;
-        if (state.words[id]) { schedule(state.words[id], -1); save(); renderWords(); renderProgress(); }
+        if (state.words[id]) {
+          const prev = JSON.stringify(state.words[id]);
+          schedule(state.words[id], -1); save(); renderWords(); renderProgress();
+          toast('המילה הוסתרה', () => { state.words[id] = JSON.parse(prev); save(); renderWords(); renderProgress(); });
+        }
         return;
       }
       if (e.target.closest('[data-word-id]')) {
