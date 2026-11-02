@@ -79,6 +79,26 @@
   var host = document.createElement('div');
   host.id = 'ner-watch-host';
   host.style.cssText = 'all:initial;position:fixed;inset:0;pointer-events:none;z-index:2147483646';
+  // YouTube's own menus (settings, subtitles, quality) open as bottom sheets
+  // under the caption panel. While one is open, the Shoresh layer steps below it.
+  var YT_MENUS = '.ytSpecBottomSheetLayoutContainer,ytm-bottom-sheet-renderer,.bottom-sheet-container,tp-yt-paper-dialog,.ytp-settings-menu,.ytp-popup';
+  function ytMenuOpen() {
+    var list = document.querySelectorAll(YT_MENUS);
+    for (var i = 0; i < list.length; i++) {
+      var r = list[i].getBoundingClientRect();
+      if (r.width > 0 && r.height > 0 && getComputedStyle(list[i]).visibility !== 'hidden') return true;
+    }
+    return false;
+  }
+  var menuCheck = 0;
+  new MutationObserver(function () {
+    cancelAnimationFrame(menuCheck);
+    menuCheck = requestAnimationFrame(function () {
+      // 0 also puts it under YouTube's scrim, so a tap outside the menu closes it.
+      var z = ytMenuOpen() ? '0' : '2147483646';
+      if (host.style.zIndex !== z) host.style.zIndex = z;
+    });
+  }).observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'style', 'hidden'] });
   var root = host.attachShadow({ mode: 'open' });
   var style = document.createElement('style');
   style.textContent = `
