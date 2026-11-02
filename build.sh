@@ -32,8 +32,8 @@ echo "== resources =="
   --auto-add-overlay \
   --min-sdk-version 26 \
   --target-sdk-version 35 \
-  --version-code 121 \
-  --version-name 1.8.0
+  --version-code 122 \
+  --version-name 1.8.1
 
 echo "== java =="
 find "$ROOT/app/src" -name '*.java' -print0 | xargs -0 "$JAVA_HOME/bin/javac" \
@@ -72,7 +72,7 @@ if [ ! -f "$KS" ]; then
     -keyalg RSA -keysize 2048 -validity 10000 >/dev/null 2>&1
 fi
 "$APKSIGNER" sign --ks "$KS" --ks-key-alias ner --ks-pass pass:nerdev --key-pass pass:nerdev \
-  --out "$OUT/Shoresh-1.8.0.apk" "$BUILD/app-aligned.apk"
-"$APKSIGNER" verify --verbose "$OUT/Shoresh-1.8.0.apk" | head -8
-ls -lh "$OUT/Shoresh-1.8.0.apk"
-echo "APK: $OUT/Shoresh-1.8.0.apk"
+  --out "$OUT/Shoresh-1.8.1.apk" "$BUILD/app-aligned.apk"
+"$APKSIGNER" verify --verbose "$OUT/Shoresh-1.8.1.apk" | head -8
+ls -lh "$OUT/Shoresh-1.8.1.apk"
+echo "APK: $OUT/Shoresh-1.8.1.apk"

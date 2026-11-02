@@ -746,11 +746,11 @@ public class MainActivity extends Activity {
             try {
                 JSONObject o = new JSONObject();
                 o.put("state", new JSONObject(store.load()));
-                o.put("version", "1.8.0");
+                o.put("version", "1.8.1");
                 o.put("platform", "android");
                 return o.toString();
             } catch (Exception e) {
-                return "{\"state\":{},\"version\":\"1.8.0\",\"platform\":\"android\"}";
+                return "{\"state\":{},\"version\":\"1.8.1\",\"platform\":\"android\"}";
             }
         }
 
@@ -1000,7 +1000,7 @@ public class MainActivity extends Activity {
                     HttpURLConnection c = (HttpURLConnection) url.openConnection();
                     c.setConnectTimeout(4000);
                     c.setReadTimeout(8000);
-                    c.setRequestProperty("User-Agent", "Shoresh/1.8.0");
+                    c.setRequestProperty("User-Agent", "Shoresh/1.8.1");
                     int code = c.getResponseCode();
                     if (code == 200) {
                         InputStream in = c.getInputStream();
@@ -1105,6 +1105,6 @@ public class MainActivity extends Activity {
         }
 
         @JavascriptInterface
-        public String version() { return "1.8.0"; }
+        public String version() { return "1.8.1"; }
     }
 }

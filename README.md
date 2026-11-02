@@ -1,7 +1,11 @@
 # Shoresh (שורש) — language-learning reading app
 
 Shoresh is an original Android reading app built from scratch. The name is the Hebrew word for “root”, שורש. 
-**Current build:** `out/Shoresh-1.8.0.apk` (dev-signed, Android 8+). The Android package is still `app.ner.reader`, so this installs over the earlier Ner build and keeps its data.
+**Current build:** `out/Shoresh-1.8.1.apk` (dev-signed, Android 8+). The Android package is still `app.ner.reader`, so this installs over the earlier Ner build and keeps its data.
+
+## New in 1.8.1
+
+- **YouTube settings work in the video player.** YouTube's settings, subtitle, quality and speed menus open as sheets from the bottom and used to sit under the caption panel. While one is open, the panel now steps below it, so you can choose subtitles; it comes back when the menu closes.
 
 ## New in 1.8.0
 
@@ -143,7 +147,7 @@ The project builds without Gradle, using the Android SDK command-line tools and 
 ./build.sh
 ```
 
-The script writes `out/Shoresh-1.8.0.apk`. The toolchain lives in `.toolchain/` and is not part of the app. The dev keystore is `keystore/ner-dev.keystore` (password `nerdev`); do not ship with it.
+The script writes `out/Shoresh-1.8.1.apk`. The toolchain lives in `.toolchain/` and is not part of the app. The dev keystore is `keystore/ner-dev.keystore` (password `nerdev`); do not ship with it.
 
 ## Data pipeline
 
