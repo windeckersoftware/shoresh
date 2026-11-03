@@ -60,6 +60,7 @@
     'שמרו כקלף חזרה': ['Save as review card', 'Mentés ismétlőkártyaként', 'Guardar como tarjeta de repaso', 'Enregistrer comme carte de révision', 'Als Wiederholungskarte speichern', 'Сохранить как карточку', 'احفظ كبطاقة مراجعة'],
     'הקלף כבר בחזרה': ['Already in your review', 'Már az ismétlésben van', 'Ya está en tu repaso', 'Déjà dans votre révision', 'Schon in der Wiederholung', 'Уже в повторении', 'موجودة في المراجعة'],
     'נוסף לחזרה': ['Added to review', 'Hozzáadva az ismétléshez', 'Añadido al repaso', 'Ajouté à la révision', 'Zur Wiederholung hinzugefügt', 'Добавлено в повторение', 'أُضيفت للمراجعة'],
+    'משפט': ['Sentence', 'Mondat', 'Frase', 'Phrase', 'Satz', 'Предложение', 'جملة'],
     'תבנית משפט': ['Sentence pattern', 'Mondatminta', 'Patrón de frase', 'Structure de phrase', 'Satzmuster', 'Шаблон предложения', 'نمط جملة'],
     'תבניות משפט': ['Sentence patterns', 'Mondatminták', 'Patrones de frases', 'Structures de phrases', 'Satzmuster', 'Шаблоны предложений', 'أنماط الجمل'],
     'דקדוק בתרגול': ['Grammar in practice', 'Nyelvtan gyakorlatban', 'Gramática en práctica', 'La grammaire en pratique', 'Grammatik in der Praxis', 'Грамматика на практике', 'القواعد بالممارسة'],

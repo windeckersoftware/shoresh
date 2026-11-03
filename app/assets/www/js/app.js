@@ -254,7 +254,7 @@
     const id = readerLang().id;
     for (const w of Object.values(state.words)) {
       if (w && !w.srs && (w.due || w.interval) && window.NerReview) migrateSchedule(w);
-      if (!w || w.lang !== id) continue;
+      if (!w || w.lang !== id || w.cloze || w.pos === 'pattern') continue; // study cards are not words of the text
       if (w.key) wordIndex.set(w.key, w);
       if (w.form) wordIndex.set(w.form, w);
       if (w.display) wordIndex.set(w.display, w);
@@ -309,6 +309,7 @@
     let code = String(pos).split(' ')[0];
     code = POS_ALIAS[code] || code;
     if (code === 'pattern') return tr('תבנית משפט');
+    if (code === 'sentence') return tr('משפט');
     const ui = activeUiLang();
     if (ui === 'he') return POS[code] || POS[pos] || pos;
     return (POS_UI[ui] || POS_UI.en)[code] || pos;
@@ -3192,7 +3193,7 @@
     const w = state.words[reviewCur.id];
     if (!w) { reviewCur = null; renderReview(); return; }
     const before = typeOf(w);
-    reviewUndo.push({ id: reviewCur.id, main: reviewCur.main, index: reviewIndex, seen: reviewSeen.has(reviewCur.id), word: JSON.stringify(w), log: JSON.stringify(srsToday()), done: reviewDone });
+    reviewUndo.push({ id: reviewCur.id, main: reviewCur.main, index: reviewIndex, seen: reviewSeen.has(reviewCur.id), word: JSON.stringify(w), log: JSON.stringify(srsToday()), day: RV().dayKey(), done: reviewDone });
     if (reviewUndo.length > 50) reviewUndo.shift();
     const now = Date.now();
     if (RATE[g]) w.srs = RV().next(w.srs, RATE[g], now, true);
@@ -3215,31 +3216,76 @@
     const u = reviewUndo.pop();
     if (!u) return;
     state.words[u.id] = JSON.parse(u.word);
-    state.srsLog[RV().dayKey()] = JSON.parse(u.log);
+    state.srsLog[u.day || RV().dayKey()] = JSON.parse(u.log);   // the day the card was graded, even after the 4:00 rollover
     reviewIndex = u.index;
     if (!u.seen) reviewSeen.delete(u.id);
     reviewDone = u.done;
     reviewForced = { id: u.id, main: u.main };
     reviewCur = null;
+    rebuildIndex();
     save();
     renderReview();
     renderHome();
   }
 
   /* ---------------- sentence mining: cloze cards ---------------- */
+  // Where the target stands as a word of its own in the sentence (any occurrence for CJK, which has no spaces).
+  const CLOZE_CJK = /[぀-ヿ㐀-鿿豈-﫿가-힯]/;
+  const CLOZE_WORD = /[\p{L}\p{N}_]/u;
+  function clozeSpans(text, target) {
+    const out = [];
+    if (!text || !target) return out;
+    const cjk = CLOZE_CJK.test(target[0]) || CLOZE_CJK.test(target[target.length - 1]);
+    for (let i = text.indexOf(target); i >= 0; i = text.indexOf(target, i + target.length)) {
+      const prev = i > 0 ? Array.from(text.slice(Math.max(0, i - 2), i)).pop() : '';
+      const next = Array.from(text.slice(i + target.length, i + target.length + 2))[0] || '';
+      if (cjk || !(CLOZE_WORD.test(prev) || CLOZE_WORD.test(next))) out.push(i);
+    }
+    return out;
+  }
+
   // The word as it stands in its sentence, or '' when the sentence does not hold it.
   function clozeTarget(w, sentence) {
     if (!w || !sentence || sentence.length < 12 || w.pos === 'pattern' || w.cloze) return '';
     const forms = [currentWord && currentWord.raw, w.form, w.display, w.key].filter(f => f && f.length);
-    return forms.find(f => sentence.indexOf(f) >= 0) || '';
+    return forms.find(f => clozeSpans(sentence, f).length) || '';
   }
 
   const CLOZE_GAP = '＿＿＿';
-  function clozeHtml(cz, reveal, dir) {
-    const at = cz.text.indexOf(cz.target);
-    if (at < 0) return escapeHtml(cz.text);
-    const before = escapeHtml(cz.text.slice(0, at)), after = escapeHtml(cz.text.slice(at + cz.target.length));
-    return before + (reveal ? `<b class="cloze-hit">${escapeHtml(cz.target)}</b>` : `<span class="cloze-gap">${CLOZE_GAP}</span>`) + after;
+  // The sentence as [{ t, hit }] parts: every occurrence of the target is a hit.
+  function clozeParts(text, target) {
+    const spans = clozeSpans(text, target), parts = [];
+    let at = 0;
+    for (const i of spans) {
+      if (i > at) parts.push({ t: text.slice(at, i), hit: false });
+      parts.push({ t: target, hit: true });
+      at = i + target.length;
+    }
+    if (at < text.length) parts.push({ t: text.slice(at), hit: false });
+    return parts;
+  }
+
+  function clozeHtml(cz, reveal) {
+    return clozeParts(cz.text, cz.target).map(p => !p.hit ? escapeHtml(p.t)
+      : reveal ? `<b class="cloze-hit">${escapeHtml(p.t)}</b>` : `<span class="cloze-gap">${CLOZE_GAP}</span>`).join('');
+  }
+
+  // A study card is in review while its grade is 1-4; known (K) and ignored (X) cards are out of it.
+  const cardActive = w => !!w && Number(w.grade) >= 1 && Number(w.grade) <= 4;
+
+  // Add a pattern or cloze card, or bring back one that was marked known / ignored. false = already in review.
+  function addStudyCard(id, card) {
+    const old = state.words[id];
+    if (cardActive(old)) return false;
+    if (old) {
+      delete old.srs;
+      schedule(old, 1);
+      old.seen = (old.seen || 0) + 1;
+    } else {
+      state.words[id] = card;
+      schedule(card, 1);
+    }
+    return true;
   }
 
   function saveCloze() {
@@ -3252,15 +3298,13 @@
     for (const ch of sentence + '|' + target) h = (Math.imul(h, 31) + ch.codePointAt(0)) | 0;
     const key = 'cloze:' + (h >>> 0).toString(36);
     const id = w.lang + ':' + key;
-    if (state.words[id]) { toast(tr('הקלף כבר בחזרה')); return; }
     const card = {
       lang: w.lang, key, form: target, display: sentence, tr: '', pos: 'sentence',
       meaning: (w.display || w.form || w.key) + (w.meaning ? ' — ' + w.meaning : ''),
       context: '', cloze: { text: sentence, target },
       grade: 1, added: Date.now(), lastSeen: Date.now(), seen: 1
     };
-    state.words[id] = card;
-    schedule(card, 1);
+    if (!addStudyCard(id, card)) { toast(tr('הקלף כבר בחזרה')); return; }
     rebuildIndex(); save(); renderHome();
     toast(tr('נוסף לחזרה'));
   }
@@ -3316,7 +3360,7 @@
     const head = patternFocus
       ? `<button class="chip pattern-all" type="button" data-pattern-all>← ${escapeHtml(tr('כל התבניות'))}</button>` : '';
     host.innerHTML = head + list.map(p => {
-      const saved = !!state.words[L.id + ':' + patternKey(p)];
+      const saved = cardActive(state.words[L.id + ':' + patternKey(p)]);
       const open = !!patternFocus || patternOpen.has(p.id);
       const shown = open ? p.x : p.x.slice(0, PATTERN_SHOWN);
       const ex = shown.map(e =>
@@ -3357,7 +3401,6 @@
     const p = ((window.NER_PATTERNS || {})[L.id] || []).find(x => x.id === id);
     if (!p) return;
     const key = patternKey(p), wid = L.id + ':' + key;
-    if (state.words[wid]) { toast(tr('הקלף כבר בחזרה')); return; }
     const e = p.x[0];
     const eg = e && (e.t[baseLang().id] || e.t.en);
     const w = {
@@ -3365,8 +3408,7 @@
       meaning: p.en + (eg ? ' — ' + eg : ''),
       context: e ? e.s : '', grade: 1, added: Date.now(), lastSeen: Date.now(), seen: 1
     };
-    state.words[wid] = w;
-    schedule(w, 1);
+    if (!addStudyCard(wid, w)) { toast(tr('הקלף כבר בחזרה')); return; }
     rebuildIndex(); save(); renderPatterns(); renderHome();
     toast(tr('נוסף לחזרה'));
   }
