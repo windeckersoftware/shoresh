@@ -335,6 +335,15 @@
 
   // A UI word in the current interface language, for labels built from pieces.
   const tr = he => translateString(he, activeUiLang()) || he;
+  // Screen-reader announcement for state changes that do not show a toast.
+  let announceTimer = 0;
+  function announce(msg) {
+    const el = document.getElementById('sr-live');
+    if (!el || !msg) return;
+    clearTimeout(announceTimer);
+    el.textContent = '';
+    announceTimer = setTimeout(() => { el.textContent = msg; }, 60);
+  }
   // A sentence with numbers: tf('words', { n: 3 }) → "3 words".
   function tf(id, vars) {
     const t = (window.NER_I18N_TPL || {})[id] || {};
@@ -387,6 +396,7 @@
     const rtlUi = lang === 'he' || lang === 'ar';
     document.documentElement.dir = rtlUi ? 'rtl' : 'ltr';
     document.documentElement.style.setProperty('--ui-dir', rtlUi ? 'rtl' : 'ltr');
+    ['word-sheet', 'word-card'].forEach(id => { const el = document.getElementById(id); if (el) el.dir = rtlUi ? 'rtl' : 'ltr'; });
     document.documentElement.dataset.uiLang = lang;
     i18nApplying = true;
     try {
@@ -770,8 +780,8 @@
           </span></span>
           <span class="word-side">
             <span class="grade-badge n${w.grade}">${gradeBadge(w.grade)}</span>
-            <button class="icon-btn" data-speak="${escapeHtml(shownWord)}" aria-label="השמעה"><svg><use href="#i-speaker"></use></svg></button>
-            <button class="icon-btn word-dismiss" data-ignore-word="${escapeHtml(w.lang + ':' + w.key)}" aria-label="התעלם"><svg><use href="#i-close"></use></svg></button>
+            <button class="icon-btn" data-speak="${escapeHtml(shownWord)}" aria-label="${escapeHtml(tr('השמעה'))}"><svg><use href="#i-speaker"></use></svg></button>
+            <button class="icon-btn word-dismiss" data-ignore-word="${escapeHtml(w.lang + ':' + w.key)}" aria-label="${escapeHtml(tr('התעלם'))}"><svg><use href="#i-close"></use></svg></button>
           </span>
         </div>`;
       }).join('') + '</div>').join('') +
@@ -1789,7 +1799,7 @@
       return `<div class="toc-row${current ? ' current' : ''}">
         <button class="toc-page" ${attr}>${num}</button>
         <button class="toc-copy" ${attr}><strong>${escapeHtml(it.title)}</strong><small>${escapeHtml(it.sub || '')}</small></button>
-        ${it.bookmark ? `<button class="toc-del" data-toc-del="${it.bookmarkKey || it.page}" aria-label="מחיקת סימנייה"><svg><use href="#i-close"></use></svg></button>` : ''}
+        ${it.bookmark ? `<button class="toc-del" data-toc-del="${it.bookmarkKey || it.page}" aria-label="${escapeHtml(tr('מחיקת סימנייה'))}"><svg><use href="#i-close"></use></svg></button>` : ''}
       </div>`;
     }).join('');
   }
@@ -2670,6 +2680,7 @@
     word.dir = ((currentWord && currentWord.w && BY_LANG[currentWord.w.lang]) || readerLang()).dir;
     word.parentElement.classList.toggle('long', String(head.raw).length > 14);
     $('#' + prefix + '-alt').textContent = head.alt;
+    $('#' + prefix + '-alt').dir = word.dir;
     $('#' + prefix + '-reading').textContent = head.reading;
     const seen = $('#' + prefix + '-seen');
     seen.hidden = !head.seen;
@@ -3127,11 +3138,15 @@
         (!meaningFront && meaning ? `<span class="srs-meaning" dir="auto">${escapeHtml(meaning)}</span>` : '') +
         (ctx ? `<span class="srs-context" dir="${lang().dir}">${escapeHtml(ctx)}</span>` : '')
       : '';
+    const spoken = reviewFlipped
+      ? [word, reading, meaning].filter(Boolean).join(', ')
+      : tr(clozeKind || kind) + '. ' + [c.n + ' ' + tr('חדשים'), c.l + ' ' + tr('בלמידה'), c.r + ' ' + tr('לחזרה')].join(', ');
+    if (!keep || reviewFlipped) announce(spoken);
     host.innerHTML =
       `<div class="srs-head"><span class="srs-counts">${count('n', c.n)} · ${count('l', c.l)} · ${count('r', c.r)}</span>` +
-      `<span class="srs-tools">${reviewUndo.length ? '<button class="icon-btn" data-action="review-undo" type="button" aria-label="בטלו"><svg><use href="#i-undo"></use></svg></button>' : ''}` +
+      `<span class="srs-tools">${reviewUndo.length ? '<button class="icon-btn" data-action="review-undo" type="button" aria-label="' + escapeHtml(tr('בטלו')) + '"><svg><use href="#i-undo"></use></svg></button>' : ''}` +
       `<button class="srs-swap" data-action="review-swap" type="button">${escapeHtml(tr(meaningFront ? 'משמעות קודם' : 'מילה קודם'))} ⇄</button>` +
-      `<button class="icon-btn" data-speak-review type="button" aria-label="השמעה"><svg><use href="#i-speaker"></use></svg></button></span></div>` +
+      `<button class="icon-btn" data-speak-review type="button" aria-label="${escapeHtml(tr('השמעה'))}"><svg><use href="#i-speaker"></use></svg></button></span></div>` +
       `<div class="srs-card${reviewFlipped ? ' flipped' : ''}" data-action="review-flip" role="button" tabindex="0">` +
       `<span class="srs-kind">${escapeHtml(clozeKind || tr(kind))}${escapeHtml(pos)}</span>` +
       (meaningFront ? `<span class="srs-meaning front" dir="auto">${escapeHtml(meaning)}</span>` : wordHtml) + back + '</div>' +

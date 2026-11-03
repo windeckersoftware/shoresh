@@ -474,7 +474,7 @@
           <span class="sheet-phrase-gloss"></span>
           <svg><use href="#i-chevron"></use></svg>
         </button>
-        <ol id="card-glosses" class="gloss-list"></ol>
+        <ol id="card-glosses" class="gloss-list" aria-live="polite"></ol>
       </section>
     </section>
 
@@ -497,7 +497,7 @@
 </div>
 
 <div id="sheet-backdrop" class="backdrop" hidden></div>
-<section id="word-sheet" class="word-sheet" aria-hidden="true">
+<section id="word-sheet" class="word-sheet" role="dialog" aria-labelledby="sheet-word" aria-hidden="true">
   <div class="sheet-grab"></div>
   <div class="sheet-head">
     <div class="sheet-word-wrap">
@@ -521,7 +521,7 @@
       <span class="sheet-phrase-gloss"></span>
       <svg><use href="#i-chevron"></use></svg>
     </button>
-    <ol id="sheet-glosses" class="gloss-list"></ol>
+    <ol id="sheet-glosses" class="gloss-list" aria-live="polite"></ol>
     <p id="sheet-context" class="sheet-context" hidden></p>
     <div id="sheet-patterns" class="sheet-patterns" hidden></div>
     <button id="sheet-cloze" class="sheet-edit-btn" type="button" hidden><svg><use href="#i-plus"></use></svg>שמרו את המשפט כקלף השלמה</button>
@@ -616,7 +616,7 @@
 
 <div id="library-modal" class="modal" hidden>
   <div class="modal-card">
-    <div class="modal-head"><h2>ניהול ספרייה</h2><button class="icon-btn" data-close="library"><svg><use href="#i-close"></use></svg></button></div>
+    <div class="modal-head"><h2>ניהול ספרייה</h2><button class="icon-btn" data-close="library" aria-label="סגירה"><svg><use href="#i-close"></use></svg></button></div>
     <p class="modal-sub" id="library-summary">—</p>
     <div id="library-list" class="library-list"></div>
     <div class="modal-actions"><button class="ghost" data-action="library-clean">ניקוי קבצים יתומים</button><button class="primary" data-close="library">סגירה</button></div>
@@ -641,7 +641,7 @@
 
 <div id="edit-word-modal" class="modal" hidden>
   <div class="modal-card">
-    <div class="modal-head"><h2>עריכת מילה</h2><button class="icon-btn" data-close="edit-word"><svg><use href="#i-close"></use></svg></button></div>
+    <div class="modal-head"><h2>עריכת מילה</h2><button class="icon-btn" data-close="edit-word" aria-label="סגירה"><svg><use href="#i-close"></use></svg></button></div>
     <p class="modal-sub">המשמעות וההקשר נשמרים מקומית ובאים לידי ביטוי גם בייצוא.</p>
     <label class="field-label">משמעות</label>
     <textarea id="edit-meaning" class="field textarea edit-meaning" rows="3"></textarea>
@@ -653,7 +653,7 @@
 
 <div id="paste-modal" class="modal" hidden>
   <div class="modal-card">
-    <div class="modal-head"><h2>טקסט חדש</h2><button class="icon-btn" data-close="paste"><svg><use href="#i-close"></use></svg></button></div>
+    <div class="modal-head"><h2>טקסט חדש</h2><button class="icon-btn" data-close="paste" aria-label="סגירה"><svg><use href="#i-close"></use></svg></button></div>
     <p class="modal-sub">הדביקו כתבה, סיפור, פתק או שיחה. אפשר גם לבחור כותרת.</p>
     <input id="paste-title" class="field" placeholder="כותרת (לא חובה)" autocomplete="off">
     <textarea id="paste-text" class="field textarea" placeholder="הדביקו כאן את הטקסט…" rows="10"></textarea>
@@ -663,7 +663,7 @@
 
 <div id="lang-modal" class="modal" hidden>
   <div class="modal-card lang-card">
-    <div class="modal-head"><div><h2 id="lang-modal-title">שפת לימוד</h2><p class="modal-sub" id="lang-modal-sub">25 שפות. עברית עם מילון מקומי מלא.</p></div><button class="icon-btn" data-close="lang"><svg><use href="#i-close"></use></svg></button></div>
+    <div class="modal-head"><div><h2 id="lang-modal-title">שפת לימוד</h2><p class="modal-sub" id="lang-modal-sub">25 שפות. עברית עם מילון מקומי מלא.</p></div><button class="icon-btn" data-close="lang" aria-label="סגירה"><svg><use href="#i-close"></use></svg></button></div>
     <div class="search-box compact" id="lang-search-box"><svg><use href="#i-search"></use></svg><input id="lang-search" type="search" placeholder="חיפוש שפה…" autocomplete="off"></div>
     <div id="custom-base-row" class="custom-base" hidden>
       <div><strong>שפה אחרת</strong><small>הקלידו קוד שפה (ISO 639-1), למשל hu, cs, ro</small></div>
@@ -675,12 +675,13 @@
 
 <div id="notices-modal" class="modal" hidden>
   <div class="modal-card">
-    <div class="modal-head"><h2>רישיונות וייחוס</h2><button class="icon-btn" data-close="notices"><svg><use href="#i-close"></use></svg></button></div>
+    <div class="modal-head"><h2>רישיונות וייחוס</h2><button class="icon-btn" data-close="notices" aria-label="סגירה"><svg><use href="#i-close"></use></svg></button></div>
     <div class="notices" id="notices-body"></div>
   </div>
 </div>
 
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
+<div id="sr-live" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
 
 <script>window.__bm=function(l){try{window.Ner&&Ner.bootMark&&Ner.bootMark(l)}catch(e){}};__bm("html-parsed")</script>
 <script src="js/seed-he.js"></script>

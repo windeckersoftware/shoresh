@@ -7,18 +7,18 @@
   --surface-3: #e7ddca;
   --ink: #1c1b18;
   --ink-2: #3d3a33;
-  --muted: #726c60;
+  --muted: #645e53;
   --line: #e3dac9;
-  --green: #2f6f5e;
+  --green: #2a6554;
   --green-2: #3f8b73;
   --green-soft: #dcebe4;
   --gold: #c9943f;
   --gold-soft: #f3e6c9;
-  --blue: #3f6fa8;
+  --blue: #35639a;
   --blue-soft: #dfe9f5;
-  --amber: #bd812b;
+  --amber: #835510;
   --amber-soft: #f6e7ca;
-  --red: #a94f3b;
+  --red: #9c4533;
   --shadow: 0 10px 30px rgba(43, 35, 20, .08), 0 2px 8px rgba(43, 35, 20, .04);
   --shadow-lg: 0 24px 60px rgba(43, 35, 20, .16);
   --reader-font: 19px;
@@ -417,7 +417,7 @@ html[dir="ltr"] .reader-topbar [data-action="reader-back"] svg { transform: scal
 }
 .page-box input { width: 4.2ch; text-align: end; font-weight: 750; padding: 0; }
 .page-box input:focus { outline: none; color: var(--reader-accent, var(--green)); }
-.page-box span { color: color-mix(in srgb, var(--reader-paper-ink, var(--ink)) 55%, transparent); white-space: nowrap; }
+.page-box span { color: color-mix(in srgb, var(--reader-paper-ink, var(--ink)) 72%, transparent); white-space: nowrap; }
 .reader-scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; position: relative; overscroll-behavior: contain; }
 .reader-foreign {
   display: flex; align-items: center; justify-content: space-between; gap: 10px;
@@ -487,7 +487,7 @@ html[dir="ltr"] .turn-btn.next svg { transform: none; }
 /* In the reader the sheet takes the reading paper, like the compact card. */
 body.reader-mode .word-sheet {
   --ink: var(--reader-paper-ink);
-  --muted: color-mix(in srgb, var(--reader-paper-ink) 58%, transparent);
+  --muted: color-mix(in srgb, var(--reader-paper-ink) 72%, transparent);
   --line: color-mix(in srgb, var(--reader-paper-ink) 14%, transparent);
   --surface: color-mix(in srgb, var(--reader-paper-ink) 5%, var(--reader-paper-bg));
   --surface-2: color-mix(in srgb, var(--reader-paper-ink) 9%, var(--reader-paper-bg));
@@ -516,7 +516,7 @@ body.reader-mode .word-sheet {
 .dict-chips:empty { display: none; }
 .dict-chips.wrap { flex-wrap: wrap; overflow: visible; }
 .dict-chip {
-  flex: 0 0 auto; display: inline-flex; align-items: center; gap: 4px; min-height: 32px; padding: 0 11px 0 13px;
+  flex: 0 0 auto; display: inline-flex; align-items: center; gap: 4px; min-height: 32px; padding: 0; padding-inline: 11px 13px;
   border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--ink);
   font-size: 12px; font-weight: 650; white-space: nowrap;
 }
@@ -807,8 +807,8 @@ html[data-theme="dark"] .today-card::after { background: rgba(255,255,255,.045);
 .reader-view .reader-toolbar .grade-bar button.active { color: var(--reader-accent); }
 .reader-view .reader-scroll { background: var(--reader-paper-bg); }
 .reader-view .reader-body { color: var(--reader-paper-ink); }
-.reader-view .reader-end { color: color-mix(in srgb, var(--reader-paper-ink) 55%, transparent); }
-.reader-view .reader-counts { color: color-mix(in srgb, var(--reader-paper-ink) 62%, transparent); }
+.reader-view .reader-end { color: color-mix(in srgb, var(--reader-paper-ink) 72%, transparent); }
+.reader-view .reader-counts { color: color-mix(in srgb, var(--reader-paper-ink) 72%, transparent); }
 .reader-view .reader-counts b { color: var(--reader-paper-ink); }
 .reader-topbar .page-btn { width: 30px; }
 .page-btn svg { width: 17px; height: 17px; transform: rotate(180deg); }
@@ -937,9 +937,9 @@ html[dir="ltr"] .page-btn svg { transform: rotate(0deg); }
 html[dir="ltr"] .page-btn.prev svg { transform: rotate(180deg); }
 html[dir="ltr"] .module-cta svg { transform: rotate(0deg); }
 
-.sheet-context { margin: 8px 0 2px; padding: 8px 10px; border-inline-start: 2px solid var(--gold); background: color-mix(in srgb, var(--gold) 7%, transparent); border-radius: 0 8px 8px 0; color: var(--muted); font-size: 10.5px; line-height: 1.55; unicode-bidi: plaintext; }
+.sheet-context { margin: 8px 0 2px; padding: 8px 10px; border-inline-start: 2px solid var(--gold); background: color-mix(in srgb, var(--gold) 7%, transparent); border-start-start-radius: 0; border-end-start-radius: 0; border-start-end-radius: 8px; border-end-end-radius: 8px; color: var(--muted); font-size: 10.5px; line-height: 1.55; unicode-bidi: plaintext; }
 .sheet-edit-btn {
-  display: inline-flex; align-items: center; gap: 5px; margin-top: 10px; padding: 7px 13px 7px 11px;
+  display: inline-flex; align-items: center; gap: 5px; margin-top: 10px; padding-block: 7px; padding-inline: 11px 13px;
   border-radius: 999px; border: 1px dashed color-mix(in srgb, var(--green) 45%, transparent); color: var(--green); font-size: 12px; font-weight: 700;
 }
 .sheet-edit-btn svg { width: 14px; height: 14px; }
@@ -1086,7 +1086,7 @@ html[lang="ar"] body { font-family: "Noto Naskh Arabic", "Noto Sans Arabic", "No
 .sheet-phrase-meaning { grid-column: 1; font-size: 12.5px; line-height: 1.45; color: var(--ink-2); unicode-bidi: plaintext; }
 .sheet-phrase svg { grid-column: 2; grid-row: 1 / span 4; width: 16px; height: 16px; color: var(--muted); transform: rotate(180deg); }
 html[dir="ltr"] .sheet-phrase svg { transform: none; }
-.sheet-phrase-gloss { grid-column: 1; font-size: 10.5px; line-height: 1.4; color: var(--muted); direction: ltr; text-align: start; }
+.sheet-phrase-gloss { grid-column: 1; font-size: 10.5px; line-height: 1.4; color: var(--muted); unicode-bidi: plaintext; text-align: start; }
 .sheet-phrase-gloss:empty { display: none; }
 .sheet-head h2.long { font-size: 24px; }
 
@@ -1095,9 +1095,9 @@ html[dir="ltr"] .sheet-phrase svg { transform: none; }
 .reader-view { --reader-accent: #2f6f5e; }
 .reader-view[data-paper-tone="dark"] { --reader-accent: #84c9ad; }
 .word-card {
-  --card-muted: color-mix(in srgb, var(--reader-paper-ink) 58%, transparent);
-  position: fixed; z-index: 20; left: 12px; right: 12px; max-width: 640px; margin: 0 auto;
-  overflow-y: auto; overscroll-behavior: contain; padding: 14px 15px 14px 16px; border-radius: 20px;
+  --card-muted: color-mix(in srgb, var(--reader-paper-ink) 72%, transparent);
+  position: fixed; z-index: 20; inset-inline: 12px; max-width: 640px; margin: 0 auto;
+  overflow-y: auto; overscroll-behavior: contain; padding: 14px 16px; border-radius: 20px;
   background: color-mix(in srgb, var(--reader-paper-ink) 5%, var(--reader-paper-bg)); color: var(--reader-paper-ink);
   border: 1px solid color-mix(in srgb, var(--reader-paper-ink) 14%, transparent);
   box-shadow: 0 16px 40px rgba(0, 0, 0, .2), 0 2px 8px rgba(0, 0, 0, .1);
@@ -1217,3 +1217,29 @@ html[dir="ltr"] .langs-head .icon-btn svg { transform: scaleX(-1); }
 .pattern-chip span { color: var(--muted); font-size: 12px; }
 #pattern-levels[hidden] { display: none; }
 .pattern-all { justify-self: start; }
+
+/* ---------- word sheet and card: UI direction, with the learnt word in its own ---------- */
+.word-sheet, .word-card { text-align: start; }
+.sheet-head, .word-card-head, .word-badges, .dict-chips, .grade-grid, .sheet-footer, .sheet-patterns { direction: inherit; }
+.card-word, .sheet-word, .word-alt { unicode-bidi: isolate; }
+html[dir="ltr"] .sheet-phrase svg { transform: none; }
+
+/* ---------- accessibility ---------- */
+.sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+:where(a, summary, select, [role="button"], [role="checkbox"], [role="switch"], [tabindex]:not([tabindex="-1"])):focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+.reader-view :focus-visible, body.reader-mode .word-sheet :focus-visible, .word-card :focus-visible { outline-color: var(--reader-accent, var(--green)); }
+.page-box input:focus-visible { outline: 2px solid var(--reader-accent, var(--green)); outline-offset: 2px; }
+
+/* Touch targets: 44 x 44 CSS px. The Watch screen keeps its own layout and is not listed. */
+:is(.topbar, #view-home, #view-read, #view-words, #view-progress, #view-settings, #view-languages, #view-patterns, #view-review, .reader-view, #word-sheet, #word-card, .modal, #reader-menu, #reader-toc, #reader-settings, #item-sheet)
+  :is(.icon-btn, .page-btn, .turn-btn, .card-btn, .speak-btn, .sheet-close, .shelf-tool, .word-dismiss, .toc-del, .lang-pill, .text-btn, .small-btn, .chip, .dict-chip, .srs-swap, .sheet-edit-btn, .primary, .ghost, .segmented button, .lang-tick, .lang-row, .field, .setting-row, .switch, .about-links button) {
+  min-width: 44px; min-height: 44px;
+}
+:is(.topbar, #view-words, #view-settings, #view-patterns, .reader-view, #word-sheet, .modal) :is(input[type="range"], #word-search, #reader-page-input, select) { min-height: 44px; }
+#reader-page-input { min-width: 44px; }
+.page-box { min-height: 44px; }
+.grade-bar { gap: 0; }
+.grade-bar button { min-width: 44px; max-width: none; min-height: 44px; height: auto; }
+.grade-grid button { min-width: 44px; }
+/* Eight 44 px controls (turn, 1 2 3 4 I K, turn) must fit a 360 px phone. */
+@media (max-width: 400px) { .reader-toolbar { padding-inline: 2px; gap: 0; } }
