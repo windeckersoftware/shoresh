@@ -2209,9 +2209,16 @@
     return out.length ? out : null;
   }
 
+  // pinyin.js (230 KB) loads on first need, not at startup; rerender once it is in.
+  function ensurePinyin() {
+    if (window.NerPinyin || !window.NerLib) return;
+    NerLib.load('js/pinyin.js').then(() => { if (window.NerPinyin && state.settings.readerPinyin && currentView === 'reader') rerenderKeepingPlace(); }).catch(() => {});
+  }
+
   function hanReading(text, id) {
     const langId = id || (currentWord && currentWord.w && currentWord.w.lang) || readerLang().id;
-    if (!text || langId !== 'zh' || !window.NerPinyin) return '';
+    if (!text || langId !== 'zh') return '';
+    if (!window.NerPinyin) { ensurePinyin(); return ''; }
     return window.NerPinyin.phrase(text) || '';
   }
 
@@ -2761,6 +2768,10 @@
     stopStrokes();
     const panel = $('#stroke-panel');
     const lid = (currentWord && currentWord.w && currentWord.w.lang) || readerLang().id;
+    if (ch && /^(zh|yue)$/.test(lid) && !window.HanziWriter && window.NerLib) {
+      NerLib.load('vendor/hanzi-writer.min.js').then(() => { if (window.HanziWriter && strokeChar === ch) showStrokes(ch); }).catch(() => {});
+      return;
+    }
     const raw = ch && /^(zh|yue)$/.test(lid) && window.HanziWriter && N.strokes ? N.strokes(ch) : '';
     if (!panel) return;
     panel.hidden = !raw;
@@ -3699,6 +3710,7 @@
   }
 
   async function extractPdf(payload) {
+    if (!window.pdfjsLib) { try { await NerLib.load('vendor/pdf.min.js'); } catch (e) { } }
     if (!window.pdfjsLib) { toast('מנוע PDF לא נטען'); return; }
     toast('מחלץ טקסט מה-PDF…');
     try {
@@ -4352,6 +4364,10 @@
   bind();
   document.documentElement.classList.remove('booting');
   bm('first-usable-frame');
+  // Heavy libraries load after the first frame; pinyin only for Chinese learners.
+  (window.requestIdleCallback || (f => setTimeout(f, 1500)))(() => {
+    if ((state.settings.learnLangs || [state.settings.lang]).some(l => l === 'zh' || l === 'yue') || state.settings.readerPinyin) ensurePinyin();
+  });
   if (boot.platform === 'web') {
     // Browser preview: make the sample available without native file access.
     setTimeout(() => { if (!state.articles.length) { /* keep the empty state */ } }, 0);

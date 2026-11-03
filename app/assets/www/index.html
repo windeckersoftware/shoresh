@@ -656,8 +656,6 @@
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
 <script>window.__bm=function(l){try{window.Ner&&Ner.bootMark&&Ner.bootMark(l)}catch(e){}};__bm("html-parsed")</script>
-<script src="vendor/pdf.min.js"></script>
-<script src="vendor/hanzi-writer.min.js"></script>
 <script src="js/seed-he.js"></script>
 <script src="js/i18n.js"></script>
 <script src="js/i18n-reader.js"></script>
@@ -666,8 +664,8 @@
 <script src="js/packs.js"></script>
 <script src="js/langs.js"></script>
 <script src="js/review.js"></script>
-<script src="js/pinyin.js"></script>
 <script src="js/langdetect.js"></script>
+<script>window.NerLib=(function(){var p={};return{load:function(src){if(p[src])return p[src];return p[src]=new Promise(function(ok,no){var t=document.createElement("script");t.src=src;t.onload=function(){ok()};t.onerror=function(){delete p[src];no(new Error("load "+src))};document.head.appendChild(t)})}}})()</script>
 <script>__bm("libs-loaded")</script>
 <script src="js/app.js"></script>
 </body>
