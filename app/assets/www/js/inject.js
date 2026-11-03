@@ -2,7 +2,7 @@
   'use strict';
   if (window.__NerReader) return;
   var state = window.__NER_STATE__ || {};
-  var lang = (state.settings && state.settings.lang) || 'he';
+  var lang = state.textLang || (state.settings && state.settings.lang) || 'he';
   var root = null, bar = null, panel = null, overlay = null, current = null, currentKey = null, reqId = 0;
   var currentCtx = '', currentPhrase = null;
   var font = 20;
@@ -733,7 +733,7 @@
     refresh: function (s) {
       state = s || state;
       words = state.words || {};
-      lang = (state.settings && state.settings.lang) || lang;
+      lang = state.textLang || (state.settings && state.settings.lang) || lang;
       rebuild();
     },
     back: function () {

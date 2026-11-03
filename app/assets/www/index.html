@@ -169,6 +169,10 @@
         <div class="section-head"><h2>כתבות ואתרים</h2><button class="text-btn" id="recent-clear">ניקוי</button></div>
         <div id="read-shelf" class="recent-list"></div>
       </div>
+      <div id="read-other-wrap" hidden>
+        <div class="section-head"><h2 id="read-other-title"></h2></div>
+        <div id="read-other" class="recent-list"></div>
+      </div>
     </section>
 
     <section id="view-watch" class="view" aria-label="צפייה והאזנה">
@@ -407,6 +411,10 @@
         <button class="icon-btn" data-action="reader-aa" aria-label="גודל טקסט">Aa</button>
       </div>
       <div id="reader-scroll" class="reader-scroll">
+        <div id="reader-foreign" class="reader-foreign" hidden>
+          <p id="reader-foreign-text"></p>
+          <button type="button" id="reader-foreign-add" data-action="add-text-lang"></button>
+        </div>
         <article id="reader-body" class="reader-body" dir="rtl"></article>
         <div class="reader-end" id="reader-end"><span>סוף הטקסט</span><button class="primary" data-action="reader-back">חזרה לספרייה</button></div>
       </div>
@@ -647,6 +655,7 @@
 
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
+<script>window.__bm=function(l){try{window.Ner&&Ner.bootMark&&Ner.bootMark(l)}catch(e){}};__bm("html-parsed")</script>
 <script src="vendor/pdf.min.js"></script>
 <script src="vendor/hanzi-writer.min.js"></script>
 <script src="js/seed-he.js"></script>
@@ -658,6 +667,8 @@
 <script src="js/langs.js"></script>
 <script src="js/review.js"></script>
 <script src="js/pinyin.js"></script>
+<script src="js/langdetect.js"></script>
+<script>__bm("libs-loaded")</script>
 <script src="js/app.js"></script>
 </body>
 </html>

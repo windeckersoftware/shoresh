@@ -416,6 +416,18 @@ html[dir="ltr"] .reader-topbar [data-action="reader-back"] svg { transform: scal
 .page-box input:focus { outline: none; color: var(--reader-accent, var(--green)); }
 .page-box span { color: color-mix(in srgb, var(--reader-paper-ink, var(--ink)) 55%, transparent); white-space: nowrap; }
 .reader-scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; position: relative; overscroll-behavior: contain; }
+.reader-foreign {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  margin: 0; padding: 8px 14px;
+  background: color-mix(in srgb, var(--gold) 18%, var(--reader-paper-bg, var(--bg)));
+  color: var(--reader-paper-ink, var(--ink)); font-size: 12.5px; line-height: 1.35;
+}
+.reader-foreign[hidden] { display: none; }
+.reader-foreign p { margin: 0; }
+.reader-foreign button {
+  flex: 0 0 auto; border: 0; background: var(--green); color: #fff;
+  border-radius: 999px; padding: 6px 10px; font-weight: 750; font-size: 12px;
+}
 .reader-body {
   max-width: 700px; margin: 0 auto; padding: 24px 22px 86px;
   font-size: var(--reader-font); line-height: var(--reader-lh, 1.95); color: var(--ink);

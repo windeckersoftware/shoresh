@@ -44,6 +44,7 @@ public class ReaderActivity extends Activity {
     private TextToSpeech tts;
     private boolean ttsReady;
     private String url;
+    private String textLang;
     private final ExecutorService io = Executors.newSingleThreadExecutor();
     private final Handler main = new Handler(Looper.getMainLooper());
 
@@ -53,13 +54,16 @@ public class ReaderActivity extends Activity {
         store = new Store(this);
         dict = new Dict(this);
         adBlock = new AdBlock(this);
+        textLang = getIntent().getStringExtra("textLang");
         io.execute(() -> {
-            String learn = "he";
-            try {
-                JSONObject st = new JSONObject(store.load());
-                JSONObject settings = st.optJSONObject("settings");
-                if (settings != null) learn = settings.optString("lang", "he");
-            } catch (Exception ignored) { }
+            String learn = textLang != null && !textLang.isEmpty() ? textLang : "he";
+            if (textLang == null || textLang.isEmpty()) {
+                try {
+                    JSONObject st = new JSONObject(store.load());
+                    JSONObject settings = st.optJSONObject("settings");
+                    if (settings != null) learn = settings.optString("lang", "he");
+                } catch (Exception ignored) { }
+            }
             dict.preload(learn);
         });
         url = getIntent().getStringExtra("url");
@@ -250,8 +254,10 @@ public class ReaderActivity extends Activity {
         String linksJs = asset("www/js/dictlinks.js");
         String js = asset("www/js/inject.js");
         String state = store.load();
+        String stamp = (textLang != null && !textLang.isEmpty())
+                ? "s.textLang=" + JSONObject.quote(textLang) + ";" : "";
         String pre = "(function(){" +
-                "var s=" + (state == null || state.isEmpty() ? "{}" : state) + ";" +
+                "var s=" + (state == null || state.isEmpty() ? "{}" : state) + ";" + stamp +
                 "if(window.__NerReaderLoaded){ if(window.__NerReader) __NerReader.refresh(s); return false; }" +
                 "window.__NerReaderLoaded=true;" +
                 "window.__NER_STATE__=s;" +

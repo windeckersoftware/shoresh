@@ -146,6 +146,12 @@
     return l.en || l.he || l.id;
   }
   function lang() { return BY_LANG[state.settings.lang] || BY_LANG.he || LANGS[0]; }
+  // The open text, when there is one. Direction, dictionary and word counts follow
+  // this, not the language the reader happens to be studying.
+  function readerLang() {
+    const id = currentArticle && currentArticle.lang;
+    return (id && BY_LANG[id]) || lang();
+  }
   const learnLangs = () => state.settings.learnLangs;
   // settings.lang is the language read now; learnLangs every language the user
   // learns (1.7, migrated from the single lang, which always stays in it).
@@ -170,6 +176,7 @@
     if (!state.stats) state.stats = {};
     if (!state.articles) state.articles = [];
     normalizeLangs();
+    repairOwnedLangs();
     if (raw && raw.settings && raw.onboarded === undefined) state.onboarded = true;
     if (!state.settings.readerFlow) {
       // 1.5: continuous scrolling became the default reading mode.
@@ -238,13 +245,13 @@
       .replace(/[\u0591-\u05AF\u05B0-\u05C7]/g, '')
       .replace(/\u05BE/g, '')
       .trim();
-    try { s = s.toLocaleLowerCase(lang().id); } catch (e) { s = s.toLowerCase(); }
+    try { s = s.toLocaleLowerCase(readerLang().id); } catch (e) { s = s.toLowerCase(); }
     return s;
   }
 
   function rebuildIndex() {
     wordIndex = new Map();
-    const id = lang().id;
+    const id = readerLang().id;
     for (const w of Object.values(state.words)) {
       if (w && !w.srs && (w.due || w.interval) && window.NerReview) migrateSchedule(w);
       if (!w || w.lang !== id) continue;
@@ -552,6 +559,7 @@
     }
     for (const a of books) if (!a.vocab && !statsAsked.has(a.id)) requestVocabStats(a);
     renderNews();
+    renderOtherLangs();
     const web = articles.filter(a => a.kind !== 'book' && a.kind !== 'watch');
     const shelf = $('#read-shelf');
     if (shelf) {
@@ -635,9 +643,25 @@
     try { s = JSON.parse(json); } catch (e) { }
     const a = state.articles.find(x => x.id === id);
     if (!a || !s || !s.ok) return;
+    // A count started before the text's language was corrected belongs to the old language.
+    if (s.lang && a.lang && s.lang !== a.lang) return;
     a.vocab = { at: Date.now(), unique: s.unique, fresh: s.fresh, frequent: s.frequent, learning: s.learning, known: s.known, capped: !!s.capped };
     save();
     if (currentView === 'read') renderRead();
+  }
+
+  // Texts in a language the reader does not learn stay out of the current shelf.
+  // They stay listed here, under their own language, instead of disappearing.
+  function renderOtherLangs() {
+    const wrap = $('#read-other-wrap');
+    const host = $('#read-other');
+    if (!wrap || !host) return;
+    const stray = state.articles.filter(a => a.lang && !learnLangs().includes(a.lang))
+      .sort((a, b) => (b.lastOpened || b.added || 0) - (a.lastOpened || a.added || 0));
+    wrap.hidden = !stray.length;
+    if (!stray.length) { host.innerHTML = ''; return; }
+    $('#read-other-title').textContent = tf('otherLangs');
+    host.innerHTML = stray.slice(0, 8).map(a => articleRow(a)).join('');
   }
 
   function renderNews() {
@@ -657,13 +681,22 @@
 
   function openWebUrl(url, title) {
     const article = {
-      id: 'web-' + Date.now(), title: title || url, url, lang: lang().id, kind: 'web', added: Date.now(), lastOpened: Date.now()
+      id: 'web-' + Date.now(), title: title || url, url, kind: 'web', added: Date.now(), lastOpened: Date.now()
     };
+    let fromUrl = null;
+    try { fromUrl = langFromUrl(new URL(url)); } catch (e) { fromUrl = null; }
+    applyKnownLang(article, fromUrl || lang().id);
     const old = state.articles.find(a => a.kind === 'web' && a.url === url);
-    if (old) old.lastOpened = Date.now(); else addArticle(article);
+    if (old) {
+      old.lastOpened = Date.now();
+      if (!old.lang) applyKnownLang(old, article.lang);
+    } else addArticle(article);
+    const opened = old || article;
     save();
     renderRead();
-    try { N.openUrl(url); } catch (e) { toast('לא ניתן לפתוח את הקישור'); }
+    followLang(opened.lang);
+    noteUnlearned(opened);
+    openInWeb(url, opened.lang);
   }
 
   function applyReadMode() {
@@ -1027,6 +1060,8 @@
     }
     currentReader = null;
     readerSel = null;
+    const foreign = $('#reader-foreign');
+    if (foreign) foreign.hidden = true;
     if (readObserver) { readObserver.disconnect(); readObserver = null; }
     if (tokenObserver) { tokenObserver.disconnect(); tokenObserver = null; }
     clearInterval(readFlushTimer); readFlushTimer = null;
@@ -1091,10 +1126,19 @@
   }
 
   function openReaderText(title, text, article, opts = {}) {
-    if (article) followLang(article.lang);
-    const l = lang();
-    currentArticle = article || { id: 'text-' + Date.now(), title, text, lang: l.id, kind: 'text' };
-    if (!currentArticle.lang) currentArticle.lang = l.id;
+    let langChanged = false;
+    if (article) {
+      const before = article.lang;
+      applyDetectedLang(article, text || article.text || '');
+      langChanged = article.lang !== before;
+      followLang(article.lang);
+    }
+    currentArticle = article || { id: 'text-' + Date.now(), title, text, lang: lang().id, langSource: 'fallback', kind: 'text' };
+    if (!currentArticle.lang) {
+      currentArticle.lang = lang().id;
+      currentArticle.langSource = currentArticle.langSource || 'fallback';
+    }
+    const l = readerLang();
     const blocks = String(text || '').replace(/\r/g, '').split(/\n{2,}/).map(s => s.trim()).filter(Boolean);
     const paged = opts.paged != null ? opts.paged : state.settings.readerPaged !== false;
     currentReader = {
@@ -1114,6 +1158,11 @@
     $('#view-reader').classList.remove('chrome-hidden');
     $('#reader-counts').textContent = '';
     navigate('reader');
+    showForeignNote();
+    if (!opts.stream || !opts.stream.offset) noteUnlearned(currentArticle);
+    if (currentArticle && currentArticle.kind === 'book' && (!opts.stream || !opts.stream.offset || langChanged)) {
+      requestVocabStats(currentArticle);
+    }
     applyReaderSettings();
     renderReaderCurrent();
     updateGradeBar();
@@ -1265,7 +1314,7 @@
     const r = currentReader;
     const body = $('#reader-body');
     if (!body || !r) return;
-    body.dir = lang().dir;
+    body.dir = readerLang().dir;
     body.textContent = '';
     body.onclick = onReaderClick;
     const blocks = r.stream ? (r.streamBlocks || splitBlocks(r.text, r.stream.offset, true)) : splitBlocks(r.text, 0, false);
@@ -1527,7 +1576,7 @@
     const idx = Math.max(0, Math.min(currentReader.page, pages.length - 1));
     currentReader.page = idx;
     const blocks = pages[idx] || [''];
-    body.dir = lang().dir;
+    body.dir = readerLang().dir;
     let html = idx === 0 ? `<h1>${escapeHtml(currentReader.title)}</h1>` : '';
     html += blocks.map(b => `<p>${escapeHtml(b).replace(/\n/g, '<br>')}</p>`).join('');
     body.innerHTML = html;
@@ -1536,7 +1585,7 @@
     const stream = currentReader.stream;
     const pct = stream && stream.total ? Math.min(100, Math.round(((stream.offset + (idx / Math.max(1, pages.length)) * (stream.next - stream.offset)) / stream.total) * 100)) : null;
     setProgress(pct != null ? pct / 100 : (idx + 1) / Math.max(1, pages.length));
-    $('#reader-meta').textContent = `${langName(lang())} · ${fmt(countWords(currentReader.text))} ${trWord('מילים')} · ${trWord('עמוד')} ${fmt(idx + 1)}` + (pct != null ? ` · ${pct}%` : '');
+    $('#reader-meta').textContent = `${langName(readerLang())} · ${fmt(countWords(currentReader.text))} ${trWord('מילים')} · ${trWord('עמוד')} ${fmt(idx + 1)}` + (pct != null ? ` · ${pct}%` : '');
     $('#reader-scroll').scrollTop = 0;
     updatePageBox();
     body.onclick = onReaderClick;
@@ -1979,7 +2028,7 @@
     const line = LINE_HEIGHTS[s.readerLine] ? s.readerLine : 'normal';
     document.documentElement.style.setProperty('--reader-lh', String(LINE_HEIGHTS[line]));
     $$('#line-seg button').forEach(b => b.classList.toggle('active', b.dataset.line === line));
-    $('#pinyin-row').hidden = lang().id !== 'zh';
+    $('#pinyin-row').hidden = readerLang().id !== 'zh';
     $('#pinyin-switch').classList.toggle('on', !!s.readerPinyin);
     $('#pinyin-switch').setAttribute('aria-checked', s.readerPinyin ? 'true' : 'false');
     document.documentElement.style.setProperty('--reader-font', (s.fontSize || 19) + 'px');
@@ -2092,8 +2141,8 @@
       markAloud(item.el);
     }));
     try {
-      if (typeof N.speakAs === 'function') N.speakAs(item.text, lang().id, 'read' + token);
-      else N.speak(item.text, lang().id);
+      if (typeof N.speakAs === 'function') N.speakAs(item.text, readerLang().id, 'read' + token);
+      else N.speak(item.text, readerLang().id);
     } catch (e) { stopAloud(false); }
   }
 
@@ -2120,7 +2169,7 @@
     if (aloud) { stopAloud(true); return; }
     if (typeof N.speakAs !== 'function' || !window.NerReview) {
       const text = pageBlocks().map(paraText).join(' ');
-      if (text) N.speak(text, lang().id);
+      if (text) N.speak(text, readerLang().id);
       return;
     }
     applyTtsRate();
@@ -2160,8 +2209,9 @@
     return out.length ? out : null;
   }
 
-  function hanReading(text) {
-    if (!text || lang().id !== 'zh' || !window.NerPinyin) return '';
+  function hanReading(text, id) {
+    const langId = id || (currentWord && currentWord.w && currentWord.w.lang) || readerLang().id;
+    if (!text || langId !== 'zh' || !window.NerPinyin) return '';
     return window.NerPinyin.phrase(text) || '';
   }
 
@@ -2219,7 +2269,7 @@
   function tokenizeNode(root) {
     const body = $('#reader-body');
     if (!body || !root || !root.isConnected) return;
-    const l = lang();
+    const l = readerLang();
     body.dataset.cjk = ['zh', 'yue', 'ja', 'th'].includes(l.id) ? 'true' : 'false';
     body.dataset.py = l.id === 'zh' && state.settings.readerPinyin ? 'on' : 'off';
     body.dataset.lang = l.id;
@@ -2361,9 +2411,10 @@
     const rid = 'tw' + (++translationRid);
     lookup.pending = true;
     lookup.glosses = [raw];
-    lookup.meaningLang = lang().id;
+    const from = (w && w.lang) || readerLang().id;
+    lookup.meaningLang = from;
     pendingTranslations.set(rid, { lookup, w, word: true });
-    try { N.translateFrom(raw, lang().id, target, rid); } catch (e) { }
+    try { N.translateFrom(raw, from, target, rid); } catch (e) { }
     showWordSheet();
   }
 
@@ -2397,7 +2448,8 @@
   }
 
   async function onlineLookup(raw) {
-    if (lang().id === 'he') return null;
+    const lid = (currentWord && currentWord.w && currentWord.w.lang) || readerLang().id;
+    if (lid === 'he') return null;
     try {
       const url = 'https://en.wiktionary.org/api/rest_v1/page/definition/' + encodeURIComponent(raw);
       const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
@@ -2405,7 +2457,7 @@
       const data = await res.json();
       const keys = Object.keys(data || {});
       if (!keys.length) return null;
-      let block = data[lang().id];
+      let block = data[lid];
       if (!block) block = data[keys[0]];
       if (!Array.isArray(block) || !block.length) return null;
       const defs = [];
@@ -2455,34 +2507,35 @@
   async function openWord(raw, span, autoLearn) {
     let lookup;
     const ctx = span ? spanContext(span) : null;
+    const L = (span && span.closest && span.closest('#reader-body')) ? readerLang() : lang();
     try {
       lookup = JSON.parse(ctx && typeof N.lookupAt === 'function'
-        ? N.lookupAt(lang().id, raw, ctx.text, ctx.offset)
-        : N.lookup(lang().id, raw));
+        ? N.lookupAt(L.id, raw, ctx.text, ctx.offset)
+        : N.lookup(L.id, raw));
     } catch (e) { lookup = { found: false, word: raw }; }
     // Not in the offline pack: open the card now and fill it in from the
     // online dictionary when (if) it answers.
-    const online = !lookup.found && lang().id !== 'he';
+    const online = !lookup.found && L.id !== 'he';
     if (online) lookup.pending = true;
     const norm = normalizeWord(raw);
     let key = lookup && lookup.found ? lookup.key : norm;
-    let w = lookup && lookup.found ? state.words[lang().id + ':' + key] : null;
+    let w = lookup && lookup.found ? state.words[L.id + ':' + key] : null;
     if (!w) w = wordFor(raw);
     if (lookup && lookup.found && w && w.key !== key) {
       // A word saved before its pack arrived can be keyed by the surface form.
       // The pack's lemma is authoritative; replace the stale entry.
-      delete state.words[lang().id + ':' + w.key];
+      delete state.words[L.id + ':' + w.key];
       w = null;
     }
 
     if (!w) {
       w = {
-        lang: lang().id, key, form: raw, display: (lookup && lookup.display) || raw,
-        tr: hanReading(raw) || (lang().id === 'zh' ? '' : ((lookup && lookup.tr) || '')), pos: (lookup && lookup.pos) || '',
+        lang: L.id, key, form: raw, display: (lookup && lookup.display) || raw,
+        tr: hanReading(raw, L.id) || (L.id === 'zh' ? '' : ((lookup && lookup.tr) || '')), pos: (lookup && lookup.pos) || '',
         meaning: (lookup && lookup.meaning) || '', grade: 1,
         added: Date.now(), lastSeen: Date.now(), seen: 1
       };
-      state.words[lang().id + ':' + key] = w;
+      state.words[L.id + ':' + key] = w;
       schedule(w, 1);
     } else if (autoLearn) {
       w.lastSeen = Date.now();
@@ -2490,9 +2543,9 @@
       if ((w.grade || 0) === 0) schedule(w, 1);
       if (!w.meaning && lookup && lookup.meaning) w.meaning = lookup.meaning;
       if (!w.tr) {
-        const py = hanReading(raw);
+        const py = hanReading(raw, L.id);
         if (py) w.tr = py;
-        else if (lang().id !== 'zh' && lookup && lookup.tr) w.tr = lookup.tr;
+        else if (L.id !== 'zh' && lookup && lookup.tr) w.tr = lookup.tr;
       }
     }
     rebuildIndex();
@@ -2536,11 +2589,12 @@
   function openPhrase() {
     if (!currentWord || !currentWord.phrase) return;
     const ph = currentWord.phrase;
-    const id = lang().id + ':' + ph.key;
+    const lid = (currentWord.w && currentWord.w.lang) || readerLang().id;
+    const id = lid + ':' + ph.key;
     let w = state.words[id];
     if (!w) {
       w = {
-        lang: lang().id, key: ph.key, form: ph.display, display: ph.display, tr: ph.tr || '', pos: ph.kind,
+        lang: lid, key: ph.key, form: ph.display, display: ph.display, tr: ph.tr || '', pos: ph.kind,
         meaning: ph.meaningLang === state.settings.baseLang ? ph.meaning : (ph.meaning || ''),
         meaningBase: ph.meaningLang, grade: 1, added: Date.now(), lastSeen: Date.now(), seen: 1,
         context: currentWord.context || ''
@@ -2579,7 +2633,7 @@
     const other = lookup && lookup.alt && lookup.alt !== raw ? lookup.alt : '';
     const head = {
       raw, alt: other || (display !== raw ? display : ''), seen: w.seen || 0,
-      reading: hanReading(raw) || (lang().id === 'zh' ? '' : (w.tr || (lookup && lookup.tr) || ''))
+      reading: hanReading(raw, w.lang) || (w.lang === 'zh' ? '' : (w.tr || (lookup && lookup.tr) || ''))
     };
     const links = dictLinks();
     const glosses = glossItems();
@@ -2603,7 +2657,7 @@
   function fillHead(prefix, head) {
     const word = $('#' + prefix + '-word');
     word.textContent = head.raw;
-    word.dir = lang().dir;
+    word.dir = ((currentWord && currentWord.w && BY_LANG[currentWord.w.lang]) || readerLang()).dir;
     word.parentElement.classList.toggle('long', String(head.raw).length > 14);
     $('#' + prefix + '-alt').textContent = head.alt;
     $('#' + prefix + '-reading').textContent = head.reading;
@@ -2618,8 +2672,9 @@
   function dictLinks() {
     const { raw, lookup } = currentWord;
     const word = (lookup && lookup.found && lookup.key) || raw;
-    const all = window.nerDictLinks ? window.nerDictLinks(lang().id, state.settings.baseLang || 'en', word) : [];
-    const own = ((window.NER_DICTS || {})[lang().id] || []).length;
+    const lid = (currentWord.w && currentWord.w.lang) || readerLang().id;
+    const all = window.nerDictLinks ? window.nerDictLinks(lid, state.settings.baseLang || 'en', word) : [];
+    const own = ((window.NER_DICTS || {})[lid] || []).length;
     return { own: all.slice(0, own), general: all.slice(own) };
   }
 
@@ -2632,7 +2687,8 @@
     if (!ph) return;
     btn.querySelector('.sheet-phrase-kind').textContent = posLabel(ph.kind || 'phrase');
     // Opening a saying saves it as a card of its own; say so on the card.
-    btn.querySelector('.sheet-phrase-save').textContent = state.words[lang().id + ':' + ph.key] ? '✓ ' + tr('נשמר') : '+ ' + tr('שמירה');
+    const lid = (currentWord && currentWord.w && currentWord.w.lang) || readerLang().id;
+    btn.querySelector('.sheet-phrase-save').textContent = state.words[lid + ':' + ph.key] ? '✓ ' + tr('נשמר') : '+ ' + tr('שמירה');
     btn.querySelector('.sheet-phrase-text').textContent = ph.display;
     btn.querySelector('.sheet-phrase-meaning').textContent = ph.meaning || '';
     // Idiom glosses translate poorly, so the English original stays in view.
@@ -2652,7 +2708,7 @@
     if (!list.length) return meaning ? [{ text: meaning }] : [];
     const items = list.map(g => ({ text: g }));
     if (!meaning || list.some(g => g.toLowerCase() === meaning.toLowerCase())) return items;
-    if (lookup && lookup.meaningLang === lang().id && meaning === lookup.meaning) return [{ text: meaning }].concat(items);
+    if (lookup && lookup.meaningLang === ((w && w.lang) || readerLang().id) && meaning === lookup.meaning) return [{ text: meaning }].concat(items);
     items[0] = { text: meaning, sub: list[0] };
     return items;
   }
@@ -2678,7 +2734,8 @@
     let chars = lookup && Array.isArray(lookup.chars) ? lookup.chars : [];
     // One character is its own breakdown, so it gets the stroke order too.
     const one = String((lookup && lookup.display) || w.display || '').trim();
-    if (!chars.length && /^(zh|yue)$/.test(lang().id) && /^\p{Script=Han}$/u.test(one)) chars = [{ c: one, tr: w.tr || '', g: '' }];
+    const lid = (w && w.lang) || readerLang().id;
+    if (!chars.length && /^(zh|yue)$/.test(lid) && /^\p{Script=Han}$/u.test(one)) chars = [{ c: one, tr: w.tr || '', g: '' }];
     if (!chars.length) wordTab = 'meaning';
     $('#word-tabs').hidden = !chars.length;
     $$('#word-tabs button').forEach(b => b.classList.toggle('active', b.dataset.wordTab === wordTab));
@@ -2692,7 +2749,7 @@
     const ctx = w.context || currentWord.context || '';
     $('#sheet-context').hidden = !ctx;
     $('#sheet-context').textContent = ctx ? (activeUiLang() === 'he' ? '״' + ctx + '״' : '“' + ctx + '”') : '';
-    $('#sheet-context').dir = lang().dir;
+    $('#sheet-context').dir = ((w && BY_LANG[w.lang]) || readerLang()).dir;
     $$('#grade-grid button').forEach(b => b.classList.toggle('active', Number(b.dataset.grade) === Number(w.grade)));
     $('#sheet-source').textContent = lookup && lookup.found
       ? (/wiktionary|google/i.test(lookup.source || '') ? lookup.source.replace(/\s*\(online\)/i, '') : tr('מילון מקומי'))
@@ -2703,7 +2760,8 @@
   function showStrokes(ch) {
     stopStrokes();
     const panel = $('#stroke-panel');
-    const raw = ch && /^(zh|yue)$/.test(lang().id) && window.HanziWriter && N.strokes ? N.strokes(ch) : '';
+    const lid = (currentWord && currentWord.w && currentWord.w.lang) || readerLang().id;
+    const raw = ch && /^(zh|yue)$/.test(lid) && window.HanziWriter && N.strokes ? N.strokes(ch) : '';
     if (!panel) return;
     panel.hidden = !raw;
     if (!raw) return;
@@ -3148,9 +3206,10 @@
     if (text.length < 10) { toast('הטקסט קצר מדי'); return; }
     const cleanTitle = String(title || '').trim() || text.split('\n')[0].slice(0, 70) || 'טקסט';
     const article = {
-      id: 'text-' + Date.now(), title: cleanTitle, text, lang: articleLang(detectLang(text, learnLangs())),
+      id: 'text-' + Date.now(), title: cleanTitle, text,
       kind, chapters, added: Date.now(), lastOpened: Date.now(), ...extra
     };
+    applyDetectedLang(article, text);
     addArticle(article);
     hideModal('paste');
     openReaderText(cleanTitle, text, article);
@@ -3160,6 +3219,7 @@
   function openArticle(id) {
     const article = state.articles.find(a => a.id === id);
     if (!article) return;
+    if (article.text) applyDetectedLang(article, article.text);
     article.lastOpened = Date.now();
     save();
     if (article.kind === 'book') requestVocabStats(article);
@@ -3169,8 +3229,16 @@
       openReaderText(article.title, article.text, article);
     } else if (article.url) {
       followLang(article.lang);
+      noteUnlearned(article);
       if (article.kind === 'watch') N.openWatch(article.url);
-      else N.openUrl(article.url);
+      else openInWeb(article.url, article.lang);
+    }
+  }
+
+  function openInWeb(url, textLang) {
+    try { N.openUrl(url, textLang || ''); }
+    catch (e) {
+      try { N.openUrl(url); } catch (e2) { toast('לא ניתן לפתוח את הקישור'); }
     }
   }
 
@@ -3180,11 +3248,13 @@
     if (!/^https?:$/.test(u.protocol)) { toast('הקישור לא תקין'); return; }
     const article = {
       id: 'web-' + Date.now(), title: title || u.hostname.replace(/^www\./, ''), url: u.href,
-      lang: articleLang(langFromUrl(u) || detectLang(title || '', learnLangs())), kind: 'web', added: Date.now(), lastOpened: Date.now()
+      kind: 'web', added: Date.now(), lastOpened: Date.now()
     };
+    applyKnownLang(article, langFromUrl(u) || detectLang(title || ''));
     addArticle(article);
     followLang(article.lang);
-    try { N.openUrl(u.href); } catch (e) { toast('לא ניתן לפתוח את הקישור'); }
+    noteUnlearned(article);
+    openInWeb(u.href, article.lang);
   }
 
   function onShare(json) {
@@ -3216,12 +3286,14 @@
     if (!/^https?:$/.test(u.protocol)) { toast('הקישור לא תקין'); return; }
     const article = {
       id: 'web-' + Date.now(), title: u.hostname.replace(/^www\./, ''), url: u.href,
-      lang: articleLang(langFromUrl(u)), kind: 'web', added: Date.now(), lastOpened: Date.now()
+      kind: 'web', added: Date.now(), lastOpened: Date.now()
     };
+    applyKnownLang(article, langFromUrl(u));
     addArticle(article);
     followLang(article.lang);
+    noteUnlearned(article);
     $('#url-input').value = '';
-    try { N.openUrl(u.href); } catch (e) { toast('לא ניתן לפתוח את הקישור'); }
+    openInWeb(u.href, article.lang);
   }
 
   function sampleForLang(id) {
@@ -3296,74 +3368,91 @@
 
   /* ---------------- language ---------------- */
 
-  // Writing systems in the order they are tried; 'han' and 'cyr' are split further below.
-  const SCRIPTS = [
-    ['han', /[぀-ヿ㐀-鿿豈-﫿]/g], ['ko', /[가-힯ᄀ-ᇿ]/g],
-    ['he', /[֐-׿]/g], ['ar', /[؀-ۿ]/g], ['cyr', /[Ѐ-ӿ]/g],
-    ['el', /[Ͱ-Ͽ]/g], ['th', /[฀-๿]/g], ['lat', /[a-zÀ-ɏḀ-ỿ]/gi]
-  ];
-  const SIMPLIFIED = /[这们说时对会来国为过发还现开问么见长门车马东书个学后样经没点让话应从头关]/g;
-  const TRADITIONAL = /[這們說時對會來國為過發還現開問麼見長門車馬東書個學後樣經沒點讓話應從頭關嘅咗喺唔佢啲嘢冇]/g;
-  // The most common words of each Latin-script language.
-  const STOP_WORDS = Object.fromEntries(Object.entries({
-    en: 'the and of to in is that it was for on with as his he you are this be at by not have from',
-    fr: 'le la les et des est une dans que qui pour pas sur au du il elle ne avec se ce sont mais',
-    es: 'el la los las y que de en un una por con no es se del para al lo como su pero más',
-    de: 'der die das und ist nicht ein eine zu mit sich auf den dem des ich er sie es auch für von',
-    it: 'il lo la gli le di che e è un una per non con del della sono ma si al nel anche',
-    pt: 'o a os as e de que em um uma do da não para com por se no na mais é ao dos',
-    nl: 'de het een en van is dat niet op te zijn met voor ik je die er maar ook hij',
-    sv: 'och att det är som en på av för med inte jag till den har var om men ett',
-    da: 'og at det er som en på af for med ikke jeg til den har var om men et hvad efter meget',
-    no: 'og at det er som en på av for med ikke jeg til den har var om men et ble hva etter mye',
-    pl: 'i w nie na się że jest to z do co jak ale o tak po od za jego przez',
-    tr: 've bir bu da de için ile ne çok değil mi ama gibi daha o ben sen var olarak',
-    fi: 'ja on ei se että oli hän mutta kun ovat myös tai jos niin minä sinä mitä tämä',
-    hu: 'a az és hogy nem is egy van meg de már csak volt mint ez el ki fel azt',
-    id: 'dan yang di itu ini dengan untuk tidak dari ada saya akan ke juga dalam adalah',
-    vi: 'và của là có không những được một các người cho với này trong đã khi'
-  }).map(([id, words]) => [id, new Set(words.split(' '))]));
+  const detectLang = (text, candidates) => window.NER_DETECT.detectLang(text, candidates);
+  const scriptOf = text => window.NER_DETECT.scriptOf(text);
 
-  // Latin-script languages whose common words make up a good share of the text, best first.
-  function rankLatin(sample) {
-    const tokens = sample.toLowerCase().match(/\p{L}+/gu) || [];
-    const scores = Object.entries(STOP_WORDS)
-      .map(([id, set]) => [id, tokens.filter(t => set.has(t)).length / (tokens.length || 1)])
-      .sort((a, b) => b[1] - a[1]);
-    const floor = Math.max(0.05, scores[0][1] * 0.7);
-    return scores.filter(([, score]) => score >= floor).map(([id]) => id);
+  function articleOwned(article) {
+    const id = article && article.lang;
+    if (!id) return window.NER_DETECT.ownArticleLang(null, learnLangs(), lang().id);
+    return {
+      lang: id,
+      learned: learnLangs().includes(id),
+      source: article.langSource || 'detected'
+    };
   }
 
-  // The language of a text, the first of candidates (when given) that fits: the
-  // script decides, then kana/simplified/traditional for Han, letters for
-  // Cyrillic and common words for Latin.
-  function detectLang(text, candidates) {
-    const sample = String(text || '').slice(0, 5000);
-    const count = re => (sample.match(re) || []).length;
-    let script = null, most = 0;
-    for (const [id, re] of SCRIPTS) {
-      const n = count(re);
-      if (n > most) { script = id; most = n; }
+  // Store the detected language even when the reader does not learn it.
+  // A stored language is only replaced while it is still unlocked (never
+  // detected, or a previous fallback), so a later page cannot flip the book.
+  function applyDetectedLang(article, text) {
+    if (!article || article.langSource === 'user') return articleOwned(article);
+    const owned = window.NER_DETECT.articleLanguage(text || '', learnLangs(), lang().id);
+    const unlocked = !article.langSource || article.langSource === 'fallback';
+    if (owned.langSource === 'detected' && unlocked) {
+      if (article.lang && article.lang !== owned.lang) delete article.vocab;
+      article.lang = owned.lang;
+      article.langSource = 'detected';
+    } else if (!article.lang) {
+      article.lang = owned.lang;
+      article.langSource = owned.langSource;
+    } else if (!article.langSource) {
+      article.langSource = owned.langSource;
     }
-    let ranked = script ? [script] : [];
-    if (script === 'han') {
-      ranked = count(/[぀-ヿ]/g) * 10 > most ? ['ja', 'zh', 'yue']
-        : count(TRADITIONAL) > count(SIMPLIFIED) ? ['yue', 'zh', 'ja'] : ['zh', 'yue', 'ja'];
-    } else if (script === 'cyr') {
-      ranked = count(/[іїєґ]/gi) > count(/[ыэъё]/gi) ? ['uk', 'ru'] : ['ru', 'uk'];
-    } else if (script === 'lat') {
-      ranked = rankLatin(sample);
-    }
-    return (candidates ? ranked.find(id => candidates.includes(id)) : ranked[0]) || null;
+    return articleOwned(article);
   }
 
-  function scriptOf(text) {
-    let script = null, most = 0;
-    for (const [id, re] of SCRIPTS) {
-      const n = (String(text).match(re) || []).length;
-      if (n > most) { script = id; most = n; }
+  // An id already known from the address, with the same ownership rules.
+  function applyKnownLang(article, detected) {
+    if (!article || article.langSource === 'user') return articleOwned(article);
+    const owned = window.NER_DETECT.ownArticleLang(detected, learnLangs(), lang().id);
+    const unlocked = !article.langSource || article.langSource === 'fallback';
+    if (owned.source === 'detected' && unlocked) {
+      if (article.lang && article.lang !== owned.lang) delete article.vocab;
+      article.lang = owned.lang;
+      article.langSource = 'detected';
+    } else if (!article.lang) {
+      article.lang = owned.lang;
+      article.langSource = 'fallback';
+    } else if (!article.langSource) {
+      article.langSource = owned.source;
     }
-    return script;
+    return articleOwned(article);
+  }
+
+  function repairOwnedLangs() {
+    let changed = false;
+    for (const a of state.articles || []) {
+      if (!a || a.langSource === 'user' || a.kind === 'watch') continue;
+      const before = a.lang;
+      const hadSource = a.langSource;
+      if (a.text) applyDetectedLang(a, a.text);
+      else if (a.url) {
+        let detected = null;
+        try { detected = langFromUrl(new URL(a.url)); } catch (e) { detected = null; }
+        if (detected) applyKnownLang(a, detected);
+      }
+      if (a.lang !== before || a.langSource !== hadSource) changed = true;
+    }
+    if (changed) save(true);
+  }
+
+  function noteUnlearned(article) {
+    const owned = articleOwned(article);
+    if (owned.source !== 'detected' || owned.learned || !BY_LANG[owned.lang]) return;
+    toast(tf('unlearnedText', { lang: langName(BY_LANG[owned.lang]) }));
+  }
+
+  function showForeignNote() {
+    const el = $('#reader-foreign');
+    if (!el) return;
+    const owned = articleOwned(currentArticle);
+    const show = owned.source === 'detected' && !owned.learned && !!BY_LANG[owned.lang];
+    el.hidden = !show;
+    if (!show) return;
+    const name = langName(BY_LANG[owned.lang]);
+    $('#reader-foreign-text').textContent = tf('unlearnedText', { lang: name });
+    const btn = $('#reader-foreign-add');
+    if (btn) btn.textContent = tf('addLang', { lang: name });
   }
 
   // The language of a word or two selected in another app. Too short for
@@ -3392,8 +3481,8 @@
     return BY_LANG[parts[0]] ? parts[0] : TLD_LANG[parts[parts.length - 1]] || null;
   }
 
-  // A new article belongs to its detected language when the user learns it, else the current one.
-  const articleLang = id => (id && learnLangs().includes(id) ? id : lang().id);
+  // article.lang is the detected language, including one the reader does not learn.
+  // langSource 'user' is left alone. 'fallback' means detection found nothing.
 
   function applyCustomBase() {
     const code = ($('#custom-base-code').value || '').trim().toLowerCase();
@@ -3576,10 +3665,11 @@
       try { head = JSON.parse(N.readBook(payload.bookId, 0, 20000)).text || ''; } catch (e) { }
       const article = {
         id: 'book-' + Date.now(), title, bookId: payload.bookId, stream: true,
-        bytes: Number(payload.bytes) || 0, lang: articleLang(detectLang(head, learnLangs())), kind: 'book',
+        bytes: Number(payload.bytes) || 0, kind: 'book',
         chapters: Array.isArray(payload.chapters) ? payload.chapters : [],
         added: Date.now(), lastOpened: Date.now()
       };
+      applyDetectedLang(article, head);
       addArticle(article);
       openStreamArticle(article);
       toast('הספר נטען לקריאה');
@@ -3912,7 +4002,7 @@
       if (e.target.closest('#sheet-phrase, #card-phrase')) { openPhrase(); return; }
       if (e.target.closest('#edit-save')) { saveEditWord(); return; }
       if (e.target.closest('#sheet-speak, #card-speak')) {
-        if (currentWord) N.speak(currentWord.raw, lang().id);
+        if (currentWord) N.speak(currentWord.raw, (currentWord.w && currentWord.w.lang) || readerLang().id);
         return;
       }
       if (e.target.closest('[data-srs]')) { rateReview(Number(e.target.closest('[data-srs]').dataset.srs)); return; }
@@ -3973,6 +4063,15 @@
         case 'notices': openNotices('notices'); break;
         case 'privacy': openNotices('privacy'); break;
         case 'reader-back': cleanupReader(); navigate('read'); break;
+        case 'add-text-lang': {
+          const id = currentArticle && currentArticle.lang;
+          if (!id || !BY_LANG[id]) break;
+          if (!learnLangs().includes(id)) state.settings.learnLangs = [...state.settings.learnLangs, id];
+          setLearnLang(id);
+          showForeignNote();
+          toast(tf('langNow', { lang: langName(BY_LANG[id]) }));
+          break;
+        }
         case 'reader-aa': openReaderSettings(); break;
         case 'reader-settings-close': closeReaderSettings(); break;
         case 'page-next': turnReader(1); break;
@@ -4152,12 +4251,13 @@
         schedule(w, 5);
       } else {
         const norm = normalizeWord(raw);
+        const lid = readerLang().id;
         const created = {
-          lang: lang().id, key: norm, form: raw, display: raw, tr: '', pos: '',
+          lang: lid, key: norm, form: raw, display: raw, tr: '', pos: '',
           meaning: '', grade: 5, added: Date.now(), lastSeen: Date.now(), seen: 0
         };
         schedule(created, 5);
-        state.words[lang().id + ':' + norm] = created;
+        state.words[lid + ':' + norm] = created;
       }
     }
     save();
@@ -4238,14 +4338,20 @@
   };
 
   /* ---------------- boot ---------------- */
+  const bm = window.__bm || function () { };
+  bm('app-start');
   load();
+  bm('state-loaded');
   applyTheme();
   renderAll();
+  bm('rendered');
   applyUiLanguage();
+  bm('translated');
   if (!state.onboarded) showOnboarding();
   startI18nObserver();
   bind();
   document.documentElement.classList.remove('booting');
+  bm('first-usable-frame');
   if (boot.platform === 'web') {
     // Browser preview: make the sample available without native file access.
     setTimeout(() => { if (!state.articles.length) { /* keep the empty state */ } }, 0);
