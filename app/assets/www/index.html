@@ -87,6 +87,15 @@
       </button>
       <button class="ghost practice-early" id="practice-early" type="button" data-action="practice-early" hidden>תרגול מוקדם</button>
 
+      <button class="review-card patterns-entry" data-go="patterns" type="button">
+        <span>
+          <span class="eyebrow">דקדוק בתרגול</span>
+          <strong>תבניות משפט</strong>
+          <small>משפטים אמיתיים, לפי תדירות</small>
+        </span>
+        <span class="review-go">לתבניות</span>
+      </button>
+
       <div class="start-card" id="start-card" hidden>
         <div class="eyebrow">התחלה</div>
         <h2>שלושה צעדים</h2>
@@ -343,6 +352,22 @@
       </div>
     </section>
 
+    <section id="view-patterns" class="view" aria-label="תבניות משפט">
+      <div class="view-head langs-head">
+        <button class="icon-btn" data-go="home" aria-label="חזרה"><svg><use href="#i-arrow"></use></svg></button>
+        <div class="langs-title"><div class="eyebrow">דקדוק בתרגול</div><h1>תבניות משפט</h1></div>
+      </div>
+      <div class="chips" id="pattern-levels">
+        <button class="chip active" data-level="">הכול</button>
+        <button class="chip" data-level="A1">A1</button>
+        <button class="chip" data-level="A2">A2</button>
+        <button class="chip" data-level="B1">B1</button>
+        <button class="chip" data-level="B2">B2+</button>
+      </div>
+      <div id="patterns-list" class="patterns-list"></div>
+      <p class="patterns-credit">משפטי הדוגמה מ־Tatoeba (tatoeba.org), CC BY 2.0 FR. הדירוג לפי תדירות במאגר.</p>
+    </section>
+
     <section id="view-languages" class="view" aria-label="שפות">
       <div class="view-head langs-head">
         <button class="icon-btn" data-go="settings" aria-label="חזרה"><svg><use href="#i-arrow"></use></svg></button>
@@ -498,6 +523,7 @@
     </button>
     <ol id="sheet-glosses" class="gloss-list"></ol>
     <p id="sheet-context" class="sheet-context" hidden></p>
+    <button id="sheet-cloze" class="sheet-edit-btn" type="button" hidden><svg><use href="#i-plus"></use></svg>שמרו את המשפט כקלף השלמה</button>
     <button id="sheet-edit" class="sheet-edit-btn"><svg><use href="#i-plus"></use></svg>המשמעות שלכם</button>
   </div>
   <div id="sheet-tab-chars" class="char-list" hidden></div>

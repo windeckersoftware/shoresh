@@ -17,3 +17,9 @@ For each, cold (app force-stopped) and warm:
 - Drive PDF and Drive EPUB -> Share to Shoresh (content URI; EXTRA_STREAM only).
 - Two shares in a row within ~1 s: only the newest text opens, no crash, one MainActivity in `dumpsys activity activities`.
 - App still appears in Recents after a share.
+
+## Patterns and cloze (new)
+- Home -> Sentence patterns in Hebrew and French: lists load, level chips filter, speaker plays the sentence in the right TTS voice, RTL Hebrew looks right, "Save as review card" then appears in Review.
+- Switch to another language: friendly "available for Hebrew and French" message.
+- Tap a word in a book, expand the sheet, "Save sentence as a cloze card": Review shows the blank, flips to the full sentence.
+- Review header (`n new · n learning · n review`) does not wrap awkwardly on a narrow phone with the undo button showing.

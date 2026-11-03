@@ -1007,7 +1007,9 @@ html[lang="ar"] body { font-family: "Noto Naskh Arabic", "Noto Sans Arabic", "No
 .srs-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .srs-counts { font-size: 15px; font-weight: 700; color: var(--muted); font-variant-numeric: tabular-nums; }
 .srs-counts b { font-weight: 800; }
-.srs-counts small { font-size: 12px; font-weight: 650; }
+.srs-counts { white-space: nowrap; }
+.srs-counts small { font-size: 11px; font-weight: 650; }
+.srs-head { flex-wrap: wrap; row-gap: 6px; }
 .srs-counts b.cur { text-decoration: underline; text-underline-offset: 4px; }
 .srs-c-n { color: var(--ink-2); }
 .srs-c-l { color: var(--amber); }
@@ -1184,3 +1186,24 @@ html[dir="ltr"] .langs-head .icon-btn svg { transform: scaleX(-1); }
 .search-box[hidden] { display: none; }
 .lang-manage .lang-code svg { width: 14px; height: 14px; color: var(--green); }
 .review-stage:has(.srs-card) { background: none; border: 0; box-shadow: none; padding: 4px 0 0; }
+
+/* ---------- sentence patterns ---------- */
+.patterns-list { display: grid; gap: 12px; padding-bottom: 12px; }
+.pattern-card { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 14px 14px 12px; display: grid; gap: 10px; }
+.pattern-card header { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.pattern-p { display: block; font-size: 22px; font-weight: 800; letter-spacing: -.01em; }
+.pattern-gloss { display: block; margin-top: 2px; color: var(--muted); font-size: 14px; }
+.pattern-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.pattern-ex { display: flex; align-items: flex-start; gap: 8px; border-top: 1px solid color-mix(in srgb, var(--line) 60%, transparent); padding-top: 8px; }
+.pattern-ex .icon-btn { min-width: 44px; min-height: 44px; flex: none; }
+.pattern-s { display: block; font-size: 17px; line-height: 1.45; }
+.pattern-ex small { display: block; color: var(--muted); font-size: 14px; line-height: 1.4; margin-top: 2px; }
+.pattern-save { justify-self: start; min-height: 44px; }
+.pattern-save.saved { color: var(--green); }
+.patterns-loading { text-align: center; color: var(--muted); padding: 32px 0; }
+.patterns-credit { color: var(--muted); font-size: 12px; text-align: center; padding: 8px 0 24px; }
+
+/* ---------- cloze cards ---------- */
+.srs-cloze { font-size: 22px; line-height: 1.6; font-weight: 600; }
+.cloze-gap { display: inline-block; min-width: 3.2em; text-align: center; color: var(--green); letter-spacing: .08em; border-bottom: 2px solid var(--green); }
+.cloze-hit { color: var(--green); font-weight: 850; }

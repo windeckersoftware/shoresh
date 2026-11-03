@@ -308,6 +308,7 @@
     if (!pos) return '';
     let code = String(pos).split(' ')[0];
     code = POS_ALIAS[code] || code;
+    if (code === 'pattern') return tr('תבנית משפט');
     const ui = activeUiLang();
     if (ui === 'he') return POS[code] || POS[pos] || pos;
     return (POS_UI[ui] || POS_UI.en)[code] || pos;
@@ -1019,6 +1020,7 @@
       if (view === 'read') renderRead();
       if (view === 'watch') renderWatch();
       if (view === 'words') renderWords();
+      if (view === 'patterns') renderPatterns();
       if (view === 'progress') renderProgress();
     }
   }
@@ -2757,6 +2759,7 @@
     $('#sheet-context').hidden = !ctx;
     $('#sheet-context').textContent = ctx ? (activeUiLang() === 'he' ? '״' + ctx + '״' : '“' + ctx + '”') : '';
     $('#sheet-context').dir = ((w && BY_LANG[w.lang]) || readerLang()).dir;
+    $('#sheet-cloze').hidden = !clozeTarget(w, ctx);
     $$('#grade-grid button').forEach(b => b.classList.toggle('active', Number(b.dataset.grade) === Number(w.grade)));
     $('#sheet-source').textContent = lookup && lookup.found
       ? (/wiktionary|google/i.test(lookup.source || '') ? lookup.source.replace(/\s*\(online\)/i, '') : tr('מילון מקומי'))
@@ -3103,14 +3106,18 @@
     const meaning = w.meaning || '';
     // Older words kept the whole paragraph: show the sentence that holds the word.
     const at = w.context ? [w.form, word, w.key].map(f => f ? w.context.indexOf(f) : -1).find(i => i >= 0) : -1;
-    const ctx = !w.context || w.context === word ? '' : at >= 0 ? sentenceAround(w.context, at) : w.context;
-    const meaningFront = state.settings.cardFront === 'meaning' && !!meaning;
+    const ctx = w.cloze ? '' : !w.context || w.context === word ? '' : at >= 0 ? sentenceAround(w.context, at) : w.context;
+    const cz = w.cloze && w.cloze.text && w.cloze.target ? w.cloze : null;
+    const meaningFront = !cz && state.settings.cardFront === 'meaning' && !!meaning;
     const t = typeOf(w);
     const cur = t === 'new' ? 'n' : t === 'review' ? 'r' : 'l';
     const count = (k, n) => `<span class="srs-c srs-c-${k}"><b${cur === k ? ' class="cur"' : ''}>${fmt(n)}</b> <small>${escapeHtml(tr({ n: 'חדשים', l: 'בלמידה', r: 'לחזרה' }[k]))}</small></span>`;
     const kind = { new: 'כרטיס חדש', learn: 'בלמידה', relearn: 'בלמידה מחדש', review: 'כרטיס חזרה' }[t];
+    const clozeKind = cz ? tr('השלימו את החסר') : '';
     const pos = /^(proverb|idiom|phrase)$/.test(w.pos) ? ' · ' + posLabel(w.pos) : '';
-    const wordHtml = `<span class="srs-word" dir="${lang().dir}">${escapeHtml(word)}</span>`;
+    const wordHtml = cz
+      ? `<span class="srs-word srs-cloze" dir="${lang().dir}">${clozeHtml(cz, reviewFlipped)}</span>`
+      : `<span class="srs-word" dir="${lang().dir}">${escapeHtml(word)}</span>`;
     const back = reviewFlipped
       ? '<span class="srs-rule"></span>' +
         (meaningFront ? wordHtml : '') +
@@ -3124,7 +3131,7 @@
       `<button class="srs-swap" data-action="review-swap" type="button">${escapeHtml(tr(meaningFront ? 'משמעות קודם' : 'מילה קודם'))} ⇄</button>` +
       `<button class="icon-btn" data-speak-review type="button" aria-label="השמעה"><svg><use href="#i-speaker"></use></svg></button></span></div>` +
       `<div class="srs-card${reviewFlipped ? ' flipped' : ''}" data-action="review-flip" role="button" tabindex="0">` +
-      `<span class="srs-kind">${escapeHtml(tr(kind))}${escapeHtml(pos)}</span>` +
+      `<span class="srs-kind">${escapeHtml(clozeKind || tr(kind))}${escapeHtml(pos)}</span>` +
       (meaningFront ? `<span class="srs-meaning front" dir="auto">${escapeHtml(meaning)}</span>` : wordHtml) + back + '</div>' +
       (reviewFlipped
         ? '<div class="grade-grid srs-grid">' + REVIEW_SCALE.map(([g, mark, label]) =>
@@ -3200,6 +3207,101 @@
     save();
     renderReview();
     renderHome();
+  }
+
+  /* ---------------- sentence mining: cloze cards ---------------- */
+  // The word as it stands in its sentence, or '' when the sentence does not hold it.
+  function clozeTarget(w, sentence) {
+    if (!w || !sentence || sentence.length < 12 || w.pos === 'pattern' || w.cloze) return '';
+    const forms = [currentWord && currentWord.raw, w.form, w.display, w.key].filter(f => f && f.length);
+    return forms.find(f => sentence.indexOf(f) >= 0) || '';
+  }
+
+  const CLOZE_GAP = '＿＿＿';
+  function clozeHtml(cz, reveal, dir) {
+    const at = cz.text.indexOf(cz.target);
+    if (at < 0) return escapeHtml(cz.text);
+    const before = escapeHtml(cz.text.slice(0, at)), after = escapeHtml(cz.text.slice(at + cz.target.length));
+    return before + (reveal ? `<b class="cloze-hit">${escapeHtml(cz.target)}</b>` : `<span class="cloze-gap">${CLOZE_GAP}</span>`) + after;
+  }
+
+  function saveCloze() {
+    if (!currentWord) return;
+    const { w } = currentWord;
+    const sentence = (w.context || currentWord.context || '').trim();
+    const target = clozeTarget(w, sentence);
+    if (!target) return;
+    let h = 0;
+    for (const ch of sentence + '|' + target) h = (Math.imul(h, 31) + ch.codePointAt(0)) | 0;
+    const key = 'cloze:' + (h >>> 0).toString(36);
+    const id = w.lang + ':' + key;
+    if (state.words[id]) { toast(tr('הקלף כבר בחזרה')); return; }
+    const card = {
+      lang: w.lang, key, form: target, display: sentence, tr: '', pos: 'sentence',
+      meaning: (w.display || w.form || w.key) + (w.meaning ? ' — ' + w.meaning : ''),
+      context: '', cloze: { text: sentence, target },
+      grade: 1, added: Date.now(), lastSeen: Date.now(), seen: 1
+    };
+    state.words[id] = card;
+    schedule(card, 1);
+    rebuildIndex(); save(); renderHome();
+    toast(tr('נוסף לחזרה'));
+  }
+
+  /* ---------------- sentence patterns ---------------- */
+  // Data: patterns/<lang>.js (tools/pack_patterns.py from Tatoeba). Loaded on first visit.
+  let patternLevel = '';
+  const PATTERN_LANGS = ['he', 'fr'];
+  const patternKey = p => 'pattern:' + p.id;
+
+  function renderPatterns() {
+    const host = $('#patterns-list');
+    if (!host) return;
+    const L = lang();
+    $$('#pattern-levels .chip').forEach(c => c.classList.toggle('active', c.dataset.level === patternLevel));
+    if (!PATTERN_LANGS.includes(L.id)) {
+      host.innerHTML = `<div class="review-empty"><h2>${escapeHtml(tr('תבניות משפט זמינות בעברית ובצרפתית'))}</h2><p>${escapeHtml(tr('החליפו שפה בכפתור השפה למעלה'))}</p></div>`;
+      return;
+    }
+    const data = window.NER_PATTERNS && window.NER_PATTERNS[L.id];
+    if (!data) {
+      host.innerHTML = '<div class="patterns-loading">…</div>';
+      NerLib.load('patterns/' + L.id + '.js').then(() => { if (currentView === 'patterns') renderPatterns(); })
+        .catch(() => { host.innerHTML = '<div class="patterns-loading">!</div>'; });
+      return;
+    }
+    const b = baseLang().id;
+    const list = data.filter(p => !patternLevel || (patternLevel === 'B2' ? /^(B2|C)/.test(p.c) : p.c === patternLevel));
+    host.innerHTML = list.map(p => {
+      const saved = !!state.words[L.id + ':' + patternKey(p)];
+      const ex = p.x.map(e =>
+        `<div class="pattern-ex"><button class="icon-btn" type="button" data-speak="${escapeHtml(e.s)}" aria-label="${escapeHtml(tr('השמעה'))}"><svg><use href="#i-speaker"></use></svg></button>` +
+        `<div><span class="pattern-s" dir="${L.dir}">${escapeHtml(e.s)}</span><small dir="auto">${escapeHtml(e.t[b] || e.t.en || '')}</small></div></div>`).join('');
+      return `<article class="pattern-card"><header><div><strong class="pattern-p" dir="${L.dir}">${escapeHtml(p.p)}</strong>` +
+        `<span class="pattern-gloss" dir="auto">${escapeHtml(p.en)}</span></div>` +
+        `<div class="pattern-meta"><span class="badge">${escapeHtml(p.c)}</span><small>#${fmt(p.r)}</small></div></header>${ex}` +
+        `<button class="ghost pattern-save${saved ? ' saved' : ''}" type="button" data-pattern-save="${escapeHtml(p.id)}">${escapeHtml(tr(saved ? 'נשמר לחזרה' : 'שמרו כקלף חזרה'))}</button></article>`;
+    }).join('') || `<div class="patterns-loading">${escapeHtml(tr('אין תבניות ברמה הזו'))}</div>`;
+  }
+
+  // A pattern becomes an ordinary review card: the pattern on the front, its gloss and an example behind.
+  function savePattern(id) {
+    const L = lang();
+    const p = ((window.NER_PATTERNS || {})[L.id] || []).find(x => x.id === id);
+    if (!p) return;
+    const key = patternKey(p), wid = L.id + ':' + key;
+    if (state.words[wid]) { toast(tr('הקלף כבר בחזרה')); return; }
+    const e = p.x[0];
+    const eg = e && (e.t[baseLang().id] || e.t.en);
+    const w = {
+      lang: L.id, key, form: p.p, display: p.p, tr: '', pos: 'pattern',
+      meaning: p.en + (eg ? ' — ' + eg : ''),
+      context: e ? e.s : '', grade: 1, added: Date.now(), lastSeen: Date.now(), seen: 1
+    };
+    state.words[wid] = w;
+    schedule(w, 1);
+    rebuildIndex(); save(); renderPatterns(); renderHome();
+    toast(tr('נוסף לחזרה'));
   }
 
   /* ---------------- articles ---------------- */
@@ -3942,6 +4044,9 @@
         renderWords();
         return;
       }
+      if (e.target.closest('#pattern-levels .chip')) { patternLevel = e.target.closest('.chip').dataset.level; renderPatterns(); return; }
+      if (e.target.closest('#sheet-cloze')) { saveCloze(); return; }
+      if (e.target.closest('[data-pattern-save]')) { savePattern(e.target.closest('[data-pattern-save]').dataset.patternSave); return; }
       if (e.target.closest('[data-lang-id]')) { selectLanguage(e.target.closest('[data-lang-id]').dataset.langId); return; }
       if (e.target.closest('[data-speak]')) {
         e.stopPropagation();
