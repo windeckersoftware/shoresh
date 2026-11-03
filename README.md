@@ -1,7 +1,33 @@
 # Shoresh (שורש) — language-learning reading app
 
 Shoresh is an original Android reading app built from scratch. The name is the Hebrew word for “root”, שורש. 
-**Current build:** `out/Shoresh-1.7.0.apk` (dev-signed, Android 8+). The Android package is still `app.ner.reader`, so this installs over the earlier Ner build and keeps its data.
+**Current build:** `out/Shoresh-1.8.2.apk` (dev-signed, Android 8+). The Android package is still `app.ner.reader`, so this installs over the earlier Ner build and keeps its data.
+
+## New in 1.8.2
+
+- **Sentence patterns in 11 languages.** Home → Sentence patterns lists the patterns a language is built from, with real example sentences you can hear and translate, a level filter (A1–B2+), "more examples", and "Save as review card". Hebrew (142 patterns) and French (154) use real sentences from Tatoeba with their human translations (CC BY 2.0 FR, ranked by how often each pattern occurs). Chinese, Japanese, Korean, German, Spanish, Italian, Portuguese, Russian and English (14–49 patterns each) are hand-written for Shoresh, are not native-checked and say so on the screen. Every pattern has a short learner-facing name and its English meaning.
+- **Patterns found while you read.** Open a word's full sheet: "Patterns in this sentence" shows the patterns the sentence uses (up to three). Tap one to see it with all its examples; Back returns to your place in the text.
+- **Cloze cards.** In the word sheet, "Save sentence as a cloze card" turns the sentence into a fill-in-the-blank review card (every occurrence of the word is blanked, in left-to-right, right-to-left and Chinese/Japanese text), graded 1–4 / K / X like any other card.
+- **Accessibility.** Touch targets are at least 44×44 px, secondary text and the amber, green, blue and red text colours reach 4.5:1 contrast (reader papers included), every icon button has a translated label, keyboard focus is visible, the review announces its counts and the answer to screen readers, and the word sheet and card follow the interface direction (Hebrew, Arabic right-to-left) while the word you are learning keeps its own.
+- **Faster start.** PDF.js, Hanzi Writer and the Chinese pinyin data load when first needed instead of before the first screen.
+- **Number keys grade from the word card.** 1–4, K and X work from the small card next to the word, not only from the full sheet.
+- **Share from Drive and Brave.** The read permission of a shared file now travels with it even when the sending app only puts the link in `EXTRA_STREAM`, so PDFs and EPUBs shared from Drive open reliably.
+- **Two-phone sync keeps your reviews.** Settings → Local sync now merges word by word: a review done on one phone is no longer overwritten when you merely open the same word on the other, the review counters of both phones are merged (the larger new and review count per day), and 1.7 words without a schedule are upgraded first. A word deleted on one phone comes back from the other. The transport is unchanged.
+- **Readings in Japanese and Cantonese.** Japanese words and kanji now show kana (hiragana or katakana; on'yomi · kun'yomi for a single kanji) from JMdict and KANJIDIC2 instead of IPA, and Cantonese words show jyutping where the Cantonese pack had none. `tools/add_readings.py` rebuilds them; words the sources do not list stay without a reading. Credits are in Settings → Licences.
+- Also: the Aa button stays on a 360 px phone; the review header reads "n new · n learning · n review"; a pattern or cloze card marked known or ignored can be saved again; undo restores the right day's counters and the reader's word colours.
+
+## New in 1.8.1
+
+- **YouTube settings work in the video player.** YouTube's settings, subtitle, quality and speed menus open as sheets from the bottom and used to sit under the caption panel. While one is open, the panel now steps below it, so you can choose subtitles; it comes back when the menu closes.
+
+## New in 1.8.0
+
+- **Review cards, Anki style, on your own scale.** Words you grade 1–4 (and the sayings you save) become cards with the SM-2 schedule. Show the answer, then grade it as in the reader: 1 don't know, 2 recognise, 3 understand, 4 almost (Again, Hard, Good and Easy to the scheduler), each button showing when the card comes back: minutes while you learn it, then days that grow with each answer. The number also becomes the word's reading status. K (known) and X (skip) take it out of review. New · learning · review counters and multi-step undo; new cards per day follow the daily goal.
+- **Both ways.** The ⇄ button switches the front between the word and its meaning. The back shows the reading, the meaning and the sentence the word came from.
+- **Stroke order for Chinese.** The Characters tab of a Chinese word animates each character (Hanzi Writer) and shows it stroke by stroke; tap a stroke to replay it. Works offline for 9,574 characters.
+- **Save proverbs, idioms and chengyu.** The saying card shows "+ Save" in the reader, the web reader and the video captions; a saved saying is a card of its own, with its sentence.
+- Context sentences: words saved in the web reader and from captions keep the sentence they came from.
+- Design: undo after ignoring a word, edge fades on sideways rows, readable labels, the Progress ring sweeps in, quick flick closes sheets; Hebrew left in the English review, contents and library labels is gone.
 
 ## New in 1.7.0
 
@@ -134,11 +160,12 @@ The project builds without Gradle, using the Android SDK command-line tools and 
 ./build.sh
 ```
 
-The script writes `out/Shoresh-1.7.0.apk`. The toolchain lives in `.toolchain/` and is not part of the app. The dev keystore is `keystore/ner-dev.keystore` (password `nerdev`); do not ship with it.
+The script writes `out/Shoresh-1.8.2.apk`. The toolchain lives in `.toolchain/` and is not part of the app. The dev keystore is `keystore/ner-dev.keystore` (password `nerdev`); do not ship with it.
 
 ## Data pipeline
 
 - `tools/build_zh_pack.py` builds `zh` and `yue` from CC-CEDICT (CC BY-SA 4.0) with FrequencyWords zh_cn ranks and HSK 3.0 levels from complete-hsk-vocabulary (MIT).
+- `tools/add_readings.py` (run after the pack builders) fills the `ja` pack with kana readings from JMdict/KANJIDIC2 and the `yue` pack with jyutping from to-jyutping; sources are downloaded to `data/raw/readings` with pinned checksums.
 - `tools/build_phrases.py [codes…]` builds the phrase packs from kaikki.org; downloads are cached in `data/raw/phrases/` (multi-word lines only for the large verb/adj files).
 
 - `tools/build_he_pack.py` builds the Hebrew dictionary from:

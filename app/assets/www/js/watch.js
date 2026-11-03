@@ -11,14 +11,14 @@
     return ISO3[code] || code;
   }
   var UI = {
-    he: { captions: 'כתוביות · לחצו על מילה', loading: 'טוען…', howWell: 'כמה המילה מוכרת לכם?', g1: 'לא מכיר', g2: 'מזהה', g3: 'מבין', g4: 'כמעט', g5: 'ידוע', gx: 'דלג', speak: '🔊 השמעה', close: 'סיום', saved: 'שמור באוצר שלכם', missing: 'לא נמצאה משמעות במילון המקומי.', sameLang: 'שפת התרגום זהה לשפת הכתוביות.', translating: 'מתרגם…', online: 'תרגום אונליין', savedOnline: 'תרגום אונליין · נשמר', noMeaning: 'אין משמעות.', rank: 'בשכיחות', local: 'מילון מקומי', notFound: 'לא נמצא במילון', failed: 'התרגום לא הצליח.', brand: 'שורש', mark: 'ש' },
-    en: { captions: 'Captions · tap a word', loading: 'Loading…', howWell: 'How well do you know this word?', g1: 'new', g2: 'seen', g3: 'know', g4: 'almost', g5: 'known', gx: 'skip', speak: '🔊 Speak', close: 'Close', saved: 'Saved', missing: 'Not in the local dictionary.', sameLang: 'Translation language matches the captions.', translating: 'Translating…', online: 'Online translation', savedOnline: 'Online translation · saved', noMeaning: 'No meaning.', rank: 'frequency', local: 'Local dictionary', notFound: 'Not in the dictionary', failed: 'Translation failed.', brand: 'Shoresh', mark: 'S' },
-    hu: { captions: 'Felirat · koppints egy szóra', loading: 'Betöltés…', howWell: 'Mennyire ismered ezt a szót?', g1: 'idegen', g2: 'ismerős', g3: 'értem', g4: 'majdnem', g5: 'tudom', gx: 'kihagy', speak: '🔊 Felolvas', close: 'Bezár', saved: 'Elmentve', missing: 'Nincs a helyi szótárban.', sameLang: 'A fordítás nyelve megegyezik a felirattal.', translating: 'Fordítás…', online: 'Online fordítás', savedOnline: 'Online fordítás · elmentve', noMeaning: 'Nincs jelentés.', rank: 'gyakoriság', local: 'Helyi szótár', notFound: 'Nincs a szótárban', failed: 'A fordítás nem sikerült.', brand: 'Shoresh', mark: 'S' },
-    es: { captions: 'Subtítulos · toca una palabra', loading: 'Cargando…', howWell: '¿Cuánto conoces esta palabra?', g1: 'nueva', g2: 'vista', g3: 'entiendo', g4: 'casi', g5: 'sé', gx: 'saltar', speak: '🔊 Oír', close: 'Cerrar', saved: 'Guardada', missing: 'No está en el diccionario local.', sameLang: 'El idioma de traducción es el de los subtítulos.', translating: 'Traduciendo…', online: 'Traducción en línea', savedOnline: 'Traducción en línea · guardada', noMeaning: 'Sin significado.', rank: 'frecuencia', local: 'Diccionario local', notFound: 'No está en el diccionario', failed: 'La traducción falló.', brand: 'Shoresh', mark: 'S' },
-    fr: { captions: 'Sous-titres · touchez un mot', loading: 'Chargement…', howWell: 'À quel point connaissez-vous ce mot ?', g1: 'nouveau', g2: 'vu', g3: 'compris', g4: 'presque', g5: 'su', gx: 'passer', speak: '🔊 Écouter', close: 'Fermer', saved: 'Enregistré', missing: 'Absent du dictionnaire local.', sameLang: 'La langue de traduction est celle des sous-titres.', translating: 'Traduction…', online: 'Traduction en ligne', savedOnline: 'Traduction en ligne · enregistrée', noMeaning: 'Pas de sens.', rank: 'fréquence', local: 'Dictionnaire local', notFound: 'Absent du dictionnaire', failed: 'La traduction a échoué.', brand: 'Shoresh', mark: 'S' },
-    de: { captions: 'Untertitel · Wort antippen', loading: 'Lädt…', howWell: 'Wie gut kennst du dieses Wort?', g1: 'neu', g2: 'gesehen', g3: 'verstanden', g4: 'fast', g5: 'bekannt', gx: 'weg', speak: '🔊 Vorlesen', close: 'Schließen', saved: 'Gespeichert', missing: 'Nicht im lokalen Wörterbuch.', sameLang: 'Übersetzungsprache ist die Untertitelsprache.', translating: 'Übersetze…', online: 'Online-Übersetzung', savedOnline: 'Online-Übersetzung · gespeichert', noMeaning: 'Keine Bedeutung.', rank: 'Häufigkeit', local: 'Lokales Wörterbuch', notFound: 'Nicht im Wörterbuch', failed: 'Übersetzung fehlgeschlagen.', brand: 'Shoresh', mark: 'S' },
-    ru: { captions: 'Субтитры · нажмите слово', loading: 'Загрузка…', howWell: 'Насколько знакомо это слово?', g1: 'новое', g2: 'видел', g3: 'понял', g4: 'почти', g5: 'знаю', gx: 'мимо', speak: '🔊 Слушать', close: 'Закрыть', saved: 'Сохранено', missing: 'Нет в местном словаре.', sameLang: 'Язык перевода совпадает с субтитрами.', translating: 'Перевод…', online: 'Онлайн-перевод', savedOnline: 'Онлайн-перевод · сохранено', noMeaning: 'Нет значения.', rank: 'частота', local: 'Местный словарь', notFound: 'Нет в словаре', failed: 'Перевод не удался.', brand: 'Shoresh', mark: 'S' },
-    ar: { captions: 'ترجمة · اضغط كلمة', loading: 'جارٍ التحميل…', howWell: 'ما مدى معرفتك بهذه الكلمة؟', g1: 'جديدة', g2: 'مألوفة', g3: 'أفهم', g4: 'تقريبًا', g5: 'أعرف', gx: 'تجاوز', speak: '🔊 استمع', close: 'إغلاق', saved: 'محفوظة', missing: 'ليست في القاموس المحلي.', sameLang: 'لغة الترجمة هي لغة الترجمة المصاحبة.', translating: 'جارٍ الترجمة…', online: 'ترجمة عبر الإنترنت', savedOnline: 'ترجمة عبر الإنترنت · حُفظت', noMeaning: 'لا معنى.', rank: 'التكرار', local: 'قاموس محلي', notFound: 'ليست في القاموس', failed: 'فشلت الترجمة.', brand: 'شوريش', mark: 'ش' }
+    he: { captions: 'כתוביות · לחצו על מילה', loading: 'טוען…', howWell: 'כמה המילה מוכרת לכם?', g1: 'לא מכיר', g2: 'מזהה', g3: 'מבין', g4: 'כמעט', g5: 'ידוע', gx: 'דלג', speak: '🔊 השמעה', close: 'סיום', save: 'שמירה', saved: 'שמור באוצר שלכם', missing: 'לא נמצאה משמעות במילון המקומי.', sameLang: 'שפת התרגום זהה לשפת הכתוביות.', translating: 'מתרגם…', online: 'תרגום אונליין', savedOnline: 'תרגום אונליין · נשמר', noMeaning: 'אין משמעות.', rank: 'בשכיחות', local: 'מילון מקומי', notFound: 'לא נמצא במילון', failed: 'התרגום לא הצליח.', brand: 'שורש', mark: 'ש' },
+    en: { captions: 'Captions · tap a word', loading: 'Loading…', howWell: 'How well do you know this word?', g1: 'new', g2: 'seen', g3: 'know', g4: 'almost', g5: 'known', gx: 'skip', speak: '🔊 Speak', close: 'Close', save: 'Save', saved: 'Saved', missing: 'Not in the local dictionary.', sameLang: 'Translation language matches the captions.', translating: 'Translating…', online: 'Online translation', savedOnline: 'Online translation · saved', noMeaning: 'No meaning.', rank: 'frequency', local: 'Local dictionary', notFound: 'Not in the dictionary', failed: 'Translation failed.', brand: 'Shoresh', mark: 'S' },
+    hu: { captions: 'Felirat · koppints egy szóra', loading: 'Betöltés…', howWell: 'Mennyire ismered ezt a szót?', g1: 'idegen', g2: 'ismerős', g3: 'értem', g4: 'majdnem', g5: 'tudom', gx: 'kihagy', speak: '🔊 Felolvas', close: 'Bezár', save: 'Mentés', saved: 'Elmentve', missing: 'Nincs a helyi szótárban.', sameLang: 'A fordítás nyelve megegyezik a felirattal.', translating: 'Fordítás…', online: 'Online fordítás', savedOnline: 'Online fordítás · elmentve', noMeaning: 'Nincs jelentés.', rank: 'gyakoriság', local: 'Helyi szótár', notFound: 'Nincs a szótárban', failed: 'A fordítás nem sikerült.', brand: 'Shoresh', mark: 'S' },
+    es: { captions: 'Subtítulos · toca una palabra', loading: 'Cargando…', howWell: '¿Cuánto conoces esta palabra?', g1: 'nueva', g2: 'vista', g3: 'entiendo', g4: 'casi', g5: 'sé', gx: 'saltar', speak: '🔊 Oír', close: 'Cerrar', save: 'Guardar', saved: 'Guardada', missing: 'No está en el diccionario local.', sameLang: 'El idioma de traducción es el de los subtítulos.', translating: 'Traduciendo…', online: 'Traducción en línea', savedOnline: 'Traducción en línea · guardada', noMeaning: 'Sin significado.', rank: 'frecuencia', local: 'Diccionario local', notFound: 'No está en el diccionario', failed: 'La traducción falló.', brand: 'Shoresh', mark: 'S' },
+    fr: { captions: 'Sous-titres · touchez un mot', loading: 'Chargement…', howWell: 'À quel point connaissez-vous ce mot ?', g1: 'nouveau', g2: 'vu', g3: 'compris', g4: 'presque', g5: 'su', gx: 'passer', speak: '🔊 Écouter', close: 'Fermer', save: 'Enregistrer', saved: 'Enregistré', missing: 'Absent du dictionnaire local.', sameLang: 'La langue de traduction est celle des sous-titres.', translating: 'Traduction…', online: 'Traduction en ligne', savedOnline: 'Traduction en ligne · enregistrée', noMeaning: 'Pas de sens.', rank: 'fréquence', local: 'Dictionnaire local', notFound: 'Absent du dictionnaire', failed: 'La traduction a échoué.', brand: 'Shoresh', mark: 'S' },
+    de: { captions: 'Untertitel · Wort antippen', loading: 'Lädt…', howWell: 'Wie gut kennst du dieses Wort?', g1: 'neu', g2: 'gesehen', g3: 'verstanden', g4: 'fast', g5: 'bekannt', gx: 'weg', speak: '🔊 Vorlesen', close: 'Schließen', save: 'Speichern', saved: 'Gespeichert', missing: 'Nicht im lokalen Wörterbuch.', sameLang: 'Übersetzungsprache ist die Untertitelsprache.', translating: 'Übersetze…', online: 'Online-Übersetzung', savedOnline: 'Online-Übersetzung · gespeichert', noMeaning: 'Keine Bedeutung.', rank: 'Häufigkeit', local: 'Lokales Wörterbuch', notFound: 'Nicht im Wörterbuch', failed: 'Übersetzung fehlgeschlagen.', brand: 'Shoresh', mark: 'S' },
+    ru: { captions: 'Субтитры · нажмите слово', loading: 'Загрузка…', howWell: 'Насколько знакомо это слово?', g1: 'новое', g2: 'видел', g3: 'понял', g4: 'почти', g5: 'знаю', gx: 'мимо', speak: '🔊 Слушать', close: 'Закрыть', save: 'Сохранить', saved: 'Сохранено', missing: 'Нет в местном словаре.', sameLang: 'Язык перевода совпадает с субтитрами.', translating: 'Перевод…', online: 'Онлайн-перевод', savedOnline: 'Онлайн-перевод · сохранено', noMeaning: 'Нет значения.', rank: 'частота', local: 'Местный словарь', notFound: 'Нет в словаре', failed: 'Перевод не удался.', brand: 'Shoresh', mark: 'S' },
+    ar: { captions: 'ترجمة · اضغط كلمة', loading: 'جارٍ التحميل…', howWell: 'ما مدى معرفتك بهذه الكلمة؟', g1: 'جديدة', g2: 'مألوفة', g3: 'أفهم', g4: 'تقريبًا', g5: 'أعرف', gx: 'تجاوز', speak: '🔊 استمع', close: 'إغلاق', save: 'حفظ', saved: 'محفوظة', missing: 'ليست في القاموس المحلي.', sameLang: 'لغة الترجمة هي لغة الترجمة المصاحبة.', translating: 'جارٍ الترجمة…', online: 'ترجمة عبر الإنترنت', savedOnline: 'ترجمة عبر الإنترنت · حُفظت', noMeaning: 'لا معنى.', rank: 'التكرار', local: 'قاموس محلي', notFound: 'ليست في القاموس', failed: 'فشلت الترجمة.', brand: 'شوريش', mark: 'ش' }
   };
   var POS = {
     en: { noun: 'noun', verb: 'verb', adj: 'adjective', adv: 'adverb', article: 'article', pron: 'pronoun', prep: 'preposition', conj: 'conjunction', num: 'number', interj: 'interjection', particle: 'particle', phrase: 'phrase', name: 'name' },
@@ -46,6 +46,7 @@
   var words = state.words || {};
   var index = {};
   var current = null, currentKey = null, reqId = 0;
+  var currentCtx = '', currentPhrase = null;
   var seconds = 0, last = Date.now(), unreported = 0;
   var lastCaption = '';
 
@@ -78,6 +79,26 @@
   var host = document.createElement('div');
   host.id = 'ner-watch-host';
   host.style.cssText = 'all:initial;position:fixed;inset:0;pointer-events:none;z-index:2147483646';
+  // YouTube's own menus (settings, subtitles, quality) open as bottom sheets
+  // under the caption panel. While one is open, the Shoresh layer steps below it.
+  var YT_MENUS = '.ytSpecBottomSheetLayoutContainer,ytm-bottom-sheet-renderer,.bottom-sheet-container,tp-yt-paper-dialog,.ytp-settings-menu,.ytp-popup';
+  function ytMenuOpen() {
+    var list = document.querySelectorAll(YT_MENUS);
+    for (var i = 0; i < list.length; i++) {
+      var r = list[i].getBoundingClientRect();
+      if (r.width > 0 && r.height > 0 && getComputedStyle(list[i]).visibility !== 'hidden') return true;
+    }
+    return false;
+  }
+  var menuCheck = 0;
+  new MutationObserver(function () {
+    cancelAnimationFrame(menuCheck);
+    menuCheck = requestAnimationFrame(function () {
+      // 0 also puts it under YouTube's scrim, so a tap outside the menu closes it.
+      var z = ytMenuOpen() ? '0' : '2147483646';
+      if (host.style.zIndex !== z) host.style.zIndex = z;
+    });
+  }).observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'style', 'hidden'] });
   var root = host.attachShadow({ mode: 'open' });
   var style = document.createElement('style');
   style.textContent = `
@@ -127,6 +148,7 @@
     .phrase small{font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;font-weight:800;color:#b07f2c}
     .phrase b{font-size:15px;line-height:1.3;unicode-bidi:plaintext}
     .phrase span{font-size:12.5px;line-height:1.45;color:#3d3a33;unicode-bidi:plaintext}
+    .ph-save{align-self:flex-start;margin-top:6px;padding:5px 10px;border:0;border-radius:9px;background:#ecdcb6;color:inherit;font:inherit;font-size:11.5px;font-weight:800}
     .more{font-size:10.5px;line-height:1.5;color:#726c60;margin:0;unicode-bidi:plaintext}
     .label{font-size:10px;color:#726c60;margin:14px 0 6px}
     .grades{display:grid;grid-template-columns:repeat(6,1fr);gap:5px}
@@ -269,7 +291,9 @@
   var phraseEl = el('div', 'phrase');
   phraseEl.hidden = true;
   var phraseKind = el('small'), phraseText = el('b'), phraseMeaning = el('span');
-  phraseEl.appendChild(phraseKind); phraseEl.appendChild(phraseText); phraseEl.appendChild(phraseMeaning);
+  var phraseSave = el('button', 'ph-save');
+  phraseEl.appendChild(phraseKind); phraseEl.appendChild(phraseText); phraseEl.appendChild(phraseMeaning); phraseEl.appendChild(phraseSave);
+  phraseSave.addEventListener('click', function (e) { e.stopPropagation(); savePhrase(); });
   wp.appendChild(phraseEl);
   var meaningEl = el('p', 'meaning', t('loading'));
   var moreEl = el('p', 'more');
@@ -601,7 +625,7 @@
     }
     currentKey = key;
     send('grade', { lang: lang, key: key, form: entry.form || raw || current, display: entry.display || raw || current,
-      tr: entry.tr || '', pos: entry.pos || '', meaning: text, meaningBase: baseLang, grade: gradeNow, context: '' });
+      tr: entry.tr || '', pos: entry.pos || '', meaning: text, meaningBase: baseLang, grade: gradeNow, context: currentCtx });
     rebuild();
   }
 
@@ -645,6 +669,7 @@
     var rid = 'w' + (++reqId);
     wp.__rid = rid;
     var ctx = lineContext(span);
+    currentCtx = ctx.text.replace(/\s+/g, ' ').trim().slice(0, 500);
     send('lookup', { lang: lang, word: raw, rid: rid, ctx: ctx.text, off: ctx.offset });
   }
 
@@ -670,8 +695,22 @@
     ru: { proverb: 'Пословица', idiom: 'Идиома', phrase: 'Выражение' }, ar: { proverb: 'مثل', idiom: 'تعبير اصطلاحي', phrase: 'عبارة' }
   };
 
+  // Keep a saying as a card of its own, with the caption line it was heard in.
+  function savePhrase() {
+    var ph = currentPhrase;
+    if (!ph || words[lang + ':' + ph.key]) return;
+    var display = ph.w || ph.key;
+    var gloss = (ph.g && ph.g[0]) || '';
+    var meaning = phraseMeaning.textContent || gloss;
+    send('grade', { lang: lang, key: ph.key, form: display, display: display, tr: '', pos: ph.kind || 'phrase', meaning: meaning, meaningBase: meaning !== gloss ? baseLang : 'en', grade: 1, context: currentCtx });
+    if (!words[lang + ':' + ph.key]) words[lang + ':' + ph.key] = { lang: lang, key: ph.key, form: display, display: display, pos: ph.kind || 'phrase', meaning: meaning, grade: 1, added: Date.now() };
+    phraseSave.textContent = '✓ ' + t('saved');
+  }
+
   function showPhrase(ph) {
+    currentPhrase = ph && ph.found ? ph : null;
     if (!ph || !ph.found) { phraseEl.hidden = true; return; }
+    phraseSave.textContent = words[lang + ':' + ph.key] ? '✓ ' + t('saved') : '+ ' + t('save');
     var kinds = KIND[uiCode] || KIND.en;
     phraseKind.textContent = kinds[ph.kind] || kinds.phrase;
     phraseText.textContent = ph.w || ph.key;
@@ -702,7 +741,7 @@
     var tr = (w && w.tr) || '';
     var pos = (w && w.pos) || '';
     var meaning = panelMeaning || (w && w.meaningBase === baseLang ? w.meaning : '') || '';
-    send('grade', { lang: lang, key: key, form: form, display: display, tr: tr, pos: pos, meaning: meaning, meaningBase: meaning ? baseLang : '', grade: g });
+    send('grade', { lang: lang, key: key, form: form, display: display, tr: tr, pos: pos, meaning: meaning, meaningBase: meaning ? baseLang : '', grade: g, context: currentCtx });
     if (!words[lang + ':' + key]) {
       words[lang + ':' + key] = { lang: lang, key: key, form: form, display: display, tr: tr, pos: pos, meaning: meaning, meaningBase: meaning ? baseLang : '', grade: g, added: Date.now() };
     } else {

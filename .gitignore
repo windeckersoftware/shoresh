@@ -22,3 +22,10 @@ data/raw/
 .DS_Store
 __pycache__/
 .idea/
+
+# Stroke data; tools/fetch_hanzi.py downloads it when building
+app/assets/hanzi/
+
+# Working notes stay on this machine, not in the public repo
+HANDOFF.md
+FINISH.md

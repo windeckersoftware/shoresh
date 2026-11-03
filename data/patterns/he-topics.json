@@ -1,0 +1,5292 @@
+{
+ "meta": {
+  "source": "Tatoeba Hebrew with English translations (CC BY 2.0 FR); ids kept for attribution",
+  "patterns": "data/patterns/he.json top 100, by frequency in Tatoeba Hebrew"
+ },
+ "maps": [
+  {
+   "id": "study",
+   "he": "לימודים",
+   "en": "Studying",
+   "center": "אני",
+   "places": [
+    {
+     "he": "בית ספר",
+     "en": "school",
+     "zh": "学校",
+     "words": [
+      {
+       "kind": "verb",
+       "he": "ללמוד",
+       "en": "to learn, study",
+       "zh": "学习",
+       "sentences": [
+        {
+         "heb_id": 587977,
+         "he": "מה אתה לומד בבית הספר?",
+         "en": "What are you learning at school?",
+         "frame": {
+          "id": "ma",
+          "he": "מה",
+          "en": "what",
+          "rank": 9
+         },
+         "patterns": [
+          {
+           "id": "ma",
+           "he": "מה",
+           "en": "what",
+           "rank": 9
+          }
+         ]
+        },
+        {
+         "heb_id": 587978,
+         "he": "מה את לומדת בבית הספר?",
+         "en": "What are you learning at school?",
+         "frame": {
+          "id": "ma",
+          "he": "מה",
+          "en": "what",
+          "rank": 9
+         },
+         "patterns": [
+          {
+           "id": "ma",
+           "he": "מה",
+           "en": "what",
+           "rank": 9
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "kind": "verb",
+       "he": "ללמד",
+       "en": "to teach",
+       "zh": "教",
+       "sentences": [
+        {
+         "heb_id": 6011753,
+         "he": "למה מלמדים את זה בבתי ספר?",
+         "en": "Why is this being taught in schools?",
+         "frame": {
+          "id": "lama",
+          "he": "למה / מדוע",
+          "en": "why",
+          "rank": 28
+         },
+         "patterns": [
+          {
+           "id": "et-def",
+           "he": "את ה־ / את זה",
+           "en": "the + definite object",
+           "rank": 2
+          },
+          {
+           "id": "ze",
+           "he": "זה / זאת",
+           "en": "this is / it is",
+           "rank": 5
+          },
+          {
+           "id": "lama",
+           "he": "למה / מדוע",
+           "en": "why",
+           "rank": 28
+          }
+         ]
+        },
+        {
+         "heb_id": 2071790,
+         "he": "העלמה סמית מלמדת אנגלית בבית הספר הזה.",
+         "en": "Miss Smith teaches English at this school.",
+         "frame": {
+          "id": "haze",
+          "he": "הזה / הזאת / האלה",
+          "en": "this / that + noun",
+          "rank": 10
+         },
+         "patterns": [
+          {
+           "id": "haze",
+           "he": "הזה / הזאת / האלה",
+           "en": "this / that + noun",
+           "rank": 10
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "kind": "noun",
+       "he": "מורה",
+       "en": "teacher",
+       "zh": "老师",
+       "sentences": [
+        {
+         "heb_id": 1384308,
+         "he": "יש פסל של מורה בחזית בית הספר.",
+         "en": "There is a statue of the teacher in front of the school.",
+         "frame": {
+          "id": "yesh",
+          "he": "יש",
+          "en": "there is / there are",
+          "rank": 13
+         },
+         "patterns": [
+          {
+           "id": "shel",
+           "he": "של",
+           "en": "of",
+           "rank": 12
+          },
+          {
+           "id": "yesh",
+           "he": "יש",
+           "en": "there is / there are",
+           "rank": 13
+          }
+         ]
+        },
+        {
+         "heb_id": 5758750,
+         "he": "המורה לא נתנה לנו שום שיעורי בית.",
+         "en": "The teacher didn't give us any homework.",
+         "frame": {
+          "id": "shum",
+          "he": "שום + שם",
+          "en": "no / any + noun",
+          "rank": 58
+         },
+         "patterns": [
+          {
+           "id": "lo",
+           "he": "לא",
+           "en": "not",
+           "rank": 1
+          },
+          {
+           "id": "le-pron",
+           "he": "לי / לך / לו …",
+           "en": "to me / you / him …",
+           "rank": 4
+          },
+          {
+           "id": "shum",
+           "he": "שום + שם",
+           "en": "no / any + noun",
+           "rank": 58
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "kind": "noun",
+       "he": "תלמיד",
+       "en": "pupil",
+       "zh": "学生",
+       "sentences": [
+        {
+         "heb_id": 637168,
+         "he": "היו מספר תלמידים בחדר.",
+         "en": "There were a number of students in the room.",
+         "frame": {
+          "id": "haya",
+          "he": "היה / הייתה / היו",
+          "en": "was / were",
+          "rank": 7
+         },
+         "patterns": [
+          {
+           "id": "haya",
+           "he": "היה / הייתה / היו",
+           "en": "was / were",
+           "rank": 7
+          }
+         ]
+        },
+        {
+         "heb_id": 6016630,
+         "he": "כמעט כל התלמידים נהנים מחיי בית הספר.",
+         "en": "Almost all the students enjoy their school life.",
+         "frame": {
+          "id": "kol",
+          "he": "כל",
+          "en": "all / every",
+          "rank": 18
+         },
+         "patterns": [
+          {
+           "id": "kol",
+           "he": "כל",
+           "en": "all / every",
+           "rank": 18
+          },
+          {
+           "id": "kimat",
+           "he": "כמעט",
+           "en": "almost",
+           "rank": 69
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "kind": "noun",
+       "he": "שיעור",
+       "en": "lesson",
+       "zh": "课",
+       "sentences": [
+        {
+         "heb_id": 5498553,
+         "he": "אין לי שום שיעורי בית.",
+         "en": "I don't have any homework.",
+         "frame": {
+          "id": "ein",
+          "he": "אין",
+          "en": "there isn't / there aren't",
+          "rank": 27
+         },
+         "patterns": [
+          {
+           "id": "le-pron",
+           "he": "לי / לך / לו …",
+           "en": "to me / you / him …",
+           "rank": 4
+          },
+          {
+           "id": "ein",
+           "he": "אין",
+           "en": "there isn't / there aren't",
+           "rank": 27
+          },
+          {
+           "id": "ein-le",
+           "he": "אין ל־",
+           "en": "don't have",
+           "rank": 53
+          },
+          {
+           "id": "shum",
+           "he": "שום + שם",
+           "en": "no / any + noun",
+           "rank": 58
+          }
+         ]
+        },
+        {
+         "heb_id": 5755382,
+         "he": "איפה שיעורי הבית שלך?",
+         "en": "Where is your homework?",
+         "frame": {
+          "id": "eifo",
+          "he": "איפה / היכן",
+          "en": "where",
+          "rank": 43
+         },
+         "patterns": [
+          {
+           "id": "sheli",
+           "he": "שלי / שלך / שלו …",
+           "en": "my / your / his …",
+           "rank": 6
+          },
+          {
+           "id": "eifo",
+           "he": "איפה / היכן",
+           "en": "where",
+           "rank": 43
+          }
+         ]
+        }
+       ]
+      }
+     ],
+     "sentences": [
+      {
+       "heb_id": 1734499,
+       "he": "אני רוצה ספר.",
+       "en": "I want a book.",
+       "frame": {
+        "id": "rotse",
+        "he": "רוצה / רוצים",
+        "en": "want",
+        "rank": 14
+       },
+       "patterns": [
+        {
+         "id": "rotse",
+         "he": "רוצה / רוצים",
+         "en": "want",
+         "rank": 14
+        }
+       ]
+      },
+      {
+       "heb_id": 1453269,
+       "he": "מישהו בבית?",
+       "en": "Is anybody home?",
+       "frame": {
+        "id": "mishehu",
+        "he": "מישהו / משהו",
+        "en": "someone / something",
+        "rank": 26
+       },
+       "patterns": [
+        {
+         "id": "mishehu",
+         "he": "מישהו / משהו",
+         "en": "someone / something",
+         "rank": 26
+        }
+       ]
+      },
+      {
+       "heb_id": 3590656,
+       "he": "ספר לי עליו.",
+       "en": "Tell me about him.",
+       "frame": {
+        "id": "alay",
+        "he": "עלי / עליך / עליו …",
+        "en": "on me / I have to",
+        "rank": 25
+       },
+       "patterns": [
+        {
+         "id": "le-pron",
+         "he": "לי / לך / לו …",
+         "en": "to me / you / him …",
+         "rank": 4
+        },
+        {
+         "id": "alay",
+         "he": "עלי / עליך / עליו …",
+         "en": "on me / I have to",
+         "rank": 25
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "he": "אוניברסיטה",
+     "en": "university",
+     "zh": "大学",
+     "words": [
+      {
+       "kind": "verb",
+       "he": "להבין",
+       "en": "to understand",
+       "zh": "明白",
+       "sentences": [
+        {
+         "heb_id": 614678,
+         "he": "אינני מבין.",
+         "en": "I don't get it.",
+         "frame": {
+          "id": "einenni",
+          "he": "אינו / אינני",
+          "en": "am not / is not",
+          "rank": 15
+         },
+         "patterns": [
+          {
+           "id": "einenni",
+           "he": "אינו / אינני",
+           "en": "am not / is not",
+           "rank": 15
+          }
+         ]
+        },
+        {
+         "heb_id": 2182388,
+         "he": "אינני מבינה.",
+         "en": "I don't understand.",
+         "frame": {
+          "id": "einenni",
+          "he": "אינו / אינני",
+          "en": "am not / is not",
+          "rank": 15
+         },
+         "patterns": [
+          {
+           "id": "einenni",
+           "he": "אינו / אינני",
+           "en": "am not / is not",
+           "rank": 15
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "kind": "verb",
+       "he": "לשאול",
+       "en": "to ask",
+       "zh": "问",
+       "sentences": [
+        {
+         "heb_id": 6084779,
+         "he": "מי שאל אותך?",
+         "en": "Who asked you?",
+         "frame": {
+          "id": "mi",
+          "he": "מי",
+          "en": "who",
+          "rank": 35
+         },
+         "patterns": [
+          {
+           "id": "oto",
+           "he": "אותי / אותך / אותו …",
+           "en": "me / you / him (object)",
+           "rank": 8
+          },
+          {
+           "id": "mi",
+           "he": "מי",
+           "en": "who",
+           "rank": 35
+          },
+          {
+           "id": "mi-she",
+           "he": "מי ש־",
+           "en": "whoever / the one who",
+           "rank": 98
+          }
+         ]
+        },
+        {
+         "heb_id": 1823773,
+         "he": "אני יכול לשאול למה?",
+         "en": "May I ask why?",
+         "frame": {
+          "id": "yaxol",
+          "he": "יכול / יכולה / יכולים",
+          "en": "can",
+          "rank": 11
+         },
+         "patterns": [
+          {
+           "id": "yaxol",
+           "he": "יכול / יכולה / יכולים",
+           "en": "can",
+           "rank": 11
+          },
+          {
+           "id": "lama",
+           "he": "למה / מדוע",
+           "en": "why",
+           "rank": 28
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "kind": "noun",
+       "he": "סטודנט",
+       "en": "student",
+       "zh": "大学生",
+       "sentences": [
+        {
+         "heb_id": 1383983,
+         "he": "כמה סטודנטים יש באוניברסיטה שלך?",
+         "en": "How many students are there in your university?",
+         "frame": {
+          "id": "yesh",
+          "he": "יש",
+          "en": "there is / there are",
+          "rank": 13
+         },
+         "patterns": [
+          {
+           "id": "sheli",
+           "he": "שלי / שלך / שלו …",
+           "en": "my / your / his …",
+           "rank": 6
+          },
+          {
+           "id": "yesh",
+           "he": "יש",
+           "en": "there is / there are",
+           "rank": 13
+          },
+          {
+           "id": "kama",
+           "he": "כמה",
+           "en": "how much / how many",
+           "rank": 32
+          }
+         ]
+        },
+        {
+         "heb_id": 6137262,
+         "he": "לאוניברסיטה שלי יש מעונות סטודנטים.",
+         "en": "My university has dormitories.",
+         "frame": {
+          "id": "yesh",
+          "he": "יש",
+          "en": "there is / there are",
+          "rank": 13
+         },
+         "patterns": [
+          {
+           "id": "sheli",
+           "he": "שלי / שלך / שלו …",
+           "en": "my / your / his …",
+           "rank": 6
+          },
+          {
+           "id": "yesh",
+           "he": "יש",
+           "en": "there is / there are",
+           "rank": 13
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "kind": "noun",
+       "he": "מבחן",
+       "en": "exam",
+       "zh": "考试",
+       "sentences": [
+        {
+         "heb_id": 2916864,
+         "he": "הוא נכנס לאוניברסיטה אחרי שניכשל בבחינה פעמיים.",
+         "en": "He entered the university after failing the examination twice.",
+         "frame": {
+          "id": "acharei",
+          "he": "אחרי / לאחר",
+          "en": "after",
+          "rank": 56
+         },
+         "patterns": [
+          {
+           "id": "acharei",
+           "he": "אחרי / לאחר",
+           "en": "after",
+           "rank": 56
+          },
+          {
+           "id": "acharei-she",
+           "he": "אחרי ש־ / לאחר ש־",
+           "en": "after (clause)",
+           "rank": 97
+          }
+         ]
+        },
+        {
+         "heb_id": 5459519,
+         "he": "מתי המבחן?",
+         "en": "When is the test?",
+         "frame": {
+          "id": "matai",
+          "he": "מתי",
+          "en": "when",
+          "rank": 66
+         },
+         "patterns": [
+          {
+           "id": "matai",
+           "he": "מתי",
+           "en": "when",
+           "rank": 66
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "kind": "noun",
+       "he": "שאלה",
+       "en": "question",
+       "zh": "问题",
+       "sentences": [
+        {
+         "heb_id": 12130048,
+         "he": "עוד שאלות?",
+         "en": "Any other questions?",
+         "frame": {
+          "id": "od",
+          "he": "עוד",
+          "en": "still / else / more",
+          "rank": 51
+         },
+         "patterns": [
+          {
+           "id": "od",
+           "he": "עוד",
+           "en": "still / else / more",
+           "rank": 51
+          }
+         ]
+        },
+        {
+         "heb_id": 5242912,
+         "he": "אל תתחמק מהשאלה.",
+         "en": "Don't evade the question.",
+         "frame": {
+          "id": "al-t",
+          "he": "אל + ת־",
+          "en": "don't (imperative)",
+          "rank": 20
+         },
+         "patterns": [
+          {
+           "id": "al-t",
+           "he": "אל + ת־",
+           "en": "don't (imperative)",
+           "rank": 20
+          }
+         ]
+        }
+       ]
+      }
+     ],
+     "sentences": [
+      {
+       "heb_id": 1361354,
+       "he": "אחותי הולכת לאוניברסיטה",
+       "en": "My sister goes to a university.",
+       "frame": {
+        "id": "holech-inf",
+        "he": "הולך + שם פועל",
+        "en": "be going to + verb",
+        "rank": 81
+       },
+       "patterns": [
+        {
+         "id": "holech-inf",
+         "he": "הולך + שם פועל",
+         "en": "be going to + verb",
+         "rank": 81
+        }
+       ]
+      },
+      {
+       "heb_id": 6016263,
+       "he": "כבר ביקרתי את האוניברסיטה שלו.",
+       "en": "I've already visited his university.",
+       "frame": {
+        "id": "kvar",
+        "he": "כבר",
+        "en": "already",
+        "rank": 39
+       },
+       "patterns": [
+        {
+         "id": "et-def",
+         "he": "את ה־ / את זה",
+         "en": "the + definite object",
+         "rank": 2
+        },
+        {
+         "id": "sheli",
+         "he": "שלי / שלך / שלו …",
+         "en": "my / your / his …",
+         "rank": 6
+        },
+        {
+         "id": "kvar",
+         "he": "כבר",
+         "en": "already",
+         "rank": 39
+        }
+       ]
+      },
+      {
+       "heb_id": 689066,
+       "he": "האם ספריית האוניברסיטה נפתחה עכשיו?",
+       "en": "Is the university library open now?",
+       "frame": {
+        "id": "ha-im",
+        "he": "האם",
+        "en": "yes/no question",
+        "rank": 22
+       },
+       "patterns": [
+        {
+         "id": "ha-im",
+         "he": "האם",
+         "en": "yes/no question",
+         "rank": 22
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "he": "ספרייה",
+     "en": "library",
+     "zh": "图书馆",
+     "words": [
+      {
+       "kind": "verb",
+       "he": "לקרוא",
+       "en": "to read",
+       "zh": "读",
+       "sentences": [
+        {
+         "heb_id": 1950047,
+         "he": "קראתי ספר מעניין מאוד בספרייה שלי.",
+         "en": "I read a most interesting book in my library.",
+         "frame": {
+          "id": "meod",
+          "he": "מאוד / מאד",
+          "en": "very",
+          "rank": 21
+         },
+         "patterns": [
+          {
+           "id": "sheli",
+           "he": "שלי / שלך / שלו …",
+           "en": "my / your / his …",
+           "rank": 6
+          },
+          {
+           "id": "meod",
+           "he": "מאוד / מאד",
+           "en": "very",
+           "rank": 21
+          }
+         ]
+        },
+        {
+         "heb_id": 1795396,
+         "he": "הוא הולך לספרייה כדי לקרוא ספרים.",
+         "en": "He goes to the library to read books.",
+         "frame": {
+          "id": "kedei",
+          "he": "כדי + שם פועל",
+          "en": "in order to",
+          "rank": 54
+         },
+         "patterns": [
+          {
+           "id": "kedei",
+           "he": "כדי + שם פועל",
+           "en": "in order to",
+           "rank": 54
+          },
+          {
+           "id": "holech-inf",
+           "he": "הולך + שם פועל",
+           "en": "be going to + verb",
+           "rank": 81
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "kind": "verb",
+       "he": "לכתוב",
+       "en": "to write",
+       "zh": "写",
+       "sentences": [
+        {
+         "heb_id": 2104779,
+         "he": "נא לא לכתוב בספר הזה של הספרייה.",
+         "en": "Please do not write in this library book.",
+         "frame": {
+          "id": "haze",
+          "he": "הזה / הזאת / האלה",
+          "en": "this / that + noun",
+          "rank": 10
+         },
+         "patterns": [
+          {
+           "id": "lo",
+           "he": "לא",
+           "en": "not",
+           "rank": 1
+          },
+          {
+           "id": "haze",
+           "he": "הזה / הזאת / האלה",
+           "en": "this / that + noun",
+           "rank": 10
+          },
+          {
+           "id": "shel",
+           "he": "של",
+           "en": "of",
+           "rank": 12
+          }
+         ]
+        },
+        {
+         "heb_id": 2603917,
+         "he": "את צריכה לכתוב ספר.",
+         "en": "You should write a book!",
+         "frame": {
+          "id": "tsarix",
+          "he": "צריך / צריכה / צריכים",
+          "en": "need / have to",
+          "rank": 16
+         },
+         "patterns": [
+          {
+           "id": "tsarix",
+           "he": "צריך / צריכה / צריכים",
+           "en": "need / have to",
+           "rank": 16
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "kind": "noun",
+       "he": "ספר",
+       "en": "book",
+       "zh": "书",
+       "sentences": [
+        {
+         "heb_id": 13048562,
+         "he": "הוא עדיין לא החזיר את הספר ששאל בספריה.",
+         "en": "He still hasn't returned the book he borrowed from the library.",
+         "frame": {
+          "id": "adayin",
+          "he": "עדיין",
+          "en": "still",
+          "rank": 45
+         },
+         "patterns": [
+          {
+           "id": "lo",
+           "he": "לא",
+           "en": "not",
+           "rank": 1
+          },
+          {
+           "id": "et-def",
+           "he": "את ה־ / את זה",
+           "en": "the + definite object",
+           "rank": 2
+          },
+          {
+           "id": "adayin",
+           "he": "עדיין",
+           "en": "still",
+           "rank": 45
+          },
+          {
+           "id": "adayin-lo",
+           "he": "עדיין לא",
+           "en": "not yet",
+           "rank": 99
+          }
+         ]
+        },
+        {
+         "heb_id": 2806975,
+         "he": "אם סיימת לקרוא את הספר, החזר אותו לספרייה.",
+         "en": "If you have finished reading the book, return it to the library.",
+         "frame": {
+          "id": "im",
+          "he": "אם",
+          "en": "if / whether",
+          "rank": 24
+         },
+         "patterns": [
+          {
+           "id": "et-def",
+           "he": "את ה־ / את זה",
+           "en": "the + definite object",
+           "rank": 2
+          },
+          {
+           "id": "oto",
+           "he": "אותי / אותך / אותו …",
+           "en": "me / you / him (object)",
+           "rank": 8
+          },
+          {
+           "id": "im",
+           "he": "אם",
+           "en": "if / whether",
+           "rank": 24
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "kind": "noun",
+       "he": "מילה",
+       "en": "word",
+       "zh": "词",
+       "sentences": [
+        {
+         "heb_id": 3060237,
+         "he": "כמה העמלה?",
+         "en": "How much is the commission?",
+         "frame": {
+          "id": "kama",
+          "he": "כמה",
+          "en": "how much / how many",
+          "rank": 32
+         },
+         "patterns": [
+          {
+           "id": "kama",
+           "he": "כמה",
+           "en": "how much / how many",
+           "rank": 32
+          }
+         ]
+        },
+        {
+         "heb_id": 13083788,
+         "he": "איך עברה הגמילה?",
+         "en": "How was detox?",
+         "frame": {
+          "id": "eich",
+          "he": "איך / כיצד",
+          "en": "how",
+          "rank": 31
+         },
+         "patterns": [
+          {
+           "id": "eich",
+           "he": "איך / כיצד",
+           "en": "how",
+           "rank": 31
+          }
+         ]
+        }
+       ]
+      }
+     ],
+     "sentences": [
+      {
+       "heb_id": 13640149,
+       "he": "תום גר בספרייה.",
+       "en": "Tom lives at the library.",
+       "frame": {
+        "id": "gar",
+        "he": "גר ב־",
+        "en": "live in",
+        "rank": 80
+       },
+       "patterns": [
+        {
+         "id": "gar",
+         "he": "גר ב־",
+         "en": "live in",
+         "rank": 80
+        }
+       ]
+      },
+      {
+       "heb_id": 1425768,
+       "he": "אני רק לומד בספרייה.",
+       "en": "I only study in the library.",
+       "frame": {
+        "id": "rak",
+        "he": "רק",
+        "en": "only",
+        "rank": 30
+       },
+       "patterns": [
+        {
+         "id": "rak",
+         "he": "רק",
+         "en": "only",
+         "rank": 30
+        }
+       ]
+      },
+      {
+       "heb_id": 5843474,
+       "he": "תום אוהב ללכת לספריה.",
+       "en": "Tom likes to go to the library.",
+       "frame": {
+        "id": "ohev-inf",
+        "he": "אוהב + שם פועל",
+        "en": "like / love + -ing",
+        "rank": 62
+       },
+       "patterns": [
+        {
+         "id": "ohev-inf",
+         "he": "אוהב + שם פועל",
+         "en": "like / love + -ing",
+         "rank": 62
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "frames": [
+    {
+     "id": "yesh",
+     "he": "יש",
+     "en": "there is / there are",
+     "rank": 13
+    },
+    {
+     "id": "ma",
+     "he": "מה",
+     "en": "what",
+     "rank": 9
+    },
+    {
+     "id": "haze",
+     "he": "הזה / הזאת / האלה",
+     "en": "this / that + noun",
+     "rank": 10
+    },
+    {
+     "id": "einenni",
+     "he": "אינו / אינני",
+     "en": "am not / is not",
+     "rank": 15
+    },
+    {
+     "id": "lama",
+     "he": "למה / מדוע",
+     "en": "why",
+     "rank": 28
+    },
+    {
+     "id": "shum",
+     "he": "שום + שם",
+     "en": "no / any + noun",
+     "rank": 58
+    },
+    {
+     "id": "haya",
+     "he": "היה / הייתה / היו",
+     "en": "was / were",
+     "rank": 7
+    },
+    {
+     "id": "kol",
+     "he": "כל",
+     "en": "all / every",
+     "rank": 18
+    }
+   ]
+  },
+  {
+   "id": "work",
+   "he": "עבודה",
+   "en": "Work",
+   "center": "אני",
+   "places": [
+    {
+     "he": "משרד",
+     "en": "office",
+     "zh": "办公室",
+     "words": [
+      {
+       "kind": "verb",
+       "he": "לעבוד",
+       "en": "to work",
+       "zh": "工作",
+       "sentences": [
+        {
+         "heb_id": 6055353,
+         "he": "דודי עובד במשרד הזה.",
+         "en": "My uncle works in this office.",
+         "frame": {
+          "id": "haze",
+          "he": "הזה / הזאת / האלה",
+          "en": "this / that + noun",
+          "rank": 10
+         },
+         "patterns": [
+          {
+           "id": "haze",
+           "he": "הזה / הזאת / האלה",
+           "en": "this / that + noun",
+           "rank": 10
+          }
+         ]
+        },
+        {
+         "heb_id": 1448735,
+         "he": "הוא איפשר לי לעבוד במשרד הזה.",
+         "en": "He granted me permission to work in his office.",
+         "frame": {
+          "id": "haze",
+          "he": "הזה / הזאת / האלה",
+          "en": "this / that + noun",
+          "rank": 10
+         },
+         "patterns": [
+          {
+           "id": "le-pron",
+           "he": "לי / לך / לו …",
+           "en": "to me / you / him …",
+           "rank": 4
+          },
+          {
+           "id": "haze",
+           "he": "הזה / הזאת / האלה",
+           "en": "this / that + noun",
+           "rank": 10
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "kind": "verb",
+       "he": "לפתור",
+       "en": "to solve",
+       "zh": "解决",
+       "sentences": [
+        {
+         "heb_id": 3121297,
+         "he": "יש פתרון נאה.",
+         "en": "There is an elegant solution.",
+         "frame": {
+          "id": "yesh",
+          "he": "יש",
+          "en": "there is / there are",
+          "rank": 13
+         },
+         "patterns": [
+          {
+           "id": "yesh",
+           "he": "יש",
+           "en": "there is / there are",
+           "rank": 13
+          }
+         ]
+        },
+        {
+         "heb_id": 2945902,
+         "he": "יש לי פתרון בראש.",
+         "en": "I have a solution in mind.",
+         "frame": {
+          "id": "yesh",
+          "he": "יש",
+          "en": "there is / there are",
+          "rank": 13
+         },
+         "patterns": [
+          {
+           "id": "le-pron",
+           "he": "לי / לך / לו …",
+           "en": "to me / you / him …",
+           "rank": 4
+          },
+          {
+           "id": "yesh",
+           "he": "יש",
+           "en": "there is / there are",
+           "rank": 13
+          },
+          {
+           "id": "yesh-le",
+           "he": "יש ל־",
+           "en": "have",
+           "rank": 19
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "kind": "noun",
+       "he": "עבודה",
+       "en": "work, job",
+       "zh": "工作",
+       "sentences": [
+        {
+         "heb_id": 2048713,
+         "he": "נראה שיש היום הרבה עבודה במשרד.",
+         "en": "The office seems very busy today.",
+         "frame": {
+          "id": "harbe",
+          "he": "הרבה",
+          "en": "a lot / many / much",
+          "rank": 40
+         },
+         "patterns": [
+          {
+           "id": "she",
+           "he": "ש־",
+           "en": "that / which (clause)",
+           "rank": 3
+          },
+          {
+           "id": "harbe",
+           "he": "הרבה",
+           "en": "a lot / many / much",
+           "rank": 40
+          },
+          {
+           "id": "nire-she",
+           "he": "נראה ש־",
+           "en": "it seems that",
+           "rank": 93
+          }
+         ]
+        },
+        {
+         "heb_id": 13083841,
+         "he": "איך היה בעבודה?",
+         "en": "How was work?",
+         "frame": {
+          "id": "haya",
+          "he": "היה / הייתה / היו",
+          "en": "was / were",
+          "rank": 7
+         },
+         "patterns": [
+          {
+           "id": "haya",
+           "he": "היה / הייתה / היו",
+           "en": "was / were",
+           "rank": 7
+          },
+          {
+           "id": "eich",
+           "he": "איך / כיצד",
+           "en": "how",
+           "rank": 31
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "kind": "noun",
+       "he": "בעיה",
+       "en": "problem",
+       "zh": "问题",
+       "sentences": [
+        {
+         "heb_id": 1397817,
+         "he": "מה הבעיה?",
+         "en": "What is the problem?",
+         "frame": {
+          "id": "ma",
+          "he": "מה",
+          "en": "what",
+          "rank": 9
+         },
+         "patterns": [
+          {
+           "id": "ma",
+           "he": "מה",
+           "en": "what",
+           "rank": 9
+          }
+         ]
+        },
+        {
+         "heb_id": 691293,
+         "he": "מה הבעיה שלך?",
+         "en": "What's your problem?",
+         "frame": {
+          "id": "ma",
+          "he": "מה",
+          "en": "what",
+          "rank": 9
+         },
+         "patterns": [
+          {
+           "id": "sheli",
+           "he": "שלי / שלך / שלו …",
+           "en": "my / your / his …",
+           "rank": 6
+          },
+          {
+           "id": "ma",
+           "he": "מה",
+           "en": "what",
+           "rank": 9
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "kind": "noun",
+       "he": "מחשב",
+       "en": "computer",
+       "zh": "电脑",
+       "sentences": [
+        {
+         "heb_id": 1475509,
+         "he": "אני רוצה מחשב.",
+         "en": "I want a computer.",
+         "frame": {
+          "id": "rotse",
+          "he": "רוצה / רוצים",
+          "en": "want",
+          "rank": 14
+         },
+         "patterns": [
+          {
+           "id": "rotse",
+           "he": "רוצה / רוצים",
+           "en": "want",
+           "rank": 14
+          }
+         ]
+        },
+        {
+         "heb_id": 2629717,
+         "he": "אני צריך מחשב.",
+         "en": "I need a computer.",
+         "frame": {
+          "id": "tsarix",
+          "he": "צריך / צריכה / צריכים",
+          "en": "need / have to",
+          "rank": 16
+         },
+         "patterns": [
+          {
+           "id": "tsarix",
+           "he": "צריך / צריכה / צריכים",
+           "en": "need / have to",
+           "rank": 16
+          }
+         ]
+        }
+       ]
+      }
+     ],
+     "sentences": [
+      {
+       "heb_id": 1814824,
+       "he": "איפה המשרד שלי?",
+       "en": "Where is my office?",
+       "frame": {
+        "id": "eifo",
+        "he": "איפה / היכן",
+        "en": "where",
+        "rank": 43
+       },
+       "patterns": [
+        {
+         "id": "sheli",
+         "he": "שלי / שלך / שלו …",
+         "en": "my / your / his …",
+         "rank": 6
+        },
+        {
+         "id": "eifo",
+         "he": "איפה / היכן",
+         "en": "where",
+         "rank": 43
+        }
+       ]
+      },
+      {
+       "heb_id": 1988051,
+       "he": "איפה משרד הכרטיסים?",
+       "en": "Where is the ticket office?",
+       "frame": {
+        "id": "eifo",
+        "he": "איפה / היכן",
+        "en": "where",
+        "rank": 43
+       },
+       "patterns": [
+        {
+         "id": "eifo",
+         "he": "איפה / היכן",
+         "en": "where",
+         "rank": 43
+        }
+       ]
+      },
+      {
+       "heb_id": 1777097,
+       "he": "למה את מנקה את המשרד?",
+       "en": "Why are you cleaning the office?",
+       "frame": {
+        "id": "lama",
+        "he": "למה / מדוע",
+        "en": "why",
+        "rank": 28
+       },
+       "patterns": [
+        {
+         "id": "et-def",
+         "he": "את ה־ / את זה",
+         "en": "the + definite object",
+         "rank": 2
+        },
+        {
+         "id": "lama",
+         "he": "למה / מדוע",
+         "en": "why",
+         "rank": 28
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "he": "פגישה",
+     "en": "meeting",
+     "zh": "会议",
+     "words": [
+      {
+       "kind": "verb",
+       "he": "לפגוש",
+       "en": "to meet",
+       "zh": "见面",
+       "sentences": [
+        {
+         "heb_id": 5658498,
+         "he": "מתי ניפגש?",
+         "en": "When are we going to get together?",
+         "frame": {
+          "id": "matai",
+          "he": "מתי",
+          "en": "when",
+          "rank": 66
+         },
+         "patterns": [
+          {
+           "id": "matai",
+           "he": "מתי",
+           "en": "when",
+           "rank": 66
+          }
+         ]
+        },
+        {
+         "heb_id": 1772794,
+         "he": "האם נכחת במפגש?",
+         "en": "Were you present at the meeting?",
+         "frame": {
+          "id": "ha-im",
+          "he": "האם",
+          "en": "yes/no question",
+          "rank": 22
+         },
+         "patterns": [
+          {
+           "id": "ha-im",
+           "he": "האם",
+           "en": "yes/no question",
+           "rank": 22
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "kind": "verb",
+       "he": "לדבר",
+       "en": "to talk",
+       "zh": "说话",
+       "sentences": [
+        {
+         "heb_id": 5414868,
+         "he": "מי דיבר?",
+         "en": "Who spoke?",
+         "frame": {
+          "id": "mi",
+          "he": "מי",
+          "en": "who",
+          "rank": 35
+         },
+         "patterns": [
+          {
+           "id": "mi",
+           "he": "מי",
+           "en": "who",
+           "rank": 35
+          }
+         ]
+        },
+        {
+         "heb_id": 5415814,
+         "he": "מי מדבר?",
+         "en": "Who's speaking?",
+         "frame": {
+          "id": "mi",
+          "he": "מי",
+          "en": "who",
+          "rank": 35
+         },
+         "patterns": [
+          {
+           "id": "mi",
+           "he": "מי",
+           "en": "who",
+           "rank": 35
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "kind": "noun",
+       "he": "בוס",
+       "en": "boss",
+       "zh": "老板",
+       "sentences": [
+        {
+         "heb_id": 1388017,
+         "he": "בעצם הוא איננו המנהל.",
+         "en": "He isn't actually the manager.",
+         "frame": {
+          "id": "einenni",
+          "he": "אינו / אינני",
+          "en": "am not / is not",
+          "rank": 15
+         },
+         "patterns": [
+          {
+           "id": "einenni",
+           "he": "אינו / אינני",
+           "en": "am not / is not",
+           "rank": 15
+          }
+         ]
+        },
+        {
+         "heb_id": 4691590,
+         "he": "אני יכול לדבר עם המנהל?",
+         "en": "Can I talk to the manager?",
+         "frame": {
+          "id": "yaxol",
+          "he": "יכול / יכולה / יכולים",
+          "en": "can",
+          "rank": 11
+         },
+         "patterns": [
+          {
+           "id": "yaxol",
+           "he": "יכול / יכולה / יכולים",
+           "en": "can",
+           "rank": 11
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "kind": "noun",
+       "he": "זמן",
+       "en": "time",
+       "zh": "时间",
+       "sentences": [
+        {
+         "heb_id": 6054297,
+         "he": "אין יותר זמן.",
+         "en": "There's no more time.",
+         "frame": {
+          "id": "yoter",
+          "he": "יותר + שם תואר",
+          "en": "more / -er",
+          "rank": 17
+         },
+         "patterns": [
+          {
+           "id": "yoter",
+           "he": "יותר + שם תואר",
+           "en": "more / -er",
+           "rank": 17
+          },
+          {
+           "id": "ein",
+           "he": "אין",
+           "en": "there isn't / there aren't",
+           "rank": 27
+          }
+         ]
+        },
+        {
+         "heb_id": 6080128,
+         "he": "תהיה בזמן.",
+         "en": "Be on time.",
+         "frame": {
+          "id": "yihye",
+          "he": "יהיה / תהיה",
+          "en": "will be",
+          "rank": 34
+         },
+         "patterns": [
+          {
+           "id": "yihye",
+           "he": "יהיה / תהיה",
+           "en": "will be",
+           "rank": 34
+          }
+         ]
+        }
+       ]
+      }
+     ],
+     "sentences": [
+      {
+       "heb_id": 5651144,
+       "he": "בוא נקבע פגישה.",
+       "en": "Let's make an appointment.",
+       "frame": {
+        "id": "bo-n",
+        "he": "בוא נ־",
+        "en": "let's",
+        "rank": 46
+       },
+       "patterns": [
+        {
+         "id": "bo-n",
+         "he": "בוא נ־",
+         "en": "let's",
+         "rank": 46
+        }
+       ]
+      },
+      {
+       "heb_id": 2184266,
+       "he": "עלינו לבטל את הפגישה.",
+       "en": "We need to cancel the meeting.",
+       "frame": {
+        "id": "alay",
+        "he": "עלי / עליך / עליו …",
+        "en": "on me / I have to",
+        "rank": 25
+       },
+       "patterns": [
+        {
+         "id": "et-def",
+         "he": "את ה־ / את זה",
+         "en": "the + definite object",
+         "rank": 2
+        },
+        {
+         "id": "alay",
+         "he": "עלי / עליך / עליו …",
+         "en": "on me / I have to",
+         "rank": 25
+        }
+       ]
+      },
+      {
+       "heb_id": 10724703,
+       "he": "אני חייב לחזור לפגישה.",
+       "en": "I've got to get back to the meeting.",
+       "frame": {
+        "id": "hayav",
+        "he": "חייב / חייבת / חייבים",
+        "en": "must",
+        "rank": 47
+       },
+       "patterns": [
+        {
+         "id": "hayav",
+         "he": "חייב / חייבת / חייבים",
+         "en": "must",
+         "rank": 47
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "he": "כסף",
+     "en": "money",
+     "zh": "钱",
+     "words": [
+      {
+       "kind": "verb",
+       "he": "לשלם",
+       "en": "to pay",
+       "zh": "付",
+       "sentences": [
+        {
+         "heb_id": 1708736,
+         "he": "שילמתי לו את הכסף.",
+         "en": "I paid him the money.",
+         "frame": {
+          "id": "et-def",
+          "he": "את ה־ / את זה",
+          "en": "the + definite object",
+          "rank": 2
+         },
+         "patterns": [
+          {
+           "id": "et-def",
+           "he": "את ה־ / את זה",
+           "en": "the + definite object",
+           "rank": 2
+          },
+          {
+           "id": "le-pron",
+           "he": "לי / לך / לו …",
+           "en": "to me / you / him …",
+           "rank": 4
+          }
+         ]
+        },
+        {
+         "heb_id": 2123386,
+         "he": "הייתי משלם את חובותיי אילו היה לי כסף.",
+         "en": "I would have paid my debts if I had had money.",
+         "frame": {
+          "id": "haya",
+          "he": "היה / הייתה / היו",
+          "en": "was / were",
+          "rank": 7
+         },
+         "patterns": [
+          {
+           "id": "le-pron",
+           "he": "לי / לך / לו …",
+           "en": "to me / you / him …",
+           "rank": 4
+          },
+          {
+           "id": "haya",
+           "he": "היה / הייתה / היו",
+           "en": "was / were",
+           "rank": 7
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "kind": "verb",
+       "he": "להרוויח",
+       "en": "to earn",
+       "zh": "挣",
+       "sentences": [
+        {
+         "heb_id": 5570291,
+         "he": "אני תוהה כמה כסף תום מרוויח.",
+         "en": "I wonder how much money Tom makes.",
+         "frame": {
+          "id": "kama",
+          "he": "כמה",
+          "en": "how much / how many",
+          "rank": 32
+         },
+         "patterns": [
+          {
+           "id": "kama",
+           "he": "כמה",
+           "en": "how much / how many",
+           "rank": 32
+          }
+         ]
+        },
+        {
+         "heb_id": 1459414,
+         "he": "אנו עובדים כדי להרוויח כסף.",
+         "en": "We work to earn money.",
+         "frame": {
+          "id": "kedei",
+          "he": "כדי + שם פועל",
+          "en": "in order to",
+          "rank": 54
+         },
+         "patterns": [
+          {
+           "id": "kedei",
+           "he": "כדי + שם פועל",
+           "en": "in order to",
+           "rank": 54
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "kind": "noun",
+       "he": "משכורת",
+       "en": "salary",
+       "zh": "工资",
+       "sentences": [
+        {
+         "heb_id": 2053354,
+         "he": "מה שאתה מרוויח זה כסף קטן לעומת המשכורת של הבוס.",
+         "en": "What you make is small potatoes compared to the boss's salary.",
+         "frame": {
+          "id": "ma",
+          "he": "מה",
+          "en": "what",
+          "rank": 9
+         },
+         "patterns": [
+          {
+           "id": "she",
+           "he": "ש־",
+           "en": "that / which (clause)",
+           "rank": 3
+          },
+          {
+           "id": "ze",
+           "he": "זה / זאת",
+           "en": "this is / it is",
+           "rank": 5
+          },
+          {
+           "id": "ma",
+           "he": "מה",
+           "en": "what",
+           "rank": 9
+          },
+          {
+           "id": "shel",
+           "he": "של",
+           "en": "of",
+           "rank": 12
+          }
+         ]
+        },
+        {
+         "heb_id": 5890912,
+         "he": "המשכורת שלי נמוכה מאד.",
+         "en": "My salary is very low.",
+         "frame": {
+          "id": "meod",
+          "he": "מאוד / מאד",
+          "en": "very",
+          "rank": 21
+         },
+         "patterns": [
+          {
+           "id": "sheli",
+           "he": "שלי / שלך / שלו …",
+           "en": "my / your / his …",
+           "rank": 6
+          },
+          {
+           "id": "meod",
+           "he": "מאוד / מאד",
+           "en": "very",
+           "rank": 21
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "kind": "noun",
+       "he": "חשבון",
+       "en": "bill, account",
+       "zh": "账单",
+       "sentences": [
+        {
+         "heb_id": 5895081,
+         "he": "נלווה קצת כסף על חשבון הבית.",
+         "en": "We'll borrow some money on the house.",
+         "frame": {
+          "id": "ktsat",
+          "he": "קצת / מעט",
+          "en": "a little",
+          "rank": 48
+         },
+         "patterns": [
+          {
+           "id": "ktsat",
+           "he": "קצת / מעט",
+           "en": "a little",
+           "rank": 48
+          }
+         ]
+        },
+        {
+         "heb_id": 2017525,
+         "he": "אני צריך להוסיף כסף לחשבון שלי.",
+         "en": "I need to add money to my account.",
+         "frame": {
+          "id": "tsarix",
+          "he": "צריך / צריכה / צריכים",
+          "en": "need / have to",
+          "rank": 16
+         },
+         "patterns": [
+          {
+           "id": "sheli",
+           "he": "שלי / שלך / שלו …",
+           "en": "my / your / his …",
+           "rank": 6
+          },
+          {
+           "id": "tsarix",
+           "he": "צריך / צריכה / צריכים",
+           "en": "need / have to",
+           "rank": 16
+          }
+         ]
+        }
+       ]
+      }
+     ],
+     "sentences": [
+      {
+       "heb_id": 723553,
+       "he": "אל תבקש כסף.",
+       "en": "Don't ask for money.",
+       "frame": {
+        "id": "al-t",
+        "he": "אל + ת־",
+        "en": "don't (imperative)",
+        "rank": 20
+       },
+       "patterns": [
+        {
+         "id": "al-t",
+         "he": "אל + ת־",
+         "en": "don't (imperative)",
+         "rank": 20
+        }
+       ]
+      },
+      {
+       "heb_id": 1404970,
+       "he": "אין לי כסף.",
+       "en": "I have no money.",
+       "frame": {
+        "id": "ein",
+        "he": "אין",
+        "en": "there isn't / there aren't",
+        "rank": 27
+       },
+       "patterns": [
+        {
+         "id": "le-pron",
+         "he": "לי / לך / לו …",
+         "en": "to me / you / him …",
+         "rank": 4
+        },
+        {
+         "id": "ein",
+         "he": "אין",
+         "en": "there isn't / there aren't",
+         "rank": 27
+        },
+        {
+         "id": "ein-le",
+         "he": "אין ל־",
+         "en": "don't have",
+         "rank": 53
+        }
+       ]
+      },
+      {
+       "heb_id": 6136216,
+       "he": "אין לו כסף.",
+       "en": "He has no money.",
+       "frame": {
+        "id": "ein",
+        "he": "אין",
+        "en": "there isn't / there aren't",
+        "rank": 27
+       },
+       "patterns": [
+        {
+         "id": "le-pron",
+         "he": "לי / לך / לו …",
+         "en": "to me / you / him …",
+         "rank": 4
+        },
+        {
+         "id": "ein",
+         "he": "אין",
+         "en": "there isn't / there aren't",
+         "rank": 27
+        },
+        {
+         "id": "ein-le",
+         "he": "אין ל־",
+         "en": "don't have",
+         "rank": 53
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "frames": [
+    {
+     "id": "ma",
+     "he": "מה",
+     "en": "what",
+     "rank": 9
+    },
+    {
+     "id": "haze",
+     "he": "הזה / הזאת / האלה",
+     "en": "this / that + noun",
+     "rank": 10
+    },
+    {
+     "id": "yesh",
+     "he": "יש",
+     "en": "there is / there are",
+     "rank": 13
+    },
+    {
+     "id": "haya",
+     "he": "היה / הייתה / היו",
+     "en": "was / were",
+     "rank": 7
+    },
+    {
+     "id": "tsarix",
+     "he": "צריך / צריכה / צריכים",
+     "en": "need / have to",
+     "rank": 16
+    },
+    {
+     "id": "eifo",
+     "he": "איפה / היכן",
+     "en": "where",
+     "rank": 43
+    },
+    {
+     "id": "mi",
+     "he": "מי",
+     "en": "who",
+     "rank": 35
+    },
+    {
+     "id": "ein",
+     "he": "אין",
+     "en": "there isn't / there aren't",
+     "rank": 27
+    }
+   ]
+  },
+  {
+   "id": "home",
+   "he": "בית",
+   "en": "Home",
+   "center": "אני",
+   "places": [
+    {
+     "he": "בית",
+     "en": "house, home",
+     "zh": "家",
+     "words": [
+      {
+       "kind": "verb",
+       "he": "לגור",
+       "en": "to live (reside)",
+       "zh": "住",
+       "sentences": [
+        {
+         "heb_id": 337523,
+         "he": "אני גר בבית הזה לבדי.",
+         "en": "I live in this house by myself.",
+         "frame": {
+          "id": "haze",
+          "he": "הזה / הזאת / האלה",
+          "en": "this / that + noun",
+          "rank": 10
+         },
+         "patterns": [
+          {
+           "id": "haze",
+           "he": "הזה / הזאת / האלה",
+           "en": "this / that + noun",
+           "rank": 10
+          },
+          {
+           "id": "gar",
+           "he": "גר ב־",
+           "en": "live in",
+           "rank": 80
+          }
+         ]
+        },
+        {
+         "heb_id": 1432669,
+         "he": "אף אחד לא גר בבית הזה.",
+         "en": "No one lives in that house.",
+         "frame": {
+          "id": "haze",
+          "he": "הזה / הזאת / האלה",
+          "en": "this / that + noun",
+          "rank": 10
+         },
+         "patterns": [
+          {
+           "id": "lo",
+           "he": "לא",
+           "en": "not",
+           "rank": 1
+          },
+          {
+           "id": "haze",
+           "he": "הזה / הזאת / האלה",
+           "en": "this / that + noun",
+           "rank": 10
+          },
+          {
+           "id": "af-exad",
+           "he": "אף אחד / אף אחת",
+           "en": "nobody",
+           "rank": 74
+          },
+          {
+           "id": "gar",
+           "he": "גר ב־",
+           "en": "live in",
+           "rank": 80
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "kind": "verb",
+       "he": "לחזור",
+       "en": "to come back",
+       "zh": "回来",
+       "sentences": [
+        {
+         "heb_id": 2353179,
+         "he": "הייתי חייב לחזור הביתה.",
+         "en": "I had to go back home.",
+         "frame": {
+          "id": "haya",
+          "he": "היה / הייתה / היו",
+          "en": "was / were",
+          "rank": 7
+         },
+         "patterns": [
+          {
+           "id": "haya",
+           "he": "היה / הייתה / היו",
+           "en": "was / were",
+           "rank": 7
+          },
+          {
+           "id": "haya-ptc",
+           "he": "היה + בינוני",
+           "en": "was + -ing / would",
+           "rank": 42
+          },
+          {
+           "id": "hayav",
+           "he": "חייב / חייבת / חייבים",
+           "en": "must",
+           "rank": 47
+          }
+         ]
+        },
+        {
+         "heb_id": 2353181,
+         "he": "הייתי חייבת לחזור הביתה.",
+         "en": "I had to go back home.",
+         "frame": {
+          "id": "haya",
+          "he": "היה / הייתה / היו",
+          "en": "was / were",
+          "rank": 7
+         },
+         "patterns": [
+          {
+           "id": "haya",
+           "he": "היה / הייתה / היו",
+           "en": "was / were",
+           "rank": 7
+          },
+          {
+           "id": "hayav",
+           "he": "חייב / חייבת / חייבים",
+           "en": "must",
+           "rank": 47
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "kind": "noun",
+       "he": "דירה",
+       "en": "apartment",
+       "zh": "公寓",
+       "sentences": [
+        {
+         "heb_id": 5555873,
+         "he": "יש לנו דירה.",
+         "en": "We got a flat.",
+         "frame": {
+          "id": "yesh",
+          "he": "יש",
+          "en": "there is / there are",
+          "rank": 13
+         },
+         "patterns": [
+          {
+           "id": "le-pron",
+           "he": "לי / לך / לו …",
+           "en": "to me / you / him …",
+           "rank": 4
+          },
+          {
+           "id": "yesh",
+           "he": "יש",
+           "en": "there is / there are",
+           "rank": 13
+          },
+          {
+           "id": "yesh-le",
+           "he": "יש ל־",
+           "en": "have",
+           "rank": 19
+          }
+         ]
+        },
+        {
+         "heb_id": 6020250,
+         "he": "יש לך דירה ריקה?",
+         "en": "Do you have a vacant apartment?",
+         "frame": {
+          "id": "yesh",
+          "he": "יש",
+          "en": "there is / there are",
+          "rank": 13
+         },
+         "patterns": [
+          {
+           "id": "le-pron",
+           "he": "לי / לך / לו …",
+           "en": "to me / you / him …",
+           "rank": 4
+          },
+          {
+           "id": "yesh",
+           "he": "יש",
+           "en": "there is / there are",
+           "rank": 13
+          },
+          {
+           "id": "yesh-le",
+           "he": "יש ל־",
+           "en": "have",
+           "rank": 19
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "kind": "noun",
+       "he": "חדר",
+       "en": "room",
+       "zh": "房间",
+       "sentences": [
+        {
+         "heb_id": 5697545,
+         "he": "בית בלי ספרים הוא כמו חדר בלי חלונות.",
+         "en": "A house without books is like a room without windows.",
+         "frame": {
+          "id": "kmo",
+          "he": "כמו",
+          "en": "like / as",
+          "rank": 57
+         },
+         "patterns": [
+          {
+           "id": "kmo",
+           "he": "כמו",
+           "en": "like / as",
+           "rank": 57
+          },
+          {
+           "id": "bli",
+           "he": "בלי",
+           "en": "without",
+           "rank": 64
+          }
+         ]
+        },
+        {
+         "heb_id": 6023918,
+         "he": "תום ומרי רוצים לקנות בית עם לפחות שלושה חדרים.",
+         "en": "Tom and Mary want to buy a house with at least three bedrooms.",
+         "frame": {
+          "id": "rotse",
+          "he": "רוצה / רוצים",
+          "en": "want",
+          "rank": 14
+         },
+         "patterns": [
+          {
+           "id": "rotse",
+           "he": "רוצה / רוצים",
+           "en": "want",
+           "rank": 14
+          }
+         ]
+        }
+       ]
+      }
+     ],
+     "sentences": [
+      {
+       "heb_id": 1700467,
+       "he": "מה גודל הבית שלך?",
+       "en": "How big is your house?",
+       "frame": {
+        "id": "ma",
+        "he": "מה",
+        "en": "what",
+        "rank": 9
+       },
+       "patterns": [
+        {
+         "id": "sheli",
+         "he": "שלי / שלך / שלו …",
+         "en": "my / your / his …",
+         "rank": 6
+        },
+        {
+         "id": "ma",
+         "he": "מה",
+         "en": "what",
+         "rank": 9
+        }
+       ]
+      },
+      {
+       "heb_id": 2297441,
+       "he": "איפה הבית?",
+       "en": "Where's home?",
+       "frame": {
+        "id": "eifo",
+        "he": "איפה / היכן",
+        "en": "where",
+        "rank": 43
+       },
+       "patterns": [
+        {
+         "id": "eifo",
+         "he": "איפה / היכן",
+         "en": "where",
+         "rank": 43
+        }
+       ]
+      },
+      {
+       "heb_id": 699283,
+       "he": "האם אמך בבית?",
+       "en": "Is your mother at home?",
+       "frame": {
+        "id": "ha-im",
+        "he": "האם",
+        "en": "yes/no question",
+        "rank": 22
+       },
+       "patterns": [
+        {
+         "id": "ha-im",
+         "he": "האם",
+         "en": "yes/no question",
+         "rank": 22
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "he": "מטבח",
+     "en": "kitchen",
+     "zh": "厨房",
+     "words": [
+      {
+       "kind": "verb",
+       "he": "לבשל",
+       "en": "to cook",
+       "zh": "做饭",
+       "sentences": [
+        {
+         "heb_id": 1914055,
+         "he": "אבא במטבח כי הוא מבשל.",
+         "en": "Dad is in the kitchen because he's cooking.",
+         "frame": {
+          "id": "ki",
+          "he": "כי",
+          "en": "because / that",
+          "rank": 71
+         },
+         "patterns": [
+          {
+           "id": "ki",
+           "he": "כי",
+           "en": "because / that",
+           "rank": 71
+          }
+         ]
+        },
+        {
+         "heb_id": 13075960,
+         "he": "מי בישל?",
+         "en": "Who cooked?",
+         "frame": {
+          "id": "mi",
+          "he": "מי",
+          "en": "who",
+          "rank": 35
+         },
+         "patterns": [
+          {
+           "id": "mi",
+           "he": "מי",
+           "en": "who",
+           "rank": 35
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "kind": "verb",
+       "he": "לאכול",
+       "en": "to eat",
+       "zh": "吃",
+       "sentences": [
+        {
+         "heb_id": 5416083,
+         "he": "עליך לאכול.",
+         "en": "You should eat.",
+         "frame": {
+          "id": "alay",
+          "he": "עלי / עליך / עליו …",
+          "en": "on me / I have to",
+          "rank": 25
+         },
+         "patterns": [
+          {
+           "id": "alay",
+           "he": "עלי / עליך / עליו …",
+           "en": "on me / I have to",
+           "rank": 25
+          }
+         ]
+        },
+        {
+         "heb_id": 1431702,
+         "he": "מישהו אוכל.",
+         "en": "Somebody is eating.",
+         "frame": {
+          "id": "mishehu",
+          "he": "מישהו / משהו",
+          "en": "someone / something",
+          "rank": 26
+         },
+         "patterns": [
+          {
+           "id": "mishehu",
+           "he": "מישהו / משהו",
+           "en": "someone / something",
+           "rank": 26
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "kind": "noun",
+       "he": "ארוחה",
+       "en": "meal",
+       "zh": "饭",
+       "sentences": [
+        {
+         "heb_id": 5242902,
+         "he": "ניחוח ארוחת הערב מאתמול עדיין ריחף במטבח.",
+         "en": "The smell of last night's dinner was still lingering in the kitchen.",
+         "frame": {
+          "id": "adayin",
+          "he": "עדיין",
+          "en": "still",
+          "rank": 45
+         },
+         "patterns": [
+          {
+           "id": "adayin",
+           "he": "עדיין",
+           "en": "still",
+           "rank": 45
+          }
+         ]
+        },
+        {
+         "heb_id": 2561916,
+         "he": "מתי ארוחת הערב?",
+         "en": "When's dinner served?",
+         "frame": {
+          "id": "matai",
+          "he": "מתי",
+          "en": "when",
+          "rank": 66
+         },
+         "patterns": [
+          {
+           "id": "matai",
+           "he": "מתי",
+           "en": "when",
+           "rank": 66
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "kind": "noun",
+       "he": "מים",
+       "en": "water",
+       "zh": "水",
+       "sentences": [
+        {
+         "heb_id": 1349699,
+         "he": "אין מים.",
+         "en": "There is no water.",
+         "frame": {
+          "id": "ein",
+          "he": "אין",
+          "en": "there isn't / there aren't",
+          "rank": 27
+         },
+         "patterns": [
+          {
+           "id": "ein",
+           "he": "אין",
+           "en": "there isn't / there aren't",
+           "rank": 27
+          }
+         ]
+        },
+        {
+         "heb_id": 1985269,
+         "he": "איך המים?",
+         "en": "How's the water?",
+         "frame": {
+          "id": "eich",
+          "he": "איך / כיצד",
+          "en": "how",
+          "rank": 31
+         },
+         "patterns": [
+          {
+           "id": "eich",
+           "he": "איך / כיצד",
+           "en": "how",
+           "rank": 31
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "kind": "noun",
+       "he": "קפה",
+       "en": "coffee",
+       "zh": "咖啡",
+       "sentences": [
+        {
+         "heb_id": 1672296,
+         "he": "אני צריך קפה.",
+         "en": "I need coffee.",
+         "frame": {
+          "id": "tsarix",
+          "he": "צריך / צריכה / צריכים",
+          "en": "need / have to",
+          "rank": 16
+         },
+         "patterns": [
+          {
+           "id": "tsarix",
+           "he": "צריך / צריכה / צריכים",
+           "en": "need / have to",
+           "rank": 16
+          }
+         ]
+        },
+        {
+         "heb_id": 2140131,
+         "he": "אני צריכה קפה.",
+         "en": "I need coffee.",
+         "frame": {
+          "id": "tsarix",
+          "he": "צריך / צריכה / צריכים",
+          "en": "need / have to",
+          "rank": 16
+         },
+         "patterns": [
+          {
+           "id": "tsarix",
+           "he": "צריך / צריכה / צריכים",
+           "en": "need / have to",
+           "rank": 16
+          }
+         ]
+        }
+       ]
+      }
+     ],
+     "sentences": [
+      {
+       "heb_id": 2298570,
+       "he": "אל תיכנס למטבח.",
+       "en": "You must not come into the kitchen.",
+       "frame": {
+        "id": "al-t",
+        "he": "אל + ת־",
+        "en": "don't (imperative)",
+        "rank": 20
+       },
+       "patterns": [
+        {
+         "id": "al-t",
+         "he": "אל + ת־",
+         "en": "don't (imperative)",
+         "rank": 20
+        }
+       ]
+      },
+      {
+       "heb_id": 8130721,
+       "he": "הנה המטבח.",
+       "en": "Here's the kitchen.",
+       "frame": {
+        "id": "hinei",
+        "he": "הנה",
+        "en": "here / here is",
+        "rank": 87
+       },
+       "patterns": [
+        {
+         "id": "hinei",
+         "he": "הנה",
+         "en": "here / here is",
+         "rank": 87
+        }
+       ]
+      },
+      {
+       "heb_id": 2298571,
+       "he": "אל תיכנסו למטבח.",
+       "en": "You must not come into the kitchen.",
+       "frame": {
+        "id": "al-t",
+        "he": "אל + ת־",
+        "en": "don't (imperative)",
+        "rank": 20
+       },
+       "patterns": [
+        {
+         "id": "al-t",
+         "he": "אל + ת־",
+         "en": "don't (imperative)",
+         "rank": 20
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "he": "חדר שינה",
+     "en": "bedroom",
+     "zh": "卧室",
+     "words": [
+      {
+       "kind": "verb",
+       "he": "לישון",
+       "en": "to sleep",
+       "zh": "睡觉",
+       "sentences": [
+        {
+         "heb_id": 2352112,
+         "he": "במיטה זרה אינני יכולה לישון היטב.",
+         "en": "I can't sleep well in a strange bed.",
+         "frame": {
+          "id": "yaxol",
+          "he": "יכול / יכולה / יכולים",
+          "en": "can",
+          "rank": 11
+         },
+         "patterns": [
+          {
+           "id": "yaxol",
+           "he": "יכול / יכולה / יכולים",
+           "en": "can",
+           "rank": 11
+          },
+          {
+           "id": "einenni",
+           "he": "אינו / אינני",
+           "en": "am not / is not",
+           "rank": 15
+          }
+         ]
+        },
+        {
+         "heb_id": 3561485,
+         "he": "אני אוהב לישון על מיטה רכה.",
+         "en": "I like to sleep on a soft bed.",
+         "frame": {
+          "id": "ohev-inf",
+          "he": "אוהב + שם פועל",
+          "en": "like / love + -ing",
+          "rank": 62
+         },
+         "patterns": [
+          {
+           "id": "ohev-inf",
+           "he": "אוהב + שם פועל",
+           "en": "like / love + -ing",
+           "rank": 62
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "kind": "verb",
+       "he": "לקום",
+       "en": "to get up",
+       "zh": "起床",
+       "sentences": [
+        {
+         "heb_id": 3926884,
+         "he": "אני לא רוצה לקום מהמיטה.",
+         "en": "I don't want to get out of bed.",
+         "frame": {
+          "id": "rotse",
+          "he": "רוצה / רוצים",
+          "en": "want",
+          "rank": 14
+         },
+         "patterns": [
+          {
+           "id": "lo",
+           "he": "לא",
+           "en": "not",
+           "rank": 1
+          },
+          {
+           "id": "rotse",
+           "he": "רוצה / רוצים",
+           "en": "want",
+           "rank": 14
+          }
+         ]
+        },
+        {
+         "heb_id": 2681229,
+         "he": "אני עדיין חלש מכדי לקום מהמיטה.",
+         "en": "I'm still too weak to get out of bed.",
+         "frame": {
+          "id": "adayin",
+          "he": "עדיין",
+          "en": "still",
+          "rank": 45
+         },
+         "patterns": [
+          {
+           "id": "adayin",
+           "he": "עדיין",
+           "en": "still",
+           "rank": 45
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "kind": "noun",
+       "he": "מיטה",
+       "en": "bed",
+       "zh": "床",
+       "sentences": [
+        {
+         "heb_id": 2307165,
+         "he": "את עוד לא במיטה?",
+         "en": "You're not in bed yet?",
+         "frame": {
+          "id": "od",
+          "he": "עוד",
+          "en": "still / else / more",
+          "rank": 51
+         },
+         "patterns": [
+          {
+           "id": "lo",
+           "he": "לא",
+           "en": "not",
+           "rank": 1
+          },
+          {
+           "id": "od",
+           "he": "עוד",
+           "en": "still / else / more",
+           "rank": 51
+          }
+         ]
+        },
+        {
+         "heb_id": 2561754,
+         "he": "בוא נזיז את המיטה.",
+         "en": "Let's move the bed.",
+         "frame": {
+          "id": "bo-n",
+          "he": "בוא נ־",
+          "en": "let's",
+          "rank": 46
+         },
+         "patterns": [
+          {
+           "id": "et-def",
+           "he": "את ה־ / את זה",
+           "en": "the + definite object",
+           "rank": 2
+          },
+          {
+           "id": "bo-n",
+           "he": "בוא נ־",
+           "en": "let's",
+           "rank": 46
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "kind": "noun",
+       "he": "בוקר",
+       "en": "morning",
+       "zh": "早上",
+       "sentences": [
+        {
+         "heb_id": 3028038,
+         "he": "קשה לצאת מהמיטה בבוקר קר.",
+         "en": "It's difficult to get out of bed on cold mornings.",
+         "frame": {
+          "id": "kal",
+          "he": "קל / קשה + ל־",
+          "en": "easy / hard to (for me)",
+          "rank": 76
+         },
+         "patterns": [
+          {
+           "id": "kal",
+           "he": "קל / קשה + ל־",
+           "en": "easy / hard to (for me)",
+           "rank": 76
+          }
+         ]
+        },
+        {
+         "heb_id": 1944185,
+         "he": "קר מאוד הבוקר.",
+         "en": "It is very cold this morning.",
+         "frame": {
+          "id": "meod",
+          "he": "מאוד / מאד",
+          "en": "very",
+          "rank": 21
+         },
+         "patterns": [
+          {
+           "id": "meod",
+           "he": "מאוד / מאד",
+           "en": "very",
+           "rank": 21
+          }
+         ]
+        }
+       ]
+      }
+     ],
+     "sentences": [
+      {
+       "heb_id": 1993549,
+       "he": "תציע את המיטה בבקשה.",
+       "en": "Please make the bed.",
+       "frame": {
+        "id": "bevakasha",
+        "he": "בבקשה",
+        "en": "please",
+        "rank": 38
+       },
+       "patterns": [
+        {
+         "id": "et-def",
+         "he": "את ה־ / את זה",
+         "en": "the + definite object",
+         "rank": 2
+        },
+        {
+         "id": "bevakasha",
+         "he": "בבקשה",
+         "en": "please",
+         "rank": 38
+        }
+       ]
+      },
+      {
+       "heb_id": 2582982,
+       "he": "אם אתה עייף, לך למיטה!",
+       "en": "If you're tired, then go to bed!",
+       "frame": {
+        "id": "im",
+        "he": "אם",
+        "en": "if / whether",
+        "rank": 24
+       },
+       "patterns": [
+        {
+         "id": "le-pron",
+         "he": "לי / לך / לו …",
+         "en": "to me / you / him …",
+         "rank": 4
+        },
+        {
+         "id": "im",
+         "he": "אם",
+         "en": "if / whether",
+         "rank": 24
+        },
+        {
+         "id": "raev",
+         "he": "רעב / עייף",
+         "en": "hungry / tired",
+         "rank": 70
+        }
+       ]
+      },
+      {
+       "heb_id": 1993551,
+       "he": "תציעי את המיטה בבקשה.",
+       "en": "Please make the bed.",
+       "frame": {
+        "id": "bevakasha",
+        "he": "בבקשה",
+        "en": "please",
+        "rank": 38
+       },
+       "patterns": [
+        {
+         "id": "et-def",
+         "he": "את ה־ / את זה",
+         "en": "the + definite object",
+         "rank": 2
+        },
+        {
+         "id": "bevakasha",
+         "he": "בבקשה",
+         "en": "please",
+         "rank": 38
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "frames": [
+    {
+     "id": "haze",
+     "he": "הזה / הזאת / האלה",
+     "en": "this / that + noun",
+     "rank": 10
+    },
+    {
+     "id": "haya",
+     "he": "היה / הייתה / היו",
+     "en": "was / were",
+     "rank": 7
+    },
+    {
+     "id": "yesh",
+     "he": "יש",
+     "en": "there is / there are",
+     "rank": 13
+    },
+    {
+     "id": "rotse",
+     "he": "רוצה / רוצים",
+     "en": "want",
+     "rank": 14
+    },
+    {
+     "id": "adayin",
+     "he": "עדיין",
+     "en": "still",
+     "rank": 45
+    },
+    {
+     "id": "tsarix",
+     "he": "צריך / צריכה / צריכים",
+     "en": "need / have to",
+     "rank": 16
+    },
+    {
+     "id": "al-t",
+     "he": "אל + ת־",
+     "en": "don't (imperative)",
+     "rank": 20
+    },
+    {
+     "id": "bevakasha",
+     "he": "בבקשה",
+     "en": "please",
+     "rank": 38
+    }
+   ]
+  },
+  {
+   "id": "city",
+   "he": "בעיר",
+   "en": "In town",
+   "center": "אני",
+   "places": [
+    {
+     "he": "רחוב",
+     "en": "street",
+     "zh": "街",
+     "words": [
+      {
+       "kind": "verb",
+       "he": "ללכת",
+       "en": "to go, walk",
+       "zh": "走",
+       "sentences": [
+        {
+         "heb_id": 4683786,
+         "he": "בוא נלך במורד הרחוב.",
+         "en": "Let's go down the street.",
+         "frame": {
+          "id": "bo-n",
+          "he": "בוא נ־",
+          "en": "let's",
+          "rank": 46
+         },
+         "patterns": [
+          {
+           "id": "bo-n",
+           "he": "בוא נ־",
+           "en": "let's",
+           "rank": 46
+          }
+         ]
+        },
+        {
+         "heb_id": 1483485,
+         "he": "לך לאורך הרחוב הזה; תמצא את הדואר לשמאלך.",
+         "en": "Go along this street and you'll come to the post office on the left.",
+         "frame": {
+          "id": "haze",
+          "he": "הזה / הזאת / האלה",
+          "en": "this / that + noun",
+          "rank": 10
+         },
+         "patterns": [
+          {
+           "id": "et-def",
+           "he": "את ה־ / את זה",
+           "en": "the + definite object",
+           "rank": 2
+          },
+          {
+           "id": "le-pron",
+           "he": "לי / לך / לו …",
+           "en": "to me / you / him …",
+           "rank": 4
+          },
+          {
+           "id": "haze",
+           "he": "הזה / הזאת / האלה",
+           "en": "this / that + noun",
+           "rank": 10
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "kind": "verb",
+       "he": "לחפש",
+       "en": "to look for",
+       "zh": "找",
+       "sentences": [
+        {
+         "heb_id": 642134,
+         "he": "מה אתה מחפש?",
+         "en": "What are you looking for?",
+         "frame": {
+          "id": "ma",
+          "he": "מה",
+          "en": "what",
+          "rank": 9
+         },
+         "patterns": [
+          {
+           "id": "ma",
+           "he": "מה",
+           "en": "what",
+           "rank": 9
+          }
+         ]
+        },
+        {
+         "heb_id": 642136,
+         "he": "מה את מחפשת?",
+         "en": "What are you looking for?",
+         "frame": {
+          "id": "ma",
+          "he": "מה",
+          "en": "what",
+          "rank": 9
+         },
+         "patterns": [
+          {
+           "id": "ma",
+           "he": "מה",
+           "en": "what",
+           "rank": 9
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "kind": "noun",
+       "he": "דרך",
+       "en": "way",
+       "zh": "路",
+       "sentences": [
+        {
+         "heb_id": 1710129,
+         "he": "בדרך לאן היית?",
+         "en": "Where were you going?",
+         "frame": {
+          "id": "haya",
+          "he": "היה / הייתה / היו",
+          "en": "was / were",
+          "rank": 7
+         },
+         "patterns": [
+          {
+           "id": "haya",
+           "he": "היה / הייתה / היו",
+           "en": "was / were",
+           "rank": 7
+          }
+         ]
+        },
+        {
+         "heb_id": 5610623,
+         "he": "לא הייתה דרך כניסה.",
+         "en": "There was no way in.",
+         "frame": {
+          "id": "haya",
+          "he": "היה / הייתה / היו",
+          "en": "was / were",
+          "rank": 7
+         },
+         "patterns": [
+          {
+           "id": "lo",
+           "he": "לא",
+           "en": "not",
+           "rank": 1
+          },
+          {
+           "id": "haya",
+           "he": "היה / הייתה / היו",
+           "en": "was / were",
+           "rank": 7
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "kind": "noun",
+       "he": "בית קפה",
+       "en": "café",
+       "zh": "咖啡馆",
+       "sentences": [
+        {
+         "heb_id": 2136948,
+         "he": "רוצה קפה?",
+         "en": "Have some coffee?",
+         "frame": {
+          "id": "rotse",
+          "he": "רוצה / רוצים",
+          "en": "want",
+          "rank": 14
+         },
+         "patterns": [
+          {
+           "id": "rotse",
+           "he": "רוצה / רוצים",
+           "en": "want",
+           "rank": 14
+          }
+         ]
+        },
+        {
+         "heb_id": 13655949,
+         "he": "מי רוצה קפה?",
+         "en": "Who wants coffee?",
+         "frame": {
+          "id": "rotse",
+          "he": "רוצה / רוצים",
+          "en": "want",
+          "rank": 14
+         },
+         "patterns": [
+          {
+           "id": "rotse",
+           "he": "רוצה / רוצים",
+           "en": "want",
+           "rank": 14
+          },
+          {
+           "id": "mi",
+           "he": "מי",
+           "en": "who",
+           "rank": 35
+          }
+         ]
+        }
+       ]
+      }
+     ],
+     "sentences": [
+      {
+       "heb_id": 1840068,
+       "he": "אל תשחק ברחוב.",
+       "en": "Don't play in the street.",
+       "frame": {
+        "id": "al-t",
+        "he": "אל + ת־",
+        "en": "don't (imperative)",
+        "rank": 20
+       },
+       "patterns": [
+        {
+         "id": "al-t",
+         "he": "אל + ת־",
+         "en": "don't (imperative)",
+         "rank": 20
+        }
+       ]
+      },
+      {
+       "heb_id": 1831414,
+       "he": "יש חנויות לאורך הרחוב.",
+       "en": "There are stores along the street.",
+       "frame": {
+        "id": "yesh",
+        "he": "יש",
+        "en": "there is / there are",
+        "rank": 13
+       },
+       "patterns": [
+        {
+         "id": "yesh",
+         "he": "יש",
+         "en": "there is / there are",
+         "rank": 13
+        }
+       ]
+      },
+      {
+       "heb_id": 5474373,
+       "he": "כמה בתים יש ברחוב שלך?",
+       "en": "How many houses are there on your street?",
+       "frame": {
+        "id": "yesh",
+        "he": "יש",
+        "en": "there is / there are",
+        "rank": 13
+       },
+       "patterns": [
+        {
+         "id": "sheli",
+         "he": "שלי / שלך / שלו …",
+         "en": "my / your / his …",
+         "rank": 6
+        },
+        {
+         "id": "yesh",
+         "he": "יש",
+         "en": "there is / there are",
+         "rank": 13
+        },
+        {
+         "id": "kama",
+         "he": "כמה",
+         "en": "how much / how many",
+         "rank": 32
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "he": "תחנה",
+     "en": "station",
+     "zh": "车站",
+     "words": [
+      {
+       "kind": "verb",
+       "he": "לנסוע",
+       "en": "to travel, ride",
+       "zh": "坐车",
+       "sentences": [
+        {
+         "heb_id": 1558103,
+         "he": "אני נוסע כל שנה.",
+         "en": "I go every year.",
+         "frame": {
+          "id": "kol",
+          "he": "כל",
+          "en": "all / every",
+          "rank": 18
+         },
+         "patterns": [
+          {
+           "id": "kol",
+           "he": "כל",
+           "en": "all / every",
+           "rank": 18
+          }
+         ]
+        },
+        {
+         "heb_id": 1514350,
+         "he": "טום נוסע הרבה.",
+         "en": "Tom travels a great deal.",
+         "frame": {
+          "id": "harbe",
+          "he": "הרבה",
+          "en": "a lot / many / much",
+          "rank": 40
+         },
+         "patterns": [
+          {
+           "id": "harbe",
+           "he": "הרבה",
+           "en": "a lot / many / much",
+           "rank": 40
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "kind": "verb",
+       "he": "להגיע",
+       "en": "to arrive",
+       "zh": "到",
+       "sentences": [
+        {
+         "heb_id": 3713649,
+         "he": "אני יכול להגיע לתחנה לפניך.",
+         "en": "I can get to the station before you do.",
+         "frame": {
+          "id": "yaxol",
+          "he": "יכול / יכולה / יכולים",
+          "en": "can",
+          "rank": 11
+         },
+         "patterns": [
+          {
+           "id": "yaxol",
+           "he": "יכול / יכולה / יכולים",
+           "en": "can",
+           "rank": 11
+          }
+         ]
+        },
+        {
+         "heb_id": 740742,
+         "he": "תוכל להגיד לי איך להגיע לתחנה?",
+         "en": "Can you tell me how to get to the station?",
+         "frame": {
+          "id": "eich",
+          "he": "איך / כיצד",
+          "en": "how",
+          "rank": 31
+         },
+         "patterns": [
+          {
+           "id": "le-pron",
+           "he": "לי / לך / לו …",
+           "en": "to me / you / him …",
+           "rank": 4
+          },
+          {
+           "id": "eich",
+           "he": "איך / כיצד",
+           "en": "how",
+           "rank": 31
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "kind": "noun",
+       "he": "אוטובוס",
+       "en": "bus",
+       "zh": "公共汽车",
+       "sentences": [
+        {
+         "heb_id": 2733489,
+         "he": "כשמרי הגיעה לתחנה, האוטובוס האחרון כבר עזב.",
+         "en": "When Mary reached the bus stop, the last bus had already left.",
+         "frame": {
+          "id": "kvar",
+          "he": "כבר",
+          "en": "already",
+          "rank": 39
+         },
+         "patterns": [
+          {
+           "id": "kvar",
+           "he": "כבר",
+           "en": "already",
+           "rank": 39
+          },
+          {
+           "id": "kshe",
+           "he": "כש־",
+           "en": "when",
+           "rank": 55
+          }
+         ]
+        },
+        {
+         "heb_id": 2733166,
+         "he": "כשמריה הגיעה לתחנה, האוטובוס האחרון כבר עזב.",
+         "en": "When Mary reached the bus stop, the last bus had already left.",
+         "frame": {
+          "id": "kvar",
+          "he": "כבר",
+          "en": "already",
+          "rank": 39
+         },
+         "patterns": [
+          {
+           "id": "kvar",
+           "he": "כבר",
+           "en": "already",
+           "rank": 39
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "kind": "noun",
+       "he": "רכבת",
+       "en": "train",
+       "zh": "火车",
+       "sentences": [
+        {
+         "heb_id": 577450,
+         "he": "הרכבת יצאה עוד לפני הגעתם לתחנה.",
+         "en": "The train left before they got to the station.",
+         "frame": {
+          "id": "od",
+          "he": "עוד",
+          "en": "still / else / more",
+          "rank": 51
+         },
+         "patterns": [
+          {
+           "id": "od",
+           "he": "עוד",
+           "en": "still / else / more",
+           "rank": 51
+          },
+          {
+           "id": "lifnei",
+           "he": "לפני",
+           "en": "before / ago",
+           "rank": 52
+          }
+         ]
+        },
+        {
+         "heb_id": 577449,
+         "he": "הרכבת יצאה עוד לפני שהם הגיעו לתחנה.",
+         "en": "The train left before they got to the station.",
+         "frame": {
+          "id": "od",
+          "he": "עוד",
+          "en": "still / else / more",
+          "rank": 51
+         },
+         "patterns": [
+          {
+           "id": "she",
+           "he": "ש־",
+           "en": "that / which (clause)",
+           "rank": 3
+          },
+          {
+           "id": "od",
+           "he": "עוד",
+           "en": "still / else / more",
+           "rank": 51
+          },
+          {
+           "id": "lifnei",
+           "he": "לפני",
+           "en": "before / ago",
+           "rank": 52
+          },
+          {
+           "id": "lifnei-she",
+           "he": "לפני ש־",
+           "en": "before (clause)",
+           "rank": 83
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "kind": "noun",
+       "he": "מונית",
+       "en": "taxi",
+       "zh": "出租车",
+       "sentences": [
+        {
+         "heb_id": 5775980,
+         "he": "בטוח שנוכל למצוא מונית שתקח אותנו לתחנה.",
+         "en": "We can definitely find a cab to take us to the station.",
+         "frame": {
+          "id": "she",
+          "he": "ש־",
+          "en": "that / which (clause)",
+          "rank": 3
+         },
+         "patterns": [
+          {
+           "id": "she",
+           "he": "ש־",
+           "en": "that / which (clause)",
+           "rank": 3
+          },
+          {
+           "id": "oto",
+           "he": "אותי / אותך / אותו …",
+           "en": "me / you / him (object)",
+           "rank": 8
+          }
+         ]
+        },
+        {
+         "heb_id": 5459530,
+         "he": "הוא צריך מונית.",
+         "en": "He needs a taxi.",
+         "frame": {
+          "id": "tsarix",
+          "he": "צריך / צריכה / צריכים",
+          "en": "need / have to",
+          "rank": 16
+         },
+         "patterns": [
+          {
+           "id": "tsarix",
+           "he": "צריך / צריכה / צריכים",
+           "en": "need / have to",
+           "rank": 16
+          }
+         ]
+        }
+       ]
+      }
+     ],
+     "sentences": [
+      {
+       "heb_id": 1710125,
+       "he": "איפה התחנה?",
+       "en": "Where is the station?",
+       "frame": {
+        "id": "eifo",
+        "he": "איפה / היכן",
+        "en": "where",
+        "rank": 43
+       },
+       "patterns": [
+        {
+         "id": "eifo",
+         "he": "איפה / היכן",
+         "en": "where",
+         "rank": 43
+        }
+       ]
+      },
+      {
+       "heb_id": 6134444,
+       "he": "איזו תחנה זו?",
+       "en": "What station is it?",
+       "frame": {
+        "id": "eize",
+        "he": "איזה / איזו",
+        "en": "which / what kind of",
+        "rank": 59
+       },
+       "patterns": [
+        {
+         "id": "eize",
+         "he": "איזה / איזו",
+         "en": "which / what kind of",
+         "rank": 59
+        }
+       ]
+      },
+      {
+       "heb_id": 6070527,
+       "he": "איזו תחנה זאת?",
+       "en": "What stop is this?",
+       "frame": {
+        "id": "eize",
+        "he": "איזה / איזו",
+        "en": "which / what kind of",
+        "rank": 59
+       },
+       "patterns": [
+        {
+         "id": "ze",
+         "he": "זה / זאת",
+         "en": "this is / it is",
+         "rank": 5
+        },
+        {
+         "id": "eize",
+         "he": "איזה / איזו",
+         "en": "which / what kind of",
+         "rank": 59
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "he": "חנות",
+     "en": "shop",
+     "zh": "商店",
+     "words": [
+      {
+       "kind": "verb",
+       "he": "לקנות",
+       "en": "to buy",
+       "zh": "买",
+       "sentences": [
+        {
+         "heb_id": 10769997,
+         "he": "תום הלך לחנות לקנות כמה ביצים.",
+         "en": "Tom walked to the store to buy some eggs.",
+         "frame": {
+          "id": "kama",
+          "he": "כמה",
+          "en": "how much / how many",
+          "rank": 32
+         },
+         "patterns": [
+          {
+           "id": "kama",
+           "he": "כמה",
+           "en": "how much / how many",
+           "rank": 32
+          }
+         ]
+        },
+        {
+         "heb_id": 5995195,
+         "he": "הוא הלך לחנות לקנות כמה תפוזים.",
+         "en": "He went to the store to buy some oranges.",
+         "frame": {
+          "id": "kama",
+          "he": "כמה",
+          "en": "how much / how many",
+          "rank": 32
+         },
+         "patterns": [
+          {
+           "id": "kama",
+           "he": "כמה",
+           "en": "how much / how many",
+           "rank": 32
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "kind": "verb",
+       "he": "לעלות",
+       "en": "to cost",
+       "zh": "花",
+       "sentences": [
+        {
+         "heb_id": 1644996,
+         "he": "יש לו חנות הנעלה.",
+         "en": "He runs a shoe shop.",
+         "frame": {
+          "id": "yesh",
+          "he": "יש",
+          "en": "there is / there are",
+          "rank": 13
+         },
+         "patterns": [
+          {
+           "id": "le-pron",
+           "he": "לי / לך / לו …",
+           "en": "to me / you / him …",
+           "rank": 4
+          },
+          {
+           "id": "yesh",
+           "he": "יש",
+           "en": "there is / there are",
+           "rank": 13
+          },
+          {
+           "id": "yesh-le",
+           "he": "יש ל־",
+           "en": "have",
+           "rank": 19
+          }
+         ]
+        },
+        {
+         "heb_id": 2074684,
+         "he": "מעולה, מי אתם?",
+         "en": "Very well, who are you?",
+         "frame": {
+          "id": "mi",
+          "he": "מי",
+          "en": "who",
+          "rank": 35
+         },
+         "patterns": [
+          {
+           "id": "mi",
+           "he": "מי",
+           "en": "who",
+           "rank": 35
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "kind": "noun",
+       "he": "מחיר",
+       "en": "price",
+       "zh": "价格",
+       "sentences": [
+        {
+         "heb_id": 1091631,
+         "he": "האם המחיר מקובל?",
+         "en": "Is this price acceptable?",
+         "frame": {
+          "id": "ha-im",
+          "he": "האם",
+          "en": "yes/no question",
+          "rank": 22
+         },
+         "patterns": [
+          {
+           "id": "ha-im",
+           "he": "האם",
+           "en": "yes/no question",
+           "rank": 22
+          }
+         ]
+        },
+        {
+         "heb_id": 1429248,
+         "he": "למחיר אין חשיבות.",
+         "en": "The price isn't important.",
+         "frame": {
+          "id": "ein",
+          "he": "אין",
+          "en": "there isn't / there aren't",
+          "rank": 27
+         },
+         "patterns": [
+          {
+           "id": "ein",
+           "he": "אין",
+           "en": "there isn't / there aren't",
+           "rank": 27
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "kind": "noun",
+       "he": "כסף",
+       "en": "money",
+       "zh": "钱",
+       "sentences": [
+        {
+         "heb_id": 2285284,
+         "he": "אינני צריך כסף.",
+         "en": "I don't need money.",
+         "frame": {
+          "id": "einenni",
+          "he": "אינו / אינני",
+          "en": "am not / is not",
+          "rank": 15
+         },
+         "patterns": [
+          {
+           "id": "einenni",
+           "he": "אינו / אינני",
+           "en": "am not / is not",
+           "rank": 15
+          },
+          {
+           "id": "tsarix",
+           "he": "צריך / צריכה / צריכים",
+           "en": "need / have to",
+           "rank": 16
+          }
+         ]
+        },
+        {
+         "heb_id": 771856,
+         "he": "אין עליי כסף.",
+         "en": "I have no money with me.",
+         "frame": {
+          "id": "alay",
+          "he": "עלי / עליך / עליו …",
+          "en": "on me / I have to",
+          "rank": 25
+         },
+         "patterns": [
+          {
+           "id": "alay",
+           "he": "עלי / עליך / עליו …",
+           "en": "on me / I have to",
+           "rank": 25
+          },
+          {
+           "id": "ein",
+           "he": "אין",
+           "en": "there isn't / there aren't",
+           "rank": 27
+          }
+         ]
+        }
+       ]
+      }
+     ],
+     "sentences": [
+      {
+       "heb_id": 5525586,
+       "he": "השוק פגיע מאד.",
+       "en": "The market is very volatile.",
+       "frame": {
+        "id": "meod",
+        "he": "מאוד / מאד",
+        "en": "very",
+        "rank": 21
+       },
+       "patterns": [
+        {
+         "id": "meod",
+         "he": "מאוד / מאד",
+         "en": "very",
+         "rank": 21
+        }
+       ]
+      },
+      {
+       "heb_id": 5525587,
+       "he": "השוק הפכפך מאד.",
+       "en": "The market is very volatile.",
+       "frame": {
+        "id": "meod",
+        "he": "מאוד / מאד",
+        "en": "very",
+        "rank": 21
+       },
+       "patterns": [
+        {
+         "id": "meod",
+         "he": "מאוד / מאד",
+         "en": "very",
+         "rank": 21
+        }
+       ]
+      },
+      {
+       "heb_id": 5525588,
+       "he": "השוק מאד לא יציב.",
+       "en": "The market is very volatile.",
+       "frame": {
+        "id": "meod",
+        "he": "מאוד / מאד",
+        "en": "very",
+        "rank": 21
+       },
+       "patterns": [
+        {
+         "id": "lo",
+         "he": "לא",
+         "en": "not",
+         "rank": 1
+        },
+        {
+         "id": "meod",
+         "he": "מאוד / מאד",
+         "en": "very",
+         "rank": 21
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "frames": [
+    {
+     "id": "yesh",
+     "he": "יש",
+     "en": "there is / there are",
+     "rank": 13
+    },
+    {
+     "id": "meod",
+     "he": "מאוד / מאד",
+     "en": "very",
+     "rank": 21
+    },
+    {
+     "id": "ma",
+     "he": "מה",
+     "en": "what",
+     "rank": 9
+    },
+    {
+     "id": "haya",
+     "he": "היה / הייתה / היו",
+     "en": "was / were",
+     "rank": 7
+    },
+    {
+     "id": "rotse",
+     "he": "רוצה / רוצים",
+     "en": "want",
+     "rank": 14
+    },
+    {
+     "id": "kvar",
+     "he": "כבר",
+     "en": "already",
+     "rank": 39
+    },
+    {
+     "id": "od",
+     "he": "עוד",
+     "en": "still / else / more",
+     "rank": 51
+    },
+    {
+     "id": "eize",
+     "he": "איזה / איזו",
+     "en": "which / what kind of",
+     "rank": 59
+    }
+   ]
+  },
+  {
+   "id": "people",
+   "he": "אנשים",
+   "en": "People",
+   "center": "אני",
+   "places": [
+    {
+     "he": "משפחה",
+     "en": "family",
+     "zh": "家人",
+     "words": [
+      {
+       "kind": "verb",
+       "he": "לאהוב",
+       "en": "to love, like",
+       "zh": "爱",
+       "sentences": [
+        {
+         "heb_id": 1804491,
+         "he": "היתה לו משפחה אוהבת.",
+         "en": "He had a loving family.",
+         "frame": {
+          "id": "haya",
+          "he": "היה / הייתה / היו",
+          "en": "was / were",
+          "rank": 7
+         },
+         "patterns": [
+          {
+           "id": "le-pron",
+           "he": "לי / לך / לו …",
+           "en": "to me / you / him …",
+           "rank": 4
+          },
+          {
+           "id": "haya",
+           "he": "היה / הייתה / היו",
+           "en": "was / were",
+           "rank": 7
+          }
+         ]
+        },
+        {
+         "heb_id": 1804494,
+         "he": "יש לה משפחה אוהבת.",
+         "en": "She has a loving family.",
+         "frame": {
+          "id": "yesh",
+          "he": "יש",
+          "en": "there is / there are",
+          "rank": 13
+         },
+         "patterns": [
+          {
+           "id": "le-pron",
+           "he": "לי / לך / לו …",
+           "en": "to me / you / him …",
+           "rank": 4
+          },
+          {
+           "id": "yesh",
+           "he": "יש",
+           "en": "there is / there are",
+           "rank": 13
+          },
+          {
+           "id": "yesh-le",
+           "he": "יש ל־",
+           "en": "have",
+           "rank": 19
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "kind": "verb",
+       "he": "לעזור",
+       "en": "to help",
+       "zh": "帮助",
+       "sentences": [
+        {
+         "heb_id": 5603149,
+         "he": "אני רוצה לעזור למשפחה שלי.",
+         "en": "I want to help my family.",
+         "frame": {
+          "id": "rotse",
+          "he": "רוצה / רוצים",
+          "en": "want",
+          "rank": 14
+         },
+         "patterns": [
+          {
+           "id": "sheli",
+           "he": "שלי / שלך / שלו …",
+           "en": "my / your / his …",
+           "rank": 6
+          },
+          {
+           "id": "rotse",
+           "he": "רוצה / רוצים",
+           "en": "want",
+           "rank": 14
+          }
+         ]
+        },
+        {
+         "heb_id": 1397860,
+         "he": "אני יכול לעזור?",
+         "en": "Can I help?",
+         "frame": {
+          "id": "yaxol",
+          "he": "יכול / יכולה / יכולים",
+          "en": "can",
+          "rank": 11
+         },
+         "patterns": [
+          {
+           "id": "yaxol",
+           "he": "יכול / יכולה / יכולים",
+           "en": "can",
+           "rank": 11
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "kind": "noun",
+       "he": "אמא",
+       "en": "mother",
+       "zh": "妈妈",
+       "sentences": [
+        {
+         "heb_id": 1101708,
+         "he": "מה שלום אמא שלך?",
+         "en": "How's your mother?",
+         "frame": {
+          "id": "ma",
+          "he": "מה",
+          "en": "what",
+          "rank": 9
+         },
+         "patterns": [
+          {
+           "id": "sheli",
+           "he": "שלי / שלך / שלו …",
+           "en": "my / your / his …",
+           "rank": 6
+          },
+          {
+           "id": "ma",
+           "he": "מה",
+           "en": "what",
+           "rank": 9
+          }
+         ]
+        },
+        {
+         "heb_id": 13110151,
+         "he": "איפה אמא?",
+         "en": "Where's mom?",
+         "frame": {
+          "id": "eifo",
+          "he": "איפה / היכן",
+          "en": "where",
+          "rank": 43
+         },
+         "patterns": [
+          {
+           "id": "eifo",
+           "he": "איפה / היכן",
+           "en": "where",
+           "rank": 43
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "kind": "noun",
+       "he": "אבא",
+       "en": "father",
+       "zh": "爸爸",
+       "sentences": [
+        {
+         "heb_id": 5952785,
+         "he": "הבית הזה שייך לאבי.",
+         "en": "This house belongs to my father.",
+         "frame": {
+          "id": "haze",
+          "he": "הזה / הזאת / האלה",
+          "en": "this / that + noun",
+          "rank": 10
+         },
+         "patterns": [
+          {
+           "id": "haze",
+           "he": "הזה / הזאת / האלה",
+           "en": "this / that + noun",
+           "rank": 10
+          }
+         ]
+        },
+        {
+         "heb_id": 13041513,
+         "he": "גם אני אבא.",
+         "en": "I'm a father, too.",
+         "frame": {
+          "id": "gam",
+          "he": "גם",
+          "en": "also / too",
+          "rank": 60
+         },
+         "patterns": [
+          {
+           "id": "gam",
+           "he": "גם",
+           "en": "also / too",
+           "rank": 60
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "kind": "noun",
+       "he": "ילד",
+       "en": "child",
+       "zh": "孩子",
+       "sentences": [
+        {
+         "heb_id": 2352103,
+         "he": "אינני ילד.",
+         "en": "I'm not a child.",
+         "frame": {
+          "id": "einenni",
+          "he": "אינו / אינני",
+          "en": "am not / is not",
+          "rank": 15
+         },
+         "patterns": [
+          {
+           "id": "einenni",
+           "he": "אינו / אינני",
+           "en": "am not / is not",
+           "rank": 15
+          }
+         ]
+        },
+        {
+         "heb_id": 13059368,
+         "he": "תום אינו ילד.",
+         "en": "Tom isn't a kid.",
+         "frame": {
+          "id": "einenni",
+          "he": "אינו / אינני",
+          "en": "am not / is not",
+          "rank": 15
+         },
+         "patterns": [
+          {
+           "id": "einenni",
+           "he": "אינו / אינני",
+           "en": "am not / is not",
+           "rank": 15
+          }
+         ]
+        }
+       ]
+      }
+     ],
+     "sentences": [
+      {
+       "heb_id": 1451006,
+       "he": "איך המשפחה?",
+       "en": "How's your family?",
+       "frame": {
+        "id": "eich",
+        "he": "איך / כיצד",
+        "en": "how",
+        "rank": 31
+       },
+       "patterns": [
+        {
+         "id": "eich",
+         "he": "איך / כיצד",
+         "en": "how",
+         "rank": 31
+        }
+       ]
+      },
+      {
+       "heb_id": 2003421,
+       "he": "אין לי משפחה.",
+       "en": "I have no family.",
+       "frame": {
+        "id": "ein",
+        "he": "אין",
+        "en": "there isn't / there aren't",
+        "rank": 27
+       },
+       "patterns": [
+        {
+         "id": "le-pron",
+         "he": "לי / לך / לו …",
+         "en": "to me / you / him …",
+         "rank": 4
+        },
+        {
+         "id": "ein",
+         "he": "אין",
+         "en": "there isn't / there aren't",
+         "rank": 27
+        },
+        {
+         "id": "ein-le",
+         "he": "אין ל־",
+         "en": "don't have",
+         "rank": 53
+        }
+       ]
+      },
+      {
+       "heb_id": 6021546,
+       "he": "לתום אין משפחה.",
+       "en": "Tom doesn't have any family.",
+       "frame": {
+        "id": "ein",
+        "he": "אין",
+        "en": "there isn't / there aren't",
+        "rank": 27
+       },
+       "patterns": [
+        {
+         "id": "ein",
+         "he": "אין",
+         "en": "there isn't / there aren't",
+         "rank": 27
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "he": "חברים",
+     "en": "friends",
+     "zh": "朋友",
+     "words": [
+      {
+       "kind": "verb",
+       "he": "לבקר",
+       "en": "to visit",
+       "zh": "拜访",
+       "sentences": [
+        {
+         "heb_id": 2017204,
+         "he": "אני חייב לבקר חבר בבית חולים.",
+         "en": "I must visit my friend in the hospital.",
+         "frame": {
+          "id": "hayav",
+          "he": "חייב / חייבת / חייבים",
+          "en": "must",
+          "rank": 47
+         },
+         "patterns": [
+          {
+           "id": "hayav",
+           "he": "חייב / חייבת / חייבים",
+           "en": "must",
+           "rank": 47
+          }
+         ]
+        },
+        {
+         "heb_id": 1626071,
+         "he": "אני הולך לבקר את החברים שלי.",
+         "en": "I'm going to visit my friends.",
+         "frame": {
+          "id": "holech-inf",
+          "he": "הולך + שם פועל",
+          "en": "be going to + verb",
+          "rank": 81
+         },
+         "patterns": [
+          {
+           "id": "et-def",
+           "he": "את ה־ / את זה",
+           "en": "the + definite object",
+           "rank": 2
+          },
+          {
+           "id": "sheli",
+           "he": "שלי / שלך / שלו …",
+           "en": "my / your / his …",
+           "rank": 6
+          },
+          {
+           "id": "holech-inf",
+           "he": "הולך + שם פועל",
+           "en": "be going to + verb",
+           "rank": 81
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "kind": "verb",
+       "he": "להתקשר",
+       "en": "to call",
+       "zh": "打电话",
+       "sentences": [
+        {
+         "heb_id": 2629757,
+         "he": "אני צריך להתקשר.",
+         "en": "I need to make a phone call.",
+         "frame": {
+          "id": "tsarix",
+          "he": "צריך / צריכה / צריכים",
+          "en": "need / have to",
+          "rank": 16
+         },
+         "patterns": [
+          {
+           "id": "tsarix",
+           "he": "צריך / צריכה / צריכים",
+           "en": "need / have to",
+           "rank": 16
+          }
+         ]
+        },
+        {
+         "heb_id": 6085868,
+         "he": "אתה צריך להתקשר.",
+         "en": "You should call.",
+         "frame": {
+          "id": "tsarix",
+          "he": "צריך / צריכה / צריכים",
+          "en": "need / have to",
+          "rank": 16
+         },
+         "patterns": [
+          {
+           "id": "tsarix",
+           "he": "צריך / צריכה / צריכים",
+           "en": "need / have to",
+           "rank": 16
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "kind": "noun",
+       "he": "טלפון",
+       "en": "phone",
+       "zh": "电话",
+       "sentences": [
+        {
+         "heb_id": 1997733,
+         "he": "כשהגעתי לתחנה הרמתי טלפון לחבר שלי.",
+         "en": "I called my friend after arriving at the station.",
+         "frame": {
+          "id": "kshe",
+          "he": "כש־",
+          "en": "when",
+          "rank": 55
+         },
+         "patterns": [
+          {
+           "id": "sheli",
+           "he": "שלי / שלך / שלו …",
+           "en": "my / your / his …",
+           "rank": 6
+          },
+          {
+           "id": "kshe",
+           "he": "כש־",
+           "en": "when",
+           "rank": 55
+          }
+         ]
+        },
+        {
+         "heb_id": 2689323,
+         "he": "מי ענה לטלפון?",
+         "en": "Who answered the phone?",
+         "frame": {
+          "id": "mi",
+          "he": "מי",
+          "en": "who",
+          "rank": 35
+         },
+         "patterns": [
+          {
+           "id": "mi",
+           "he": "מי",
+           "en": "who",
+           "rank": 35
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "kind": "noun",
+       "he": "מסיבה",
+       "en": "party",
+       "zh": "聚会",
+       "sentences": [
+        {
+         "heb_id": 5525835,
+         "he": "למה לא תזמיני כמה חברים למסיבה?",
+         "en": "Why don't you invite some friends over for a party?",
+         "frame": {
+          "id": "lama",
+          "he": "למה / מדוע",
+          "en": "why",
+          "rank": 28
+         },
+         "patterns": [
+          {
+           "id": "lo",
+           "he": "לא",
+           "en": "not",
+           "rank": 1
+          },
+          {
+           "id": "lama",
+           "he": "למה / מדוע",
+           "en": "why",
+           "rank": 28
+          },
+          {
+           "id": "kama",
+           "he": "כמה",
+           "en": "how much / how many",
+           "rank": 32
+          }
+         ]
+        },
+        {
+         "heb_id": 13092230,
+         "he": "איזו מסיבה!",
+         "en": "What a party!",
+         "frame": {
+          "id": "eize",
+          "he": "איזה / איזו",
+          "en": "which / what kind of",
+          "rank": 59
+         },
+         "patterns": [
+          {
+           "id": "eize",
+           "he": "איזה / איזו",
+           "en": "which / what kind of",
+           "rank": 59
+          }
+         ]
+        }
+       ]
+      }
+     ],
+     "sentences": [
+      {
+       "heb_id": 2705634,
+       "he": "האם הוא חבר?",
+       "en": "Is he a friend?",
+       "frame": {
+        "id": "ha-im",
+        "he": "האם",
+        "en": "yes/no question",
+        "rank": 22
+       },
+       "patterns": [
+        {
+         "id": "ha-im",
+         "he": "האם",
+         "en": "yes/no question",
+         "rank": 22
+        }
+       ]
+      },
+      {
+       "heb_id": 1562847,
+       "he": "האם הם חברים?",
+       "en": "Are they friends?",
+       "frame": {
+        "id": "ha-im",
+        "he": "האם",
+        "en": "yes/no question",
+        "rank": 22
+       },
+       "patterns": [
+        {
+         "id": "ha-im",
+         "he": "האם",
+         "en": "yes/no question",
+         "rank": 22
+        }
+       ]
+      },
+      {
+       "heb_id": 13628637,
+       "he": "כל הכבוד, חברה.",
+       "en": "Well done, everybody.",
+       "frame": {
+        "id": "kol",
+        "he": "כל",
+        "en": "all / every",
+        "rank": 18
+       },
+       "patterns": [
+        {
+         "id": "kol",
+         "he": "כל",
+         "en": "all / every",
+         "rank": 18
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "frames": [
+    {
+     "id": "einenni",
+     "he": "אינו / אינני",
+     "en": "am not / is not",
+     "rank": 15
+    },
+    {
+     "id": "ein",
+     "he": "אין",
+     "en": "there isn't / there aren't",
+     "rank": 27
+    },
+    {
+     "id": "tsarix",
+     "he": "צריך / צריכה / צריכים",
+     "en": "need / have to",
+     "rank": 16
+    },
+    {
+     "id": "ha-im",
+     "he": "האם",
+     "en": "yes/no question",
+     "rank": 22
+    },
+    {
+     "id": "haya",
+     "he": "היה / הייתה / היו",
+     "en": "was / were",
+     "rank": 7
+    },
+    {
+     "id": "yesh",
+     "he": "יש",
+     "en": "there is / there are",
+     "rank": 13
+    },
+    {
+     "id": "rotse",
+     "he": "רוצה / רוצים",
+     "en": "want",
+     "rank": 14
+    },
+    {
+     "id": "yaxol",
+     "he": "יכול / יכולה / יכולים",
+     "en": "can",
+     "rank": 11
+    }
+   ]
+  },
+  {
+   "id": "travel",
+   "he": "נסיעה",
+   "en": "Travel",
+   "center": "אני",
+   "places": [
+    {
+     "he": "שדה תעופה",
+     "en": "airport",
+     "zh": "机场",
+     "words": [
+      {
+       "kind": "verb",
+       "he": "לטוס",
+       "en": "to fly",
+       "zh": "坐飞机",
+       "sentences": [
+        {
+         "heb_id": 2224526,
+         "he": "לטוס יעלה לך יותר.",
+         "en": "It will cost you more to go by plane.",
+         "frame": {
+          "id": "yoter",
+          "he": "יותר + שם תואר",
+          "en": "more / -er",
+          "rank": 17
+         },
+         "patterns": [
+          {
+           "id": "le-pron",
+           "he": "לי / לך / לו …",
+           "en": "to me / you / him …",
+           "rank": 4
+          },
+          {
+           "id": "yoter",
+           "he": "יותר + שם תואר",
+           "en": "more / -er",
+           "rank": 17
+          }
+         ]
+        },
+        {
+         "heb_id": 1858451,
+         "he": "אני רוצה לטוס לחו\"ל.",
+         "en": "I want to go abroad.",
+         "frame": {
+          "id": "rotse",
+          "he": "רוצה / רוצים",
+          "en": "want",
+          "rank": 14
+         },
+         "patterns": [
+          {
+           "id": "rotse",
+           "he": "רוצה / רוצים",
+           "en": "want",
+           "rank": 14
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "kind": "verb",
+       "he": "לחכות",
+       "en": "to wait",
+       "zh": "等",
+       "sentences": [
+        {
+         "heb_id": 13481816,
+         "he": "הייתי מחכה.",
+         "en": "I'd wait.",
+         "frame": {
+          "id": "haya",
+          "he": "היה / הייתה / היו",
+          "en": "was / were",
+          "rank": 7
+         },
+         "patterns": [
+          {
+           "id": "haya",
+           "he": "היה / הייתה / היו",
+           "en": "was / were",
+           "rank": 7
+          },
+          {
+           "id": "haya-ptc",
+           "he": "היה + בינוני",
+           "en": "was + -ing / would",
+           "rank": 42
+          }
+         ]
+        },
+        {
+         "heb_id": 1873634,
+         "he": "היה שווה לחכות.",
+         "en": "It was worth the wait.",
+         "frame": {
+          "id": "haya",
+          "he": "היה / הייתה / היו",
+          "en": "was / were",
+          "rank": 7
+         },
+         "patterns": [
+          {
+           "id": "haya",
+           "he": "היה / הייתה / היו",
+           "en": "was / were",
+           "rank": 7
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "kind": "noun",
+       "he": "כרטיס",
+       "en": "ticket",
+       "zh": "票",
+       "sentences": [
+        {
+         "heb_id": 1814763,
+         "he": "יש לו כרטיס.",
+         "en": "He has a ticket.",
+         "frame": {
+          "id": "yesh",
+          "he": "יש",
+          "en": "there is / there are",
+          "rank": 13
+         },
+         "patterns": [
+          {
+           "id": "le-pron",
+           "he": "לי / לך / לו …",
+           "en": "to me / you / him …",
+           "rank": 4
+          },
+          {
+           "id": "yesh",
+           "he": "יש",
+           "en": "there is / there are",
+           "rank": 13
+          },
+          {
+           "id": "yesh-le",
+           "he": "יש ל־",
+           "en": "have",
+           "rank": 19
+          }
+         ]
+        },
+        {
+         "heb_id": 1705856,
+         "he": "האם יש לך כרטיס?",
+         "en": "Do you have a ticket?",
+         "frame": {
+          "id": "yesh",
+          "he": "יש",
+          "en": "there is / there are",
+          "rank": 13
+         },
+         "patterns": [
+          {
+           "id": "le-pron",
+           "he": "לי / לך / לו …",
+           "en": "to me / you / him …",
+           "rank": 4
+          },
+          {
+           "id": "yesh",
+           "he": "יש",
+           "en": "there is / there are",
+           "rank": 13
+          },
+          {
+           "id": "yesh-le",
+           "he": "יש ל־",
+           "en": "have",
+           "rank": 19
+          },
+          {
+           "id": "ha-im",
+           "he": "האם",
+           "en": "yes/no question",
+           "rank": 22
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "kind": "noun",
+       "he": "מטוס",
+       "en": "plane",
+       "zh": "飞机",
+       "sentences": [
+        {
+         "heb_id": 2008720,
+         "he": "המטוס, לאחר ההמראה, הקיף פעמיים את שדה התעופה.",
+         "en": "After taking off, the plane circled the airport twice.",
+         "frame": {
+          "id": "acharei",
+          "he": "אחרי / לאחר",
+          "en": "after",
+          "rank": 56
+         },
+         "patterns": [
+          {
+           "id": "acharei",
+           "he": "אחרי / לאחר",
+           "en": "after",
+           "rank": 56
+          }
+         ]
+        },
+        {
+         "heb_id": 1846688,
+         "he": "זה המטוס הראשון שנוחת בנמל התעופה החדש.",
+         "en": "This is the first airplane to land at the new airport.",
+         "frame": {
+          "id": "ze",
+          "he": "זה / זאת",
+          "en": "this is / it is",
+          "rank": 5
+         },
+         "patterns": [
+          {
+           "id": "ze",
+           "he": "זה / זאת",
+           "en": "this is / it is",
+           "rank": 5
+          }
+         ]
+        }
+       ]
+      }
+     ],
+     "sentences": [
+      {
+       "heb_id": 565389,
+       "he": "מה המרחק לשדה התעופה?",
+       "en": "How far is it to the airport?",
+       "frame": {
+        "id": "ma",
+        "he": "מה",
+        "en": "what",
+        "rank": 9
+       },
+       "patterns": [
+        {
+         "id": "ma",
+         "he": "מה",
+         "en": "what",
+         "rank": 9
+        }
+       ]
+      },
+      {
+       "heb_id": 1451258,
+       "he": "כמה רחוק שדה התעופה?",
+       "en": "How far is it to the airport?",
+       "frame": {
+        "id": "kama",
+        "he": "כמה",
+        "en": "how much / how many",
+        "rank": 32
+       },
+       "patterns": [
+        {
+         "id": "kama",
+         "he": "כמה",
+         "en": "how much / how many",
+         "rank": 32
+        }
+       ]
+      },
+      {
+       "heb_id": 1407685,
+       "he": "הכביש הזה מגיע לנמל התעופה.",
+       "en": "This road leads to the airport.",
+       "frame": {
+        "id": "haze",
+        "he": "הזה / הזאת / האלה",
+        "en": "this / that + noun",
+        "rank": 10
+       },
+       "patterns": [
+        {
+         "id": "haze",
+         "he": "הזה / הזאת / האלה",
+         "en": "this / that + noun",
+         "rank": 10
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "he": "מלון",
+     "en": "hotel",
+     "zh": "酒店",
+     "words": [
+      {
+       "kind": "verb",
+       "he": "להישאר",
+       "en": "to stay",
+       "zh": "留",
+       "sentences": [
+        {
+         "heb_id": 5414881,
+         "he": "מי נשאר?",
+         "en": "Who stayed?",
+         "frame": {
+          "id": "mi",
+          "he": "מי",
+          "en": "who",
+          "rank": 35
+         },
+         "patterns": [
+          {
+           "id": "mi",
+           "he": "מי",
+           "en": "who",
+           "rank": 35
+          }
+         ]
+        },
+        {
+         "heb_id": 6077533,
+         "he": "אתה יכול להישאר?",
+         "en": "Can you stay?",
+         "frame": {
+          "id": "yaxol",
+          "he": "יכול / יכולה / יכולים",
+          "en": "can",
+          "rank": 11
+         },
+         "patterns": [
+          {
+           "id": "yaxol",
+           "he": "יכול / יכולה / יכולים",
+           "en": "can",
+           "rank": 11
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "kind": "verb",
+       "he": "לטייל",
+       "en": "to travel around",
+       "zh": "旅行",
+       "sentences": [
+        {
+         "heb_id": 6120768,
+         "he": "אני מטייל כל יום.",
+         "en": "I walk every day.",
+         "frame": {
+          "id": "kol",
+          "he": "כל",
+          "en": "all / every",
+          "rank": 18
+         },
+         "patterns": [
+          {
+           "id": "kol",
+           "he": "כל",
+           "en": "all / every",
+           "rank": 18
+          }
+         ]
+        },
+        {
+         "heb_id": 4659846,
+         "he": "עלינו לצאת לטייל.",
+         "en": "We should take a walk.",
+         "frame": {
+          "id": "alay",
+          "he": "עלי / עליך / עליו …",
+          "en": "on me / I have to",
+          "rank": 25
+         },
+         "patterns": [
+          {
+           "id": "alay",
+           "he": "עלי / עליך / עליו …",
+           "en": "on me / I have to",
+           "rank": 25
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "kind": "noun",
+       "he": "חופשה",
+       "en": "holiday",
+       "zh": "假期",
+       "sentences": [
+        {
+         "heb_id": 2566085,
+         "he": "אני צריכה חופשה!",
+         "en": "I need a vacation!",
+         "frame": {
+          "id": "tsarix",
+          "he": "צריך / צריכה / צריכים",
+          "en": "need / have to",
+          "rank": 16
+         },
+         "patterns": [
+          {
+           "id": "tsarix",
+           "he": "צריך / צריכה / צריכים",
+           "en": "need / have to",
+           "rank": 16
+          }
+         ]
+        },
+        {
+         "heb_id": 13083804,
+         "he": "איך עברה החופשה הכפויה?",
+         "en": "How was furlough?",
+         "frame": {
+          "id": "eich",
+          "he": "איך / כיצד",
+          "en": "how",
+          "rank": 31
+         },
+         "patterns": [
+          {
+           "id": "eich",
+           "he": "איך / כיצד",
+           "en": "how",
+           "rank": 31
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "kind": "noun",
+       "he": "ים",
+       "en": "sea",
+       "zh": "海",
+       "sentences": [
+        {
+         "heb_id": 1206714,
+         "he": "אין בלמים!",
+         "en": "The brakes are gone!",
+         "frame": {
+          "id": "ein",
+          "he": "אין",
+          "en": "there isn't / there aren't",
+          "rank": 27
+         },
+         "patterns": [
+          {
+           "id": "ein",
+           "he": "אין",
+           "en": "there isn't / there aren't",
+           "rank": 27
+          }
+         ]
+        },
+        {
+         "heb_id": 1846435,
+         "he": "מים בבקשה.",
+         "en": "Water, please.",
+         "frame": {
+          "id": "bevakasha",
+          "he": "בבקשה",
+          "en": "please",
+          "rank": 38
+         },
+         "patterns": [
+          {
+           "id": "bevakasha",
+           "he": "בבקשה",
+           "en": "please",
+           "rank": 38
+          }
+         ]
+        }
+       ]
+      }
+     ],
+     "sentences": [
+      {
+       "heb_id": 5449569,
+       "he": "איפה המלון?",
+       "en": "Where is the hotel?",
+       "frame": {
+        "id": "eifo",
+        "he": "איפה / היכן",
+        "en": "where",
+        "rank": 43
+       },
+       "patterns": [
+        {
+         "id": "eifo",
+         "he": "איפה / היכן",
+         "en": "where",
+         "rank": 43
+        }
+       ]
+      },
+      {
+       "heb_id": 628158,
+       "he": "האם היא מתאכסנת במלון?",
+       "en": "Is she staying at a hotel?",
+       "frame": {
+        "id": "ha-im",
+        "he": "האם",
+        "en": "yes/no question",
+        "rank": 22
+       },
+       "patterns": [
+        {
+         "id": "ha-im",
+         "he": "האם",
+         "en": "yes/no question",
+         "rank": 22
+        }
+       ]
+      },
+      {
+       "heb_id": 5974194,
+       "he": "מתי היא יצאה מהמלון?",
+       "en": "What time did she check out of the hotel?",
+       "frame": {
+        "id": "matai",
+        "he": "מתי",
+        "en": "when",
+        "rank": 66
+       },
+       "patterns": [
+        {
+         "id": "matai",
+         "he": "מתי",
+         "en": "when",
+         "rank": 66
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "frames": [
+    {
+     "id": "haya",
+     "he": "היה / הייתה / היו",
+     "en": "was / were",
+     "rank": 7
+    },
+    {
+     "id": "yesh",
+     "he": "יש",
+     "en": "there is / there are",
+     "rank": 13
+    },
+    {
+     "id": "yoter",
+     "he": "יותר + שם תואר",
+     "en": "more / -er",
+     "rank": 17
+    },
+    {
+     "id": "rotse",
+     "he": "רוצה / רוצים",
+     "en": "want",
+     "rank": 14
+    },
+    {
+     "id": "acharei",
+     "he": "אחרי / לאחר",
+     "en": "after",
+     "rank": 56
+    },
+    {
+     "id": "ma",
+     "he": "מה",
+     "en": "what",
+     "rank": 9
+    },
+    {
+     "id": "kama",
+     "he": "כמה",
+     "en": "how much / how many",
+     "rank": 32
+    },
+    {
+     "id": "haze",
+     "he": "הזה / הזאת / האלה",
+     "en": "this / that + noun",
+     "rank": 10
+    }
+   ]
+  }
+ ]
+}

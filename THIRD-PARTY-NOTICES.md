@@ -37,12 +37,40 @@ Ner's application code is original. The following data and tools are used under 
 - Used for: the phrase packs in `app/assets/dict/phrases/` (chengyu, proverbs, idioms, fixed expressions in 26 languages).
 - Changes: normalised to match tokens, inflected forms pointed at their base phrase, generic two-word pairs dropped. Built by `tools/build_phrases.py`.
 
+## JMdict and KANJIDIC2 — Japanese readings
+
+- Source: the JMdict and KANJIDIC2 dictionary files of the Electronic Dictionary Research and Development Group (EDRDG), as packaged in the PyPI package `jamdict-data` 1.5 (https://pypi.org/project/jamdict-data/, JMdict of April 2021, SQLite export).
+- Licence: Creative Commons Attribution-ShareAlike 3.0 (the EDRDG licence, https://www.edrdg.org/edrdg/licence.html). These files are the property of the Electronic Dictionary Research and Development Group and are used in conformance with the Group's licence.
+- Used for: the kana readings (`tr`) in `app/assets/dict/ja.json.gz`: hiragana or katakana for kanji words, and on'yomi (katakana) · kun'yomi (hiragana) for single kanji.
+- Changes: for each word the JMdict entry is chosen by shared meaning words and entry priority and its usual (first) reading is taken; kun'yomi okurigana dots and hyphens are removed and at most two on'yomi and two kun'yomi are shown. Words JMdict does not list keep an empty reading. Built by `tools/add_readings.py`.
+
+## to-jyutping — Cantonese readings
+
+- Source: `src/trie.txt` of https://github.com/CanCLID/to-jyutping at tag 3.1.1 (sha256 `4995ec44…a87729`), by the Cantonese Computational Linguistics Infrastructure Development Workgroup (CanCLID).
+- Licence: BSD 2-Clause, as declared by that repository for its code and data. The repository does not list the upstream sources of its pronunciation data.
+- Used for: the jyutping readings (`tr`) in `app/assets/dict/yue.json.gz`. A word in the trie gets its attested reading; any other word gets the longest attested pieces and single characters joined, as that library does. Words with a character it does not know keep an empty reading.
+- Changes: decoded by a Python port of the library's decoder (`tools/add_readings.py`); no code from the package is run. A single character with several readings gets the most common one, which may differ from the meaning shown for it.
+
 ## FrequencyWords
 
 - Source: https://github.com/hermitdave/FrequencyWords (`content/2018/he/he_50k.txt`)
 - Licence: CC BY-SA 4.0
 - Used for: frequency ranks and the 700-word starter list.
 - Changes: normalised niqqud, intersected with dictionary lemmas.
+
+## Tatoeba — Hebrew and French sentence patterns
+
+- Source: https://tatoeba.org (per-language sentence and link exports, https://downloads.tatoeba.org/exports/)
+- Licence: Creative Commons Attribution 2.0 France (CC BY 2.0 FR). Sentences are by Tatoeba contributors.
+- Used for: every example sentence and every translation shown on the Sentence patterns screen for Hebrew and French, in `app/assets/www/patterns/he.js` and `fr.js` (142 Hebrew and 154 French patterns, 655 and 798 examples) and the source data in `data/patterns/he.json`, `fr.json`, `he-topics.json`.
+- Attribution: the Tatoeba id of each sentence is kept in `i`, and the ids of its translations in `ti` (by language code); a sentence is at `https://tatoeba.org/sentences/show/<id>`. The Patterns screen credits Tatoeba for these two languages.
+- Changes: sentences are unmodified; they were selected by regular expression, ranked by frequency and trimmed to the six shortest, best-translated examples per pattern. Built by `tools/build_patterns.py` and `tools/pack_patterns.py`.
+
+## Hand-written sentence patterns (not from Tatoeba)
+
+- Chinese (`zh`), Japanese (`ja`), Korean (`ko`), German (`de`), Spanish (`es`), Italian (`it`), Portuguese (`pt`), Russian (`ru`) and English (`en`) patterns in `app/assets/www/patterns/` come from `tools/authored_patterns/<lang>.py`.
+- Written for Shoresh with the help of an AI assistant. The example sentences and their translations (English, and Hebrew and Hungarian for the English set) are not taken from a corpus and have **not been checked by native speakers**; the Patterns screen says so. They are part of the project and released with its code.
+- Hebrew and French pattern names and English glosses are also written for Shoresh; only their example sentences are from Tatoeba.
 
 ## StevenBlack/hosts
 
@@ -78,3 +106,44 @@ The dictionary pack (`app/assets/dict/he.json.gz`), the starter list (`app/asset
 - Source: https://github.com/tesseract-ocr/tessdata_fast (`eng.traineddata`, `heb.traineddata`)
 - Licence: Apache License 2.0
 - Used for: OCR language models, copied into the app's private storage on first use.
+
+## Hanzi Writer
+
+- Source: https://github.com/chanind/hanzi-writer (npm `hanzi-writer` 3.7.3)
+- Licence: MIT
+- Used for: animated Chinese stroke order in the word sheet. Shipped unchanged as `app/assets/www/vendor/hanzi-writer.min.js`.
+
+```
+The MIT License (MIT)
+
+Copyright (c) 2014 David Chanin
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+the Software, and to permit persons to whom the Software is furnished to do so,
+subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+```
+
+## Hanzi Writer data (Make Me a Hanzi)
+
+- Source: https://github.com/chanind/hanzi-writer-data (npm `hanzi-writer-data` 2.0.1), derived from Make Me a Hanzi (https://github.com/skishore/makemeahanzi), whose stroke graphics come from Arphic's AR PL fonts.
+- Licence: Arphic Public License. The licence text ships with the data as `app/assets/hanzi/ARPHICPL.TXT`.
+- Used for: stroke shapes and order of 9,574 characters. `tools/fetch_hanzi.py` downloads the package at build time (pinned by checksum) and writes one file per character, renamed by code point and with whitespace removed; the stroke data itself is unchanged.
+
+## pdf.js
+
+- Source: https://github.com/mozilla/pdf.js (3.11.174)
+- Licence: Apache License 2.0, Copyright 2023 Mozilla Foundation (notice kept at the top of `vendor/pdf.min.js` and `vendor/pdf.worker.min.js`)
+- Used for: extracting text from PDFs.

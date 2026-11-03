@@ -18,6 +18,7 @@ mkdir -p "$BUILD/classes" "$BUILD/gen" "$BUILD/dex" "$OUT"
 
 echo "== packs =="
 python3 "$ROOT/tools/update_packs.py"
+python3 "$ROOT/tools/fetch_hanzi.py"
 
 echo "== resources =="
 "$AAPT2" compile --dir "$ROOT/app/res" -o "$BUILD/res.zip"
@@ -31,8 +32,8 @@ echo "== resources =="
   --auto-add-overlay \
   --min-sdk-version 26 \
   --target-sdk-version 35 \
-  --version-code 120 \
-  --version-name 1.7.0
+  --version-code 123 \
+  --version-name 1.8.2
 
 echo "== java =="
 find "$ROOT/app/src" -name '*.java' -print0 | xargs -0 "$JAVA_HOME/bin/javac" \
@@ -71,7 +72,7 @@ if [ ! -f "$KS" ]; then
     -keyalg RSA -keysize 2048 -validity 10000 >/dev/null 2>&1
 fi
 "$APKSIGNER" sign --ks "$KS" --ks-key-alias ner --ks-pass pass:nerdev --key-pass pass:nerdev \
-  --out "$OUT/Shoresh-1.7.0.apk" "$BUILD/app-aligned.apk"
-"$APKSIGNER" verify --verbose "$OUT/Shoresh-1.7.0.apk" | head -8
-ls -lh "$OUT/Shoresh-1.7.0.apk"
-echo "APK: $OUT/Shoresh-1.7.0.apk"
+  --out "$OUT/Shoresh-1.8.2.apk" "$BUILD/app-aligned.apk"
+"$APKSIGNER" verify --verbose "$OUT/Shoresh-1.8.2.apk" | head -8
+ls -lh "$OUT/Shoresh-1.8.2.apk"
+echo "APK: $OUT/Shoresh-1.8.2.apk"

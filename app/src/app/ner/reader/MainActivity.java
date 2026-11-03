@@ -75,6 +75,8 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.i("NerBoot", "onCreate " + (android.os.SystemClock.elapsedRealtime()
+                - android.os.Process.getStartElapsedRealtime()) + "ms");
         store = new Store(this);
         dict = new Dict(this);
         adBlock = new AdBlock(this);
@@ -101,7 +103,9 @@ public class MainActivity extends Activity {
                     View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
         }
 
+        Log.i("NerBoot", "before-webview " + (android.os.SystemClock.elapsedRealtime() - android.os.Process.getStartElapsedRealtime()) + "ms");
         web = new WebView(this);
+        Log.i("NerBoot", "webview-created " + (android.os.SystemClock.elapsedRealtime() - android.os.Process.getStartElapsedRealtime()) + "ms");
         web.setBackgroundColor(Color.rgb(247, 244, 238));
         web.setOverScrollMode(View.OVER_SCROLL_NEVER);
         WebSettings s = web.getSettings();
@@ -139,6 +143,7 @@ public class MainActivity extends Activity {
 
             @Override
             public void onPageFinished(WebView view, String url) {
+                Log.i("NerBoot", "page-finished " + (android.os.SystemClock.elapsedRealtime() - android.os.Process.getStartElapsedRealtime()) + "ms");
                 flushPendingCalls();
             }
         });
@@ -180,6 +185,7 @@ public class MainActivity extends Activity {
             }
         });
 
+        Log.i("NerBoot", "before-load " + (android.os.SystemClock.elapsedRealtime() - android.os.Process.getStartElapsedRealtime()) + "ms");
         web.loadUrl("file:///android_asset/www/index.html");
         // A recreated activity, or one reopened from Recents, carries the old
         // share again: import it only the first time.
@@ -741,16 +747,25 @@ public class MainActivity extends Activity {
     }
 
     private final class Bridge {
+        /** Startup timing: milliseconds since the process started, visible in logcat as NerBoot. */
+        @JavascriptInterface
+        public void bootMark(String label) {
+            Log.i("NerBoot", label + " " + (android.os.SystemClock.elapsedRealtime()
+                    - android.os.Process.getStartElapsedRealtime()) + "ms");
+        }
+
         @JavascriptInterface
         public String bootstrap() {
             try {
                 JSONObject o = new JSONObject();
-                o.put("state", new JSONObject(store.load()));
-                o.put("version", "1.7.0");
+                String raw = store.load();
+                Log.i("NerBoot", "state " + raw.length() + " chars");
+                o.put("state", new JSONObject(raw));
+                o.put("version", "1.8.2");
                 o.put("platform", "android");
                 return o.toString();
             } catch (Exception e) {
-                return "{\"state\":{},\"version\":\"1.7.0\",\"platform\":\"android\"}";
+                return "{\"state\":{},\"version\":\"1.8.2\",\"platform\":\"android\"}";
             }
         }
 
@@ -777,7 +792,7 @@ public class MainActivity extends Activity {
             statsRunner.execute(() -> {
                 String out;
                 try {
-                    out = vocabStatsFor(lang, id, knownJson).put("ok", true).toString();
+                    out = vocabStatsFor(lang, id, knownJson).put("ok", true).put("lang", lang == null ? "" : lang).toString();
                 } catch (Throwable e) {
                     Log.w(TAG, "vocabStats failed for " + id, e);
                     out = "{\"ok\":false}";
@@ -899,11 +914,15 @@ public class MainActivity extends Activity {
         public void openFile() { runOnUiThread(MainActivity.this::openTextPicker); }
 
         @JavascriptInterface
-        public void openUrl(String url) {
+        public void openUrl(String url) { openUrl(url, ""); }
+
+        @JavascriptInterface
+        public void openUrl(String url, String lang) {
             runOnUiThread(() -> {
-                if (url.startsWith("http://") || url.startsWith("https://")) {
+                if (url != null && (url.startsWith("http://") || url.startsWith("https://"))) {
                     Intent i = new Intent(MainActivity.this, ReaderActivity.class);
                     i.putExtra("url", url);
+                    if (lang != null && !lang.isEmpty()) i.putExtra("textLang", lang);
                     startActivity(i);
                 }
             });
@@ -1000,7 +1019,7 @@ public class MainActivity extends Activity {
                     HttpURLConnection c = (HttpURLConnection) url.openConnection();
                     c.setConnectTimeout(4000);
                     c.setReadTimeout(8000);
-                    c.setRequestProperty("User-Agent", "Shoresh/1.7.0");
+                    c.setRequestProperty("User-Agent", "Shoresh/1.8.2");
                     int code = c.getResponseCode();
                     if (code == 200) {
                         InputStream in = c.getInputStream();
@@ -1089,7 +1108,22 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public void toast(String msg) { runOnUiThread(() -> Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show()); }
 
+        /** HanziWriter stroke data for one character ("" when there is none). */
         @JavascriptInterface
-        public String version() { return "1.7.0"; }
+        public String strokes(String ch) {
+            if (ch == null || ch.isEmpty()) return "";
+            String name = "hanzi/" + Integer.toHexString(ch.codePointAt(0)) + ".json";
+            try (InputStream in = getAssets().open(name)) {
+                ByteArrayOutputStream out = new ByteArrayOutputStream();
+                byte[] buf = new byte[8192];
+                for (int n; (n = in.read(buf)) > 0; ) out.write(buf, 0, n);
+                return new String(out.toByteArray(), StandardCharsets.UTF_8);
+            } catch (Exception e) {
+                return "";
+            }
+        }
+
+        @JavascriptInterface
+        public String version() { return "1.8.2"; }
     }
 }

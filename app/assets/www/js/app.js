@@ -70,6 +70,7 @@
   let currentLookup = null;
   let currentReader = null;
   let wordTab = 'meaning';
+  let strokeWriter = null, strokeChar = '';
   let cardScrollTop = 0;
   let wordFilter = 'all';
   let readMode = 'books';
@@ -100,8 +101,9 @@
   let aloudToken = 0;
   let reviewQueue = [];
   let reviewIndex = 0;
-  let reviewAgain = new Set();
-  let reviewRevealed = false;
+  let reviewSeen = new Set();
+  let reviewCur = null, reviewForced = null, reviewFlipped = false;
+  let reviewUndo = [], reviewDone = 0, reviewWait = null;
   let readerSel = null;
   let countTimer = null;
 
@@ -144,6 +146,12 @@
     return l.en || l.he || l.id;
   }
   function lang() { return BY_LANG[state.settings.lang] || BY_LANG.he || LANGS[0]; }
+  // The open text, when there is one. Direction, dictionary and word counts follow
+  // this, not the language the reader happens to be studying.
+  function readerLang() {
+    const id = currentArticle && currentArticle.lang;
+    return (id && BY_LANG[id]) || lang();
+  }
   const learnLangs = () => state.settings.learnLangs;
   // settings.lang is the language read now; learnLangs every language the user
   // learns (1.7, migrated from the single lang, which always stays in it).
@@ -168,6 +176,7 @@
     if (!state.stats) state.stats = {};
     if (!state.articles) state.articles = [];
     normalizeLangs();
+    repairOwnedLangs();
     if (raw && raw.settings && raw.onboarded === undefined) state.onboarded = true;
     if (!state.settings.readerFlow) {
       // 1.5: continuous scrolling became the default reading mode.
@@ -205,12 +214,20 @@
     document.documentElement.style.setProperty('--reader-font', (state.settings.fontSize || 19) + 'px');
   }
 
-  function toast(message) {
+  function toast(message, undo) {
     const el = $('#toast');
     el.textContent = message;
+    if (undo) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'toast-act';
+      b.textContent = 'בטלו';
+      b.onclick = () => { el.classList.remove('show'); undo(); };
+      el.appendChild(b);
+    }
     el.classList.add('show');
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => el.classList.remove('show'), 2300);
+    toastTimer = setTimeout(() => el.classList.remove('show'), undo ? 5000 : 2300);
   }
 
   function levelFor(known) {
@@ -228,19 +245,32 @@
       .replace(/[\u0591-\u05AF\u05B0-\u05C7]/g, '')
       .replace(/\u05BE/g, '')
       .trim();
-    try { s = s.toLocaleLowerCase(lang().id); } catch (e) { s = s.toLowerCase(); }
+    try { s = s.toLocaleLowerCase(readerLang().id); } catch (e) { s = s.toLowerCase(); }
     return s;
   }
 
   function rebuildIndex() {
     wordIndex = new Map();
-    const id = lang().id;
+    const id = readerLang().id;
     for (const w of Object.values(state.words)) {
-      if (!w || w.lang !== id) continue;
+      if (w && !w.srs && (w.due || w.interval) && window.NerReview) migrateSchedule(w);
+      if (!w || w.lang !== id || w.cloze || w.pos === 'pattern') continue; // study cards are not words of the text
       if (w.key) wordIndex.set(w.key, w);
       if (w.form) wordIndex.set(w.form, w);
       if (w.display) wordIndex.set(w.display, w);
     }
+  }
+
+  // Before 1.8 a word kept due/interval/reps for the fixed 10 min / 1 / 3 / 7 day
+  // steps. One that had reached days keeps its place as a review card; the rest
+  // start as new cards (1.7 put every tapped word on a 10-minute step).
+  function migrateSchedule(w) {
+    const DAY = window.NerReview.DAY, g = Number(w.grade);
+    if (g >= 1 && g <= 4 && Number(w.reps) > 0 && Number(w.interval) >= DAY) {
+      w.srs = { reps: Number(w.reps), ivl: Math.max(1, Math.round(w.interval / DAY)), ef: 2.5, step: 0, lapses: 0,
+        due: window.NerReview.dayStart(Number(w.due) || Date.now()) };
+    }
+    delete w.due; delete w.interval; delete w.reps;
   }
 
   function wordFor(raw) {
@@ -278,6 +308,8 @@
     if (!pos) return '';
     let code = String(pos).split(' ')[0];
     code = POS_ALIAS[code] || code;
+    if (code === 'pattern') return tr('תבנית משפט');
+    if (code === 'sentence') return tr('משפט');
     const ui = activeUiLang();
     if (ui === 'he') return POS[code] || POS[pos] || pos;
     return (POS_UI[ui] || POS_UI.en)[code] || pos;
@@ -304,6 +336,15 @@
 
   // A UI word in the current interface language, for labels built from pieces.
   const tr = he => translateString(he, activeUiLang()) || he;
+  // Screen-reader announcement for state changes that do not show a toast.
+  let announceTimer = 0;
+  function announce(msg) {
+    const el = document.getElementById('sr-live');
+    if (!el || !msg) return;
+    clearTimeout(announceTimer);
+    el.textContent = '';
+    announceTimer = setTimeout(() => { el.textContent = msg; }, 60);
+  }
   // A sentence with numbers: tf('words', { n: 3 }) → "3 words".
   function tf(id, vars) {
     const t = (window.NER_I18N_TPL || {})[id] || {};
@@ -333,7 +374,7 @@
   function skipI18n(node) {
     const p = node.parentElement;
     if (!p) return true;
-    if (p.closest('script,style,noscript,.reader-body,.word-line,.word-reading,.gloss-list,.char-list,.sheet-phrase-text,.word-main,.preview-word,.preview-meaning,.book-card > strong,.book-cover-title,.book-stats,.book-meta,.recent-copy strong,.toc-copy,.notices,#reader-title,#reader-counts,.page-box')) return true;
+    if (p.closest('script,style,noscript,.reader-body,.word-line,.word-reading,.gloss-list,.char-list,.sheet-phrase-text,.srs-word,.srs-meaning,.srs-reading,.srs-context,.word-main,.preview-word,.preview-meaning,.book-card > strong,.book-cover-title,.book-stats,.book-meta,.recent-copy strong,.toc-copy,.notices,#reader-title,#reader-counts,.page-box')) return true;
     return false;
   }
 
@@ -356,6 +397,7 @@
     const rtlUi = lang === 'he' || lang === 'ar';
     document.documentElement.dir = rtlUi ? 'rtl' : 'ltr';
     document.documentElement.style.setProperty('--ui-dir', rtlUi ? 'rtl' : 'ltr');
+    ['word-sheet', 'word-card'].forEach(id => { const el = document.getElementById(id); if (el) el.dir = rtlUi ? 'rtl' : 'ltr'; });
     document.documentElement.dataset.uiLang = lang;
     i18nApplying = true;
     try {
@@ -460,7 +502,7 @@
       .filter(w => (w.added || 0) >= dayStart && w.grade >= 1 && w.grade <= 4).length;
     $('#today-known').textContent = fmt(Math.max(t.added || 0, addedToday));
     $('#streak-mini').textContent = fmt(streak());
-    const dueN = dueWords().length;
+    const dueN = dueCount();
     const dueEl = $('#review-due');
     const dueLabel = $('#review-due-label');
     if (dueEl) dueEl.textContent = fmt(dueN);
@@ -483,7 +525,7 @@
       }
     }
     const earlyBtn = $('#practice-early');
-    if (earlyBtn) earlyBtn.hidden = dueN > 0 || practiceWords().length === 0;
+    if (earlyBtn) earlyBtn.hidden = dueN > 0 || deck().length === 0;
     const start = $('#start-card');
     if (start) start.hidden = state.articles.length > 0;
     const dateEl = $('#home-date');
@@ -529,6 +571,7 @@
     }
     for (const a of books) if (!a.vocab && !statsAsked.has(a.id)) requestVocabStats(a);
     renderNews();
+    renderOtherLangs();
     const web = articles.filter(a => a.kind !== 'book' && a.kind !== 'watch');
     const shelf = $('#read-shelf');
     if (shelf) {
@@ -612,9 +655,25 @@
     try { s = JSON.parse(json); } catch (e) { }
     const a = state.articles.find(x => x.id === id);
     if (!a || !s || !s.ok) return;
+    // A count started before the text's language was corrected belongs to the old language.
+    if (s.lang && a.lang && s.lang !== a.lang) return;
     a.vocab = { at: Date.now(), unique: s.unique, fresh: s.fresh, frequent: s.frequent, learning: s.learning, known: s.known, capped: !!s.capped };
     save();
     if (currentView === 'read') renderRead();
+  }
+
+  // Texts in a language the reader does not learn stay out of the current shelf.
+  // They stay listed here, under their own language, instead of disappearing.
+  function renderOtherLangs() {
+    const wrap = $('#read-other-wrap');
+    const host = $('#read-other');
+    if (!wrap || !host) return;
+    const stray = state.articles.filter(a => a.lang && !learnLangs().includes(a.lang))
+      .sort((a, b) => (b.lastOpened || b.added || 0) - (a.lastOpened || a.added || 0));
+    wrap.hidden = !stray.length;
+    if (!stray.length) { host.innerHTML = ''; return; }
+    $('#read-other-title').textContent = tf('otherLangs');
+    host.innerHTML = stray.slice(0, 8).map(a => articleRow(a)).join('');
   }
 
   function renderNews() {
@@ -634,13 +693,22 @@
 
   function openWebUrl(url, title) {
     const article = {
-      id: 'web-' + Date.now(), title: title || url, url, lang: lang().id, kind: 'web', added: Date.now(), lastOpened: Date.now()
+      id: 'web-' + Date.now(), title: title || url, url, kind: 'web', added: Date.now(), lastOpened: Date.now()
     };
+    let fromUrl = null;
+    try { fromUrl = langFromUrl(new URL(url)); } catch (e) { fromUrl = null; }
+    applyKnownLang(article, fromUrl || lang().id);
     const old = state.articles.find(a => a.kind === 'web' && a.url === url);
-    if (old) old.lastOpened = Date.now(); else addArticle(article);
+    if (old) {
+      old.lastOpened = Date.now();
+      if (!old.lang) applyKnownLang(old, article.lang);
+    } else addArticle(article);
+    const opened = old || article;
     save();
     renderRead();
-    try { N.openUrl(url); } catch (e) { toast('לא ניתן לפתוח את הקישור'); }
+    followLang(opened.lang);
+    noteUnlearned(opened);
+    openInWeb(url, opened.lang);
   }
 
   function applyReadMode() {
@@ -713,8 +781,8 @@
           </span></span>
           <span class="word-side">
             <span class="grade-badge n${w.grade}">${gradeBadge(w.grade)}</span>
-            <button class="icon-btn" data-speak="${escapeHtml(shownWord)}" aria-label="השמעה"><svg><use href="#i-speaker"></use></svg></button>
-            <button class="icon-btn word-dismiss" data-ignore-word="${escapeHtml(w.lang + ':' + w.key)}" aria-label="התעלם"><svg><use href="#i-close"></use></svg></button>
+            <button class="icon-btn" data-speak="${escapeHtml(shownWord)}" aria-label="${escapeHtml(tr('השמעה'))}"><svg><use href="#i-speaker"></use></svg></button>
+            <button class="icon-btn word-dismiss" data-ignore-word="${escapeHtml(w.lang + ':' + w.key)}" aria-label="${escapeHtml(tr('התעלם'))}"><svg><use href="#i-close"></use></svg></button>
           </span>
         </div>`;
       }).join('') + '</div>').join('') +
@@ -815,14 +883,48 @@
     try { N.syncGet(ip, port, token, 'get'); } catch (e) { toast('החיבור נכשל'); }
   }
 
+  // Two-phone sync merges word by word. A review done on one phone must survive the other phone opening the
+  // same word later, so the schedule (word.srs) with the later last review wins - srs.reps, then srs.due as the
+  // tiebreak - and the grade comes from the same side as that schedule. When both sides hold the same schedule
+  // the later touch wins (a grade changed in the reader). A word on one side only is kept as it is.
+  function mergeWord(local, remote) {
+    if (!local) return remote;
+    if (!remote) return local;
+    for (const w of [local, remote]) if (!w.srs && (w.due || w.interval) && window.NerReview) migrateSchedule(w); // 1.7 words
+    const rank = w => (w.srs ? [Number(w.srs.reps) || 0, Number(w.srs.due) || 0] : [-1, 0]);
+    const a = rank(local), b = rank(remote);
+    let c = a[0] - b[0] || a[1] - b[1];
+    if (c === 0) c = (local.lastSeen || local.added || 0) - (remote.lastSeen || remote.added || 0);
+    const win = c >= 0 ? local : remote, lose = win === local ? remote : local;
+    const out = { ...lose };
+    for (const [k, v] of Object.entries(win)) if (v !== undefined && v !== null && v !== '') out[k] = v;
+    out.grade = win.grade;
+    if (win.srs) out.srs = win.srs; else delete out.srs;
+    const added = [local.added, remote.added].filter(Boolean);
+    if (added.length) out.added = Math.min(...added);
+    const context = local.context || remote.context;
+    if (context) out.context = context;
+    out.lastSeen = Math.max(local.lastSeen || 0, remote.lastSeen || 0) || out.lastSeen;
+    out.seen = Math.max(local.seen || 0, remote.seen || 0) || out.seen;
+    return out;
+  }
+
+  // Study counters per day: the larger n (new cards) and r (reviews) of the two phones.
+  function mergeSrsLog(a, b) {
+    const out = { ...(a || {}) };
+    for (const [day, rb] of Object.entries(b || {})) {
+      const ra = out[day] || {};
+      out[day] = { ...ra, ...rb, n: Math.max(ra.n || 0, rb.n || 0), r: Math.max(ra.r || 0, rb.r || 0) };
+    }
+    return out;
+  }
+
   function mergeRemoteState(remote) {
     if (!remote || !remote.words) throw new Error('bad state');
     const localWords = state.words || {};
-    for (const [id, rw] of Object.entries(remote.words)) {
-      const lw = localWords[id];
-      if (!lw || (rw.lastSeen || rw.added || 0) > (lw.lastSeen || lw.added || 0)) localWords[id] = rw;
-    }
+    for (const [id, rw] of Object.entries(remote.words)) localWords[id] = mergeWord(localWords[id], rw);
     state.words = localWords;
+    state.srsLog = mergeSrsLog(state.srsLog, remote.srsLog);
     const localStats = state.stats || {};
     for (const [day, rs] of Object.entries(remote.stats || {})) {
       const ls = localStats[day] || {};
@@ -882,7 +984,7 @@
     $('#goal-range-val').textContent = state.settings.dailyGoal;
     $('#tts-range').value = Math.round((state.settings.ttsRate || 1) * 100);
     $('#tts-range-val').textContent = (state.settings.ttsRate || 1).toFixed(1) + '×';
-    $('#app-version').textContent = boot.version || '1.7.0';
+    $('#app-version').textContent = boot.version || '1.8.2';
     renderSyncUI();
     renderLanguages();
   }
@@ -963,6 +1065,7 @@
       if (view === 'read') renderRead();
       if (view === 'watch') renderWatch();
       if (view === 'words') renderWords();
+      if (view === 'patterns') { if (!patternKeep) { patternFocus = ''; patternFrom = ''; } patternKeep = false; renderPatterns(); }
       if (view === 'progress') renderProgress();
     }
   }
@@ -979,6 +1082,7 @@
     if (!$('#notices-modal').hidden) { hideModal('notices'); return true; }
     if (currentView === 'reader') { cleanupReader(); navigate('read'); return true; }
     if (currentView === 'languages') { navigate('settings'); return true; }
+    if (currentView === 'patterns') { patternBack(); return true; }
     if (currentView !== 'home') { navigate('home'); return true; }
     return false;
   }
@@ -1004,6 +1108,8 @@
     }
     currentReader = null;
     readerSel = null;
+    const foreign = $('#reader-foreign');
+    if (foreign) foreign.hidden = true;
     if (readObserver) { readObserver.disconnect(); readObserver = null; }
     if (tokenObserver) { tokenObserver.disconnect(); tokenObserver = null; }
     clearInterval(readFlushTimer); readFlushTimer = null;
@@ -1068,10 +1174,19 @@
   }
 
   function openReaderText(title, text, article, opts = {}) {
-    if (article) followLang(article.lang);
-    const l = lang();
-    currentArticle = article || { id: 'text-' + Date.now(), title, text, lang: l.id, kind: 'text' };
-    if (!currentArticle.lang) currentArticle.lang = l.id;
+    let langChanged = false;
+    if (article) {
+      const before = article.lang;
+      applyDetectedLang(article, text || article.text || '');
+      langChanged = article.lang !== before;
+      followLang(article.lang);
+    }
+    currentArticle = article || { id: 'text-' + Date.now(), title, text, lang: lang().id, langSource: 'fallback', kind: 'text' };
+    if (!currentArticle.lang) {
+      currentArticle.lang = lang().id;
+      currentArticle.langSource = currentArticle.langSource || 'fallback';
+    }
+    const l = readerLang();
     const blocks = String(text || '').replace(/\r/g, '').split(/\n{2,}/).map(s => s.trim()).filter(Boolean);
     const paged = opts.paged != null ? opts.paged : state.settings.readerPaged !== false;
     currentReader = {
@@ -1091,6 +1206,11 @@
     $('#view-reader').classList.remove('chrome-hidden');
     $('#reader-counts').textContent = '';
     navigate('reader');
+    showForeignNote();
+    if (!opts.stream || !opts.stream.offset) noteUnlearned(currentArticle);
+    if (currentArticle && currentArticle.kind === 'book' && (!opts.stream || !opts.stream.offset || langChanged)) {
+      requestVocabStats(currentArticle);
+    }
     applyReaderSettings();
     renderReaderCurrent();
     updateGradeBar();
@@ -1242,7 +1362,7 @@
     const r = currentReader;
     const body = $('#reader-body');
     if (!body || !r) return;
-    body.dir = lang().dir;
+    body.dir = readerLang().dir;
     body.textContent = '';
     body.onclick = onReaderClick;
     const blocks = r.stream ? (r.streamBlocks || splitBlocks(r.text, r.stream.offset, true)) : splitBlocks(r.text, 0, false);
@@ -1504,7 +1624,7 @@
     const idx = Math.max(0, Math.min(currentReader.page, pages.length - 1));
     currentReader.page = idx;
     const blocks = pages[idx] || [''];
-    body.dir = lang().dir;
+    body.dir = readerLang().dir;
     let html = idx === 0 ? `<h1>${escapeHtml(currentReader.title)}</h1>` : '';
     html += blocks.map(b => `<p>${escapeHtml(b).replace(/\n/g, '<br>')}</p>`).join('');
     body.innerHTML = html;
@@ -1513,7 +1633,7 @@
     const stream = currentReader.stream;
     const pct = stream && stream.total ? Math.min(100, Math.round(((stream.offset + (idx / Math.max(1, pages.length)) * (stream.next - stream.offset)) / stream.total) * 100)) : null;
     setProgress(pct != null ? pct / 100 : (idx + 1) / Math.max(1, pages.length));
-    $('#reader-meta').textContent = `${langName(lang())} · ${fmt(countWords(currentReader.text))} ${trWord('מילים')} · ${trWord('עמוד')} ${fmt(idx + 1)}` + (pct != null ? ` · ${pct}%` : '');
+    $('#reader-meta').textContent = `${langName(readerLang())} · ${fmt(countWords(currentReader.text))} ${trWord('מילים')} · ${trWord('עמוד')} ${fmt(idx + 1)}` + (pct != null ? ` · ${pct}%` : '');
     $('#reader-scroll').scrollTop = 0;
     updatePageBox();
     body.onclick = onReaderClick;
@@ -1664,19 +1784,19 @@
           }
           items = currentReader.chapters.map((c, i) => ({
             offset: Number(c.offset) || 0,
-            title: c.title || ('פרק ' + (i + 1)),
-            sub: 'פרק ' + (i + 1) + ' · ' + Math.max(1, Math.round((Number(c.offset) || 0) / Math.max(1, stream.total) * 100)) + '%',
+            title: c.title || tf('chapterN', { n: i + 1 }),
+            sub: tf('chapterN', { n: i + 1 }) + ' · ' + Math.max(1, Math.round((Number(c.offset) || 0) / Math.max(1, stream.total) * 100)) + '%',
             current: i === currentChapter
           }));
         } else {
           items = currentReader.chapters.map((c, i) => ({
             page: pageForOffset(c.offset || 0),
-            title: c.title || ('פרק ' + (i + 1)),
+            title: c.title || tf('chapterN', { n: i + 1 }),
             sub: pagePreview(pageForOffset(c.offset || 0))
           }));
         }
       } else {
-        items = currentReader.pages.map((p, i) => ({ page: i, title: 'עמוד ' + (i + 1), sub: pagePreview(i) }));
+        items = currentReader.pages.map((p, i) => ({ page: i, title: tf('pageN', { n: i + 1 }), sub: pagePreview(i) }));
       }
     } else {
       const marks = (currentArticle && currentArticle.bookmarks) || [];
@@ -1691,7 +1811,7 @@
         }));
       } else {
         const total = Math.max(1, currentReader.text.length);
-        items = marks.filter(m => typeof m === 'number').sort((a, b) => a - b).map(page => ({ page, title: 'עמוד ' + (page + 1), sub: pagePreview(page), bookmark: true }))
+        items = marks.filter(m => typeof m === 'number').sort((a, b) => a - b).map(page => ({ page, title: tf('pageN', { n: page + 1 }), sub: pagePreview(page), bookmark: true }))
           .concat(marks.filter(m => m && typeof m === 'object').sort((a, b) => Number(a.offset) - Number(b.offset)).map(m => ({
             offset: Number(m.offset) || 0,
             title: tf('bookmarkAt', { p: Math.max(1, Math.round((Number(m.offset) || 0) / total * 100)) }),
@@ -1700,8 +1820,8 @@
       }
     }
     $('#toc-subtitle').textContent = tocTab === 'contents'
-      ? `${currentReader.chapters.length || currentReader.pages.length} ${currentReader.chapters.length ? 'פרקים' : 'עמודים'}`
-      : `${items.length} סימניות`;
+      ? (currentReader.chapters.length ? tf('chaptersN', { n: currentReader.chapters.length }) : tf('pagesN', { n: currentReader.pages.length }))
+      : tf('bookmarksN', { n: items.length });
     if (!items.length) {
       list.innerHTML = `<div class="toc-empty">${tocTab === 'bookmarks' ? 'אין סימניות עדיין. לחצו על סימנייה בסרגל העליון.' : 'אין תוכן זמין.'}</div>`;
       return;
@@ -1714,7 +1834,7 @@
       return `<div class="toc-row${current ? ' current' : ''}">
         <button class="toc-page" ${attr}>${num}</button>
         <button class="toc-copy" ${attr}><strong>${escapeHtml(it.title)}</strong><small>${escapeHtml(it.sub || '')}</small></button>
-        ${it.bookmark ? `<button class="toc-del" data-toc-del="${it.bookmarkKey || it.page}" aria-label="מחיקת סימנייה"><svg><use href="#i-close"></use></svg></button>` : ''}
+        ${it.bookmark ? `<button class="toc-del" data-toc-del="${it.bookmarkKey || it.page}" aria-label="${escapeHtml(tr('מחיקת סימנייה'))}"><svg><use href="#i-close"></use></svg></button>` : ''}
       </div>`;
     }).join('');
   }
@@ -1956,7 +2076,7 @@
     const line = LINE_HEIGHTS[s.readerLine] ? s.readerLine : 'normal';
     document.documentElement.style.setProperty('--reader-lh', String(LINE_HEIGHTS[line]));
     $$('#line-seg button').forEach(b => b.classList.toggle('active', b.dataset.line === line));
-    $('#pinyin-row').hidden = lang().id !== 'zh';
+    $('#pinyin-row').hidden = readerLang().id !== 'zh';
     $('#pinyin-switch').classList.toggle('on', !!s.readerPinyin);
     $('#pinyin-switch').setAttribute('aria-checked', s.readerPinyin ? 'true' : 'false');
     document.documentElement.style.setProperty('--reader-font', (s.fontSize || 19) + 'px');
@@ -1979,11 +2099,12 @@
   // Drag a bottom sheet down to close it (from its handle, or anywhere once
   // its content is scrolled to the top).
   function swipeToClose(sheet, close) {
-    let startY = 0, dy = 0, dragging = false;
+    let startY = 0, dy = 0, t0 = 0, dragging = false;
     sheet.addEventListener('touchstart', e => {
       if (e.touches.length !== 1 || (sheet.scrollTop > 0 && !e.target.closest('.sheet-grab'))) return;
       startY = e.touches[0].clientY;
       dy = 0;
+      t0 = performance.now();
       dragging = true;
     }, { passive: true });
     sheet.addEventListener('touchmove', e => {
@@ -1998,7 +2119,8 @@
       dragging = false;
       sheet.style.transition = '';
       sheet.style.transform = '';
-      if (dy > 80) close();
+      // A far drag, or a short fast flick (0.4 px/ms, as native sheets use).
+      if (dy > 80 || (dy > 24 && dy / (performance.now() - t0) > 0.4)) close();
     };
     sheet.addEventListener('touchend', end);
     sheet.addEventListener('touchcancel', end);
@@ -2067,8 +2189,8 @@
       markAloud(item.el);
     }));
     try {
-      if (typeof N.speakAs === 'function') N.speakAs(item.text, lang().id, 'read' + token);
-      else N.speak(item.text, lang().id);
+      if (typeof N.speakAs === 'function') N.speakAs(item.text, readerLang().id, 'read' + token);
+      else N.speak(item.text, readerLang().id);
     } catch (e) { stopAloud(false); }
   }
 
@@ -2095,7 +2217,7 @@
     if (aloud) { stopAloud(true); return; }
     if (typeof N.speakAs !== 'function' || !window.NerReview) {
       const text = pageBlocks().map(paraText).join(' ');
-      if (text) N.speak(text, lang().id);
+      if (text) N.speak(text, readerLang().id);
       return;
     }
     applyTtsRate();
@@ -2135,8 +2257,16 @@
     return out.length ? out : null;
   }
 
-  function hanReading(text) {
-    if (!text || lang().id !== 'zh' || !window.NerPinyin) return '';
+  // pinyin.js (230 KB) loads on first need, not at startup; rerender once it is in.
+  function ensurePinyin() {
+    if (window.NerPinyin || !window.NerLib) return;
+    NerLib.load('js/pinyin.js').then(() => { if (window.NerPinyin && state.settings.readerPinyin && currentView === 'reader') rerenderKeepingPlace(); }).catch(() => {});
+  }
+
+  function hanReading(text, id) {
+    const langId = id || (currentWord && currentWord.w && currentWord.w.lang) || readerLang().id;
+    if (!text || langId !== 'zh') return '';
+    if (!window.NerPinyin) { ensurePinyin(); return ''; }
     return window.NerPinyin.phrase(text) || '';
   }
 
@@ -2194,7 +2324,7 @@
   function tokenizeNode(root) {
     const body = $('#reader-body');
     if (!body || !root || !root.isConnected) return;
-    const l = lang();
+    const l = readerLang();
     body.dataset.cjk = ['zh', 'yue', 'ja', 'th'].includes(l.id) ? 'true' : 'false';
     body.dataset.py = l.id === 'zh' && state.settings.readerPinyin ? 'on' : 'off';
     body.dataset.lang = l.id;
@@ -2336,9 +2466,10 @@
     const rid = 'tw' + (++translationRid);
     lookup.pending = true;
     lookup.glosses = [raw];
-    lookup.meaningLang = lang().id;
+    const from = (w && w.lang) || readerLang().id;
+    lookup.meaningLang = from;
     pendingTranslations.set(rid, { lookup, w, word: true });
-    try { N.translateFrom(raw, lang().id, target, rid); } catch (e) { }
+    try { N.translateFrom(raw, from, target, rid); } catch (e) { }
     showWordSheet();
   }
 
@@ -2372,7 +2503,8 @@
   }
 
   async function onlineLookup(raw) {
-    if (lang().id === 'he') return null;
+    const lid = (currentWord && currentWord.w && currentWord.w.lang) || readerLang().id;
+    if (lid === 'he') return null;
     try {
       const url = 'https://en.wiktionary.org/api/rest_v1/page/definition/' + encodeURIComponent(raw);
       const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
@@ -2380,7 +2512,7 @@
       const data = await res.json();
       const keys = Object.keys(data || {});
       if (!keys.length) return null;
-      let block = data[lang().id];
+      let block = data[lid];
       if (!block) block = data[keys[0]];
       if (!Array.isArray(block) || !block.length) return null;
       const defs = [];
@@ -2410,6 +2542,14 @@
     return { text, offset: Math.max(0, offset) };
   }
 
+  // The sentence around offset in a paragraph: what a review card shows on its back.
+  function sentenceAround(text, offset) {
+    const head = text.slice(0, offset), tail = text.slice(offset);
+    const start = Math.max(head.search(/[^.!?。！？]*$/), 0);
+    const stop = tail.search(/[.!?。！？]/);
+    return text.slice(start, stop < 0 ? text.length : offset + stop + 1).replace(/\s+/g, ' ').trim();
+  }
+
   function phraseLookup(phrase) {
     if (!phrase || !phrase.found) return null;
     const g = Array.isArray(phrase.g) ? phrase.g : [];
@@ -2422,34 +2562,35 @@
   async function openWord(raw, span, autoLearn) {
     let lookup;
     const ctx = span ? spanContext(span) : null;
+    const L = (span && span.closest && span.closest('#reader-body')) ? readerLang() : lang();
     try {
       lookup = JSON.parse(ctx && typeof N.lookupAt === 'function'
-        ? N.lookupAt(lang().id, raw, ctx.text, ctx.offset)
-        : N.lookup(lang().id, raw));
+        ? N.lookupAt(L.id, raw, ctx.text, ctx.offset)
+        : N.lookup(L.id, raw));
     } catch (e) { lookup = { found: false, word: raw }; }
     // Not in the offline pack: open the card now and fill it in from the
     // online dictionary when (if) it answers.
-    const online = !lookup.found && lang().id !== 'he';
+    const online = !lookup.found && L.id !== 'he';
     if (online) lookup.pending = true;
     const norm = normalizeWord(raw);
     let key = lookup && lookup.found ? lookup.key : norm;
-    let w = lookup && lookup.found ? state.words[lang().id + ':' + key] : null;
+    let w = lookup && lookup.found ? state.words[L.id + ':' + key] : null;
     if (!w) w = wordFor(raw);
     if (lookup && lookup.found && w && w.key !== key) {
       // A word saved before its pack arrived can be keyed by the surface form.
       // The pack's lemma is authoritative; replace the stale entry.
-      delete state.words[lang().id + ':' + w.key];
+      delete state.words[L.id + ':' + w.key];
       w = null;
     }
 
     if (!w) {
       w = {
-        lang: lang().id, key, form: raw, display: (lookup && lookup.display) || raw,
-        tr: hanReading(raw) || (lang().id === 'zh' ? '' : ((lookup && lookup.tr) || '')), pos: (lookup && lookup.pos) || '',
+        lang: L.id, key, form: raw, display: (lookup && lookup.display) || raw,
+        tr: hanReading(raw, L.id) || (L.id === 'zh' ? '' : ((lookup && lookup.tr) || '')), pos: (lookup && lookup.pos) || '',
         meaning: (lookup && lookup.meaning) || '', grade: 1,
         added: Date.now(), lastSeen: Date.now(), seen: 1
       };
-      state.words[lang().id + ':' + key] = w;
+      state.words[L.id + ':' + key] = w;
       schedule(w, 1);
     } else if (autoLearn) {
       w.lastSeen = Date.now();
@@ -2457,16 +2598,16 @@
       if ((w.grade || 0) === 0) schedule(w, 1);
       if (!w.meaning && lookup && lookup.meaning) w.meaning = lookup.meaning;
       if (!w.tr) {
-        const py = hanReading(raw);
+        const py = hanReading(raw, L.id);
         if (py) w.tr = py;
-        else if (lang().id !== 'zh' && lookup && lookup.tr) w.tr = lookup.tr;
+        else if (L.id !== 'zh' && lookup && lookup.tr) w.tr = lookup.tr;
       }
     }
     rebuildIndex();
     save();
     let context = w.context || '';
     if (ctx && ctx.text) {
-      const t = ctx.text.replace(/\s+/g, ' ').trim();
+      const t = sentenceAround(ctx.text, ctx.offset);
       if (t) context = t.slice(0, 500);
     }
     if (context && !w.context) { w.context = context; save(); }
@@ -2503,11 +2644,12 @@
   function openPhrase() {
     if (!currentWord || !currentWord.phrase) return;
     const ph = currentWord.phrase;
-    const id = lang().id + ':' + ph.key;
+    const lid = (currentWord.w && currentWord.w.lang) || readerLang().id;
+    const id = lid + ':' + ph.key;
     let w = state.words[id];
     if (!w) {
       w = {
-        lang: lang().id, key: ph.key, form: ph.display, display: ph.display, tr: ph.tr || '', pos: ph.kind,
+        lang: lid, key: ph.key, form: ph.display, display: ph.display, tr: ph.tr || '', pos: ph.kind,
         meaning: ph.meaningLang === state.settings.baseLang ? ph.meaning : (ph.meaning || ''),
         meaningBase: ph.meaningLang, grade: 1, added: Date.now(), lastSeen: Date.now(), seen: 1,
         context: currentWord.context || ''
@@ -2546,7 +2688,7 @@
     const other = lookup && lookup.alt && lookup.alt !== raw ? lookup.alt : '';
     const head = {
       raw, alt: other || (display !== raw ? display : ''), seen: w.seen || 0,
-      reading: hanReading(raw) || (lang().id === 'zh' ? '' : (w.tr || (lookup && lookup.tr) || ''))
+      reading: hanReading(raw, w.lang) || (w.lang === 'zh' ? '' : (w.tr || (lookup && lookup.tr) || ''))
     };
     const links = dictLinks();
     const glosses = glossItems();
@@ -2570,9 +2712,10 @@
   function fillHead(prefix, head) {
     const word = $('#' + prefix + '-word');
     word.textContent = head.raw;
-    word.dir = lang().dir;
+    word.dir = ((currentWord && currentWord.w && BY_LANG[currentWord.w.lang]) || readerLang()).dir;
     word.parentElement.classList.toggle('long', String(head.raw).length > 14);
     $('#' + prefix + '-alt').textContent = head.alt;
+    $('#' + prefix + '-alt').dir = word.dir;
     $('#' + prefix + '-reading').textContent = head.reading;
     const seen = $('#' + prefix + '-seen');
     seen.hidden = !head.seen;
@@ -2585,8 +2728,9 @@
   function dictLinks() {
     const { raw, lookup } = currentWord;
     const word = (lookup && lookup.found && lookup.key) || raw;
-    const all = window.nerDictLinks ? window.nerDictLinks(lang().id, state.settings.baseLang || 'en', word) : [];
-    const own = ((window.NER_DICTS || {})[lang().id] || []).length;
+    const lid = (currentWord.w && currentWord.w.lang) || readerLang().id;
+    const all = window.nerDictLinks ? window.nerDictLinks(lid, state.settings.baseLang || 'en', word) : [];
+    const own = ((window.NER_DICTS || {})[lid] || []).length;
     return { own: all.slice(0, own), general: all.slice(own) };
   }
 
@@ -2598,6 +2742,9 @@
     btn.hidden = !ph;
     if (!ph) return;
     btn.querySelector('.sheet-phrase-kind').textContent = posLabel(ph.kind || 'phrase');
+    // Opening a saying saves it as a card of its own; say so on the card.
+    const lid = (currentWord && currentWord.w && currentWord.w.lang) || readerLang().id;
+    btn.querySelector('.sheet-phrase-save').textContent = state.words[lid + ':' + ph.key] ? '✓ ' + tr('נשמר') : '+ ' + tr('שמירה');
     btn.querySelector('.sheet-phrase-text').textContent = ph.display;
     btn.querySelector('.sheet-phrase-meaning').textContent = ph.meaning || '';
     // Idiom glosses translate poorly, so the English original stays in view.
@@ -2617,7 +2764,7 @@
     if (!list.length) return meaning ? [{ text: meaning }] : [];
     const items = list.map(g => ({ text: g }));
     if (!meaning || list.some(g => g.toLowerCase() === meaning.toLowerCase())) return items;
-    if (lookup && lookup.meaningLang === lang().id && meaning === lookup.meaning) return [{ text: meaning }].concat(items);
+    if (lookup && lookup.meaningLang === ((w && w.lang) || readerLang().id) && meaning === lookup.meaning) return [{ text: meaning }].concat(items);
     items[0] = { text: meaning, sub: list[0] };
     return items;
   }
@@ -2640,21 +2787,82 @@
     const pos = posLabel(w.pos || (lookup && lookup.pos));
     if (pos) badges.push(`<span class="word-badge">${escapeHtml(pos)}</span>`);
     $('#sheet-badges').innerHTML = badges.join('');
-    const chars = lookup && Array.isArray(lookup.chars) ? lookup.chars : [];
+    let chars = lookup && Array.isArray(lookup.chars) ? lookup.chars : [];
+    // One character is its own breakdown, so it gets the stroke order too.
+    const one = String((lookup && lookup.display) || w.display || '').trim();
+    const lid = (w && w.lang) || readerLang().id;
+    if (!chars.length && /^(zh|yue)$/.test(lid) && /^\p{Script=Han}$/u.test(one)) chars = [{ c: one, tr: w.tr || '', g: '' }];
     if (!chars.length) wordTab = 'meaning';
     $('#word-tabs').hidden = !chars.length;
     $$('#word-tabs button').forEach(b => b.classList.toggle('active', b.dataset.wordTab === wordTab));
     $('#sheet-tab-meaning').hidden = wordTab !== 'meaning';
     $('#sheet-tab-chars').hidden = wordTab !== 'chars';
-    $('#sheet-tab-chars').innerHTML = chars.map(c => `<div class="char-row"><span class="char-cell"><small>${escapeHtml(hanReading(c.c) || c.tr)}</small><b>${escapeHtml(c.c)}</b></span><span class="char-gloss">${escapeHtml(c.g)}</span></div>`).join('');
+    if (!chars.some(c => c.c === strokeChar)) strokeChar = (chars[0] && chars[0].c) || '';
+    $('#sheet-tab-chars').innerHTML = '<div class="stroke-panel" id="stroke-panel" hidden><div class="stroke-box" id="stroke-writer"></div><div class="stroke-steps" id="stroke-steps"></div></div>' +
+      chars.map(c => `<button type="button" class="char-row${c.c === strokeChar ? ' active' : ''}" data-stroke-char="${escapeHtml(c.c)}"><span class="char-cell"><small>${escapeHtml(hanReading(c.c) || c.tr)}</small><b>${escapeHtml(c.c)}</b></span><span class="char-gloss">${escapeHtml(c.g)}</span></button>`).join('');
+    if (wordTab === 'chars') showStrokes(strokeChar);
+    else stopStrokes();
     const ctx = w.context || currentWord.context || '';
     $('#sheet-context').hidden = !ctx;
     $('#sheet-context').textContent = ctx ? (activeUiLang() === 'he' ? '״' + ctx + '״' : '“' + ctx + '”') : '';
-    $('#sheet-context').dir = lang().dir;
+    $('#sheet-context').dir = ((w && BY_LANG[w.lang]) || readerLang()).dir;
+    $('#sheet-cloze').hidden = !clozeTarget(w, ctx);
+    renderSheetPatterns(w && w.lang, ctx);
     $$('#grade-grid button').forEach(b => b.classList.toggle('active', Number(b.dataset.grade) === Number(w.grade)));
     $('#sheet-source').textContent = lookup && lookup.found
       ? (/wiktionary|google/i.test(lookup.source || '') ? lookup.source.replace(/\s*\(online\)/i, '') : tr('מילון מקומי'))
       : tr('לא נמצא במילון');
+  }
+
+  // Stroke order for one Chinese character (HanziWriter, data bundled in the APK).
+  function showStrokes(ch) {
+    stopStrokes();
+    const panel = $('#stroke-panel');
+    const lid = (currentWord && currentWord.w && currentWord.w.lang) || readerLang().id;
+    if (ch && /^(zh|yue)$/.test(lid) && !window.HanziWriter && window.NerLib) {
+      NerLib.load('vendor/hanzi-writer.min.js').then(() => { if (window.HanziWriter && strokeChar === ch) showStrokes(ch); }).catch(() => {});
+      return;
+    }
+    const raw = ch && /^(zh|yue)$/.test(lid) && window.HanziWriter && N.strokes ? N.strokes(ch) : '';
+    if (!panel) return;
+    panel.hidden = !raw;
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    // HanziWriter needs plain colours; the sheet's are var()/color-mix() on reading paper.
+    const probe = document.createElement('span');
+    $('#word-sheet').appendChild(probe);
+    const px = document.createElement('canvas').getContext('2d', { willReadFrequently: true });
+    const resolve = v => {
+      probe.style.color = `var(${v})`;
+      px.clearRect(0, 0, 1, 1);
+      px.fillStyle = getComputedStyle(probe).color;
+      px.fillRect(0, 0, 1, 1);
+      const [r, g, b, a] = px.getImageData(0, 0, 1, 1).data;
+      return `rgba(${r},${g},${b},${(a / 255).toFixed(2)})`;
+    };
+    const ink = resolve('--ink'), line = resolve('--line'), accent = resolve('--green');
+    probe.remove();
+    panel.hidden = false;
+    $('#stroke-writer').textContent = '';
+    strokeWriter = HanziWriter.create($('#stroke-writer'), ch, {
+      width: 168, height: 168, padding: 6, showOutline: true,
+      strokeColor: ink, outlineColor: line, radicalColor: accent,
+      delayBetweenStrokes: 150, delayBetweenLoops: 900,
+      charDataLoader: (c, done) => done(data)
+    });
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) strokeWriter.showCharacter();
+    else strokeWriter.loopCharacterAnimation();
+    // Make Me a Hanzi paths are y-up with the baseline at 900.
+    const grid = '<path d="M0 512H1024M512 0V1024M0 0L1024 1024M1024 0L0 1024" stroke="' + line + '" stroke-width="10" stroke-dasharray="28 28" fill="none"/>';
+    $('#stroke-steps').innerHTML = data.strokes.map((_, i) =>
+      `<button type="button" class="stroke-step" data-stroke="${i}"><svg viewBox="0 0 1024 1024">${grid}<g transform="translate(0 900) scale(1 -1)">` +
+      data.strokes.map((d, j) => `<path d="${d}" fill="${j < i ? ink : j === i ? accent : line}"/>`).join('') +
+      `</g></svg><span>${fmt(i + 1)}</span></button>`).join('');
+  }
+
+  function stopStrokes() {
+    if (strokeWriter) { try { strokeWriter.pauseAnimation(); } catch (e) { } }
+    strokeWriter = null;
   }
 
   // Below the word's line when it sits in the upper half, above it otherwise.
@@ -2718,6 +2926,7 @@
   }
 
   function closeSheet() {
+    stopStrokes();
     $$('#reader-body .ner-w.active').forEach(x => x.classList.remove('active'));
     hideCard();
     $('#word-sheet').classList.remove('open');
@@ -2814,12 +3023,73 @@
     return books.concat(rest.slice(0, 40));
   }
 
-  function dueWords(now = Date.now()) {
-    if (!window.NerReview) return [];
+  /* ---------------- review (SM-2 cards, as in Anki) ---------------- */
+
+  // Words at reading status 1-4 in the language read now are the deck; their
+  // schedule is word.srs (see review.js). New cards per day follow the daily goal.
+  const RV = () => window.NerReview;
+  const idOf = w => w.lang + ':' + w.key;
+  const typeOf = w => RV().cardType(w.srs);
+  const byDue = (a, b) => (a.srs.due || 0) - (b.srs.due || 0);
+  const isLearningCard = w => /^(learn|relearn)$/.test(typeOf(w));
+  const dayEnd = () => RV().dayStart() + RV().DAY;
+
+  function deck(test) {
     const id = lang().id;
-    return Object.values(state.words)
-      .filter(w => window.NerReview.isDue(w, id, now))
-      .sort((a, b) => (a.due || 0) - (b.due || 0));
+    return Object.values(state.words).filter(w => {
+      const g = Number(w && w.grade);
+      return w && !w.seed && w.lang === id && g >= 1 && g <= 4 && (!test || test(w));
+    });
+  }
+
+  function srsToday() {
+    const log = state.srsLog || (state.srsLog = {});
+    const key = RV().dayKey();
+    return log[key] || { n: 0, r: 0 };
+  }
+
+  function learningToday() {
+    const end = dayEnd();
+    return deck(w => isLearningCard(w) && (w.srs.due || 0) < end).sort(byDue);
+  }
+
+  // Today's due review cards and new cards (within the daily limit), new ones
+  // spread through the reviews. Learning cards are picked as they come due.
+  function buildQueue() {
+    const end = dayEnd();
+    const reviews = deck(w => typeOf(w) === 'review' && (w.srs.due || 0) < end).sort(byDue);
+    const left = Math.max(0, (Number(state.settings.dailyGoal) || 20) - srsToday().n);
+    const news = deck(w => typeOf(w) === 'new').sort((a, b) => (a.added || 0) - (b.added || 0)).slice(0, left);
+    if (!news.length || !reviews.length) return reviews.concat(news).map(idOf);
+    const out = [], every = (reviews.length + news.length) / news.length;
+    let ni = 0, ri = 0;
+    for (let i = 0; i < reviews.length + news.length; i++) {
+      if (ni < news.length && i + 1 >= (ni + 1) * every - 0.001) out.push(news[ni++]);
+      else if (ri < reviews.length) out.push(reviews[ri++]);
+      else out.push(news[ni++]);
+    }
+    return out.map(idOf);
+  }
+
+  function dueCount() {
+    const soon = Date.now() + RV().LEARN_AHEAD;
+    return buildQueue().length + learningToday().filter(w => w.srs.due <= soon).length;
+  }
+
+  function nextDueAt() {
+    const now = Date.now();
+    let best = 0;
+    for (const w of deck(w => w.srs && w.srs.due > now)) if (!best || w.srs.due < best) best = w.srs.due;
+    return best;
+  }
+
+  // "Practice early": the next reviews ahead of time, then new cards past today's limit.
+  function extraCards(n) {
+    const seen = new Set(reviewQueue);
+    const pool = deck(w => !seen.has(idOf(w)) && !isLearningCard(w));
+    const ahead = pool.filter(w => typeOf(w) === 'review').sort(byDue);
+    const news = pool.filter(w => typeOf(w) === 'new').sort((a, b) => (a.added || 0) - (b.added || 0));
+    return ahead.concat(news).slice(0, n).map(idOf);
   }
 
   function schedule(word, grade) {
@@ -2828,92 +3098,353 @@
     else { word.grade = grade; word.lastSeen = Date.now(); }
   }
 
-  function nextDueAt() {
-    const id = lang().id;
-    const now = Date.now();
-    let best = 0;
-    for (const w of Object.values(state.words)) {
-      if (!w || w.seed || w.lang !== id) continue;
-      const g = Number(w.grade);
-      if (!(g >= 1 && g <= 4) || !w.due || w.due <= now) continue;
-      if (!best || w.due < best) best = w.due;
-    }
-    return best;
-  }
-
-  function practiceWords() {
-    const id = lang().id;
-    const now = Date.now();
-    return Object.values(state.words).filter(w => {
-      if (!w || w.seed || w.lang !== id) return false;
-      const g = Number(w.grade);
-      return g >= 1 && g <= 4 && w.due && w.due > now;
-    }).sort((a, b) => a.due - b.due);
-  }
-
   function openReview(early) {
-    const due = dueWords();
-    const pool = due.length ? due : (early ? practiceWords().slice(0, 5) : []);
-    reviewQueue = pool.slice(0, 20).map(w => w.lang + ':' + w.key);
+    reviewQueue = buildQueue();
+    if (early && !reviewQueue.length) reviewQueue = extraCards(5);
     reviewIndex = 0;
-    reviewAgain = new Set();
-    reviewRevealed = false;
+    reviewSeen = new Set();
+    reviewCur = null;
+    reviewForced = null;
+    reviewUndo = [];
+    reviewDone = 0;
     navigate('review');
     renderReview();
   }
 
-  function renderReview() {
+  function pickNextCard() {
+    if (reviewForced) { const f = reviewForced; reviewForced = null; return f; }
+    const now = Date.now();
+    const learn = learningToday();
+    if (learn.length && learn[0].srs.due <= now) return { id: idOf(learn[0]), main: false };
+    while (reviewIndex < reviewQueue.length) {
+      const id = reviewQueue[reviewIndex];
+      const w = state.words[id];
+      const g = Number(w && w.grade);
+      if (w && g >= 1 && g <= 4 && !isLearningCard(w) && !reviewSeen.has(id)) return { id, main: true };
+      reviewIndex++;
+    }
+    if (learn.length && learn[0].srs.due <= now + RV().LEARN_AHEAD) return { id: idOf(learn[0]), main: false };
+    return null;
+  }
+
+  function reviewCounts() {
+    let n = 0, r = 0;
+    for (let i = reviewIndex; i < reviewQueue.length; i++) {
+      const w = state.words[reviewQueue[i]];
+      if (!w || reviewSeen.has(reviewQueue[i]) || isLearningCard(w)) continue;
+      if (typeOf(w) === 'new') n++; else r++;
+    }
+    return { n, l: learningToday().length, r };
+  }
+
+  function renderReview(keep) {
     const host = $('#review-stage');
     const prog = $('#review-progress');
     if (!host) return;
-    if (!reviewQueue.length) {
-      if (prog) prog.textContent = '0';
-      const early = practiceWords().length
-        ? '<button class="primary" data-action="practice-early" type="button">תרגול מוקדם</button>'
-        : '<button class="primary" data-go="read" type="button">חזרה לקריאה</button>';
-      host.innerHTML = '<div class="review-empty"><h2>אין מילים שמחכות לחזרה</h2><p>1 חוזרת אחרי עשר דקות. 2 אחרי יום. 3 אחרי שלושה ימים. 4 אחרי שבוע. K ידועה, ו-X לא חוזרת.</p>' + early + '</div>';
-      return;
-    }
-    if (reviewIndex >= reviewQueue.length) {
-      if (prog) prog.textContent = fmt(reviewQueue.length);
-      host.innerHTML = `<div class="review-empty"><h2>הסתיימה החזרה</h2><p>${escapeHtml(tf('reviewDone', { n: fmt(reviewQueue.length) }))}</p><button class="primary" data-action="open-review" type="button">עוד סבב</button><button class="ghost" data-go="home" type="button">לדף הבית</button></div>`;
-      return;
-    }
-    const id = reviewQueue[reviewIndex];
-    const w = state.words[id];
-    if (!w) { reviewIndex++; reviewRevealed = false; renderReview(); return; }
-    if (prog) prog.textContent = fmt(reviewIndex + 1) + ' מתוך ' + fmt(reviewQueue.length);
-    const meaning = w.meaning || 'אין משמעות.';
-    host.innerHTML = `<div class="review-word" dir="${lang().dir}">${escapeHtml(w.form || w.display || w.key)}</div>` +
-      ((hanReading(w.form || w.display || w.key) || (w.lang === 'zh' ? '' : w.tr)) ? `<div class="review-tr">${escapeHtml(hanReading(w.form || w.display || w.key) || w.tr)}</div>` : '') +
-      (w.context ? `<p class="review-context">״${escapeHtml(w.context)}״</p>` : '') +
-      '<p class="review-hint">דרגו מהזיכרון, או הציגו את המשמעות.</p>' +
-      `<p class="review-meaning"${reviewRevealed ? '' : ' hidden'}>${escapeHtml(meaning)}</p>` +
-      `<button class="ghost review-reveal" data-action="review-reveal" type="button">${reviewRevealed ? 'הסתירו משמעות' : 'הציגו משמעות'}</button>` +
-      '<div class="grade-grid" id="review-grades">' +
-      '<button type="button" data-grade="1"><b>1</b><small>לא מכיר</small></button>' +
-      '<button type="button" data-grade="2"><b>2</b><small>מזהה</small></button>' +
-      '<button type="button" data-grade="3"><b>3</b><small>מבין</small></button>' +
-      '<button type="button" data-grade="4"><b>4</b><small>כמעט</small></button>' +
-      '<button type="button" data-grade="5" class="known-btn"><b>K</b><small>ידוע</small></button>' +
-      '<button type="button" data-grade="-1" class="ignore-btn"><b>X</b><small>דלג</small></button>' +
-      '</div>';
+    clearTimeout(reviewWait);
+    const pick = keep && reviewCur ? reviewCur : pickNextCard();
+    if (!keep) reviewFlipped = false;
+    reviewCur = pick;
+    const c = reviewCounts();
+    if (prog) prog.textContent = fmt(c.n + c.l + c.r);
+    if (!pick) { renderReviewEnd(host); return; }
+    const w = state.words[pick.id];
+    const word = w.display || w.form || w.key;
+    const reading = hanReading(word) || (w.lang === 'zh' ? '' : w.tr || '');
+    const meaning = w.meaning || '';
+    // Older words kept the whole paragraph: show the sentence that holds the word.
+    const at = w.context ? [w.form, word, w.key].map(f => f ? w.context.indexOf(f) : -1).find(i => i >= 0) : -1;
+    const ctx = w.cloze ? '' : !w.context || w.context === word ? '' : at >= 0 ? sentenceAround(w.context, at) : w.context;
+    const cz = w.cloze && w.cloze.text && w.cloze.target ? w.cloze : null;
+    const meaningFront = !cz && state.settings.cardFront === 'meaning' && !!meaning;
+    const t = typeOf(w);
+    const cur = t === 'new' ? 'n' : t === 'review' ? 'r' : 'l';
+    const count = (k, n) => `<span class="srs-c srs-c-${k}"><b${cur === k ? ' class="cur"' : ''}>${fmt(n)}</b> <small>${escapeHtml(tr({ n: 'חדשים', l: 'בלמידה', r: 'לחזרה' }[k]))}</small></span>`;
+    const kind = { new: 'כרטיס חדש', learn: 'בלמידה', relearn: 'בלמידה מחדש', review: 'כרטיס חזרה' }[t];
+    const clozeKind = cz ? tr('השלימו את החסר') : '';
+    const pos = /^(proverb|idiom|phrase)$/.test(w.pos) ? ' · ' + posLabel(w.pos) : '';
+    const wordHtml = cz
+      ? `<span class="srs-word srs-cloze" dir="${lang().dir}">${clozeHtml(cz, reviewFlipped)}</span>`
+      : `<span class="srs-word" dir="${lang().dir}">${escapeHtml(word)}</span>`;
+    const back = reviewFlipped
+      ? '<span class="srs-rule"></span>' +
+        (meaningFront ? wordHtml : '') +
+        (reading ? `<span class="srs-reading">${escapeHtml(reading)}</span>` : '') +
+        (!meaningFront && meaning ? `<span class="srs-meaning" dir="auto">${escapeHtml(meaning)}</span>` : '') +
+        (ctx ? `<span class="srs-context" dir="${lang().dir}">${escapeHtml(ctx)}</span>` : '')
+      : '';
+    const spoken = reviewFlipped
+      ? [word, reading, meaning].filter(Boolean).join(', ')
+      : tr(clozeKind || kind) + '. ' + [c.n + ' ' + tr('חדשים'), c.l + ' ' + tr('בלמידה'), c.r + ' ' + tr('לחזרה')].join(', ');
+    if (!keep || reviewFlipped) announce(spoken);
+    host.innerHTML =
+      `<div class="srs-head"><span class="srs-counts">${count('n', c.n)} · ${count('l', c.l)} · ${count('r', c.r)}</span>` +
+      `<span class="srs-tools">${reviewUndo.length ? '<button class="icon-btn" data-action="review-undo" type="button" aria-label="' + escapeHtml(tr('בטלו')) + '"><svg><use href="#i-undo"></use></svg></button>' : ''}` +
+      `<button class="srs-swap" data-action="review-swap" type="button">${escapeHtml(tr(meaningFront ? 'משמעות קודם' : 'מילה קודם'))} ⇄</button>` +
+      `<button class="icon-btn" data-speak-review type="button" aria-label="${escapeHtml(tr('השמעה'))}"><svg><use href="#i-speaker"></use></svg></button></span></div>` +
+      `<div class="srs-card${reviewFlipped ? ' flipped' : ''}" data-action="review-flip" role="button" tabindex="0">` +
+      `<span class="srs-kind">${escapeHtml(clozeKind || tr(kind))}${escapeHtml(pos)}</span>` +
+      (meaningFront ? `<span class="srs-meaning front" dir="auto">${escapeHtml(meaning)}</span>` : wordHtml) + back + '</div>' +
+      (reviewFlipped
+        ? '<div class="grade-grid srs-grid">' + REVIEW_SCALE.map(([g, mark, label]) =>
+          `<button type="button" data-srs="${g}"${g === 5 ? ' class="known-btn"' : g === -1 ? ' class="ignore-btn"' : ''}><b>${mark}</b><small>${escapeHtml(tr(label))}</small>` +
+          `<i>${RATE[g] ? RV().preview(w.srs, RATE[g]) : '–'}</i></button>`).join('') + '</div>'
+        : '<button class="primary srs-show" data-action="review-flip" type="button">הציגו תשובה</button>');
   }
 
-  function reviewGrade(grade) {
-    const id = reviewQueue[reviewIndex];
-    const w = id && state.words[id];
-    if (!w) { reviewIndex++; reviewRevealed = false; renderReview(); return; }
-    schedule(w, grade);
-    save();
-    if (grade === 1 && !reviewAgain.has(id)) {
-      reviewAgain.add(id);
-      reviewQueue.push(id);
+  function renderReviewEnd(host) {
+    const later = learningToday();
+    let wait = '';
+    if (later.length) {
+      const mins = Math.max(1, Math.ceil((later[0].srs.due - Date.now()) / 60000));
+      wait = `<p>${escapeHtml(tf('learningLeft', { n: fmt(later.length), m: fmt(mins) }))}</p>`;
+      // Come back by itself once the next learning step is close.
+      reviewWait = setTimeout(() => { if (currentView === 'review') renderReview(); },
+        Math.min(30 * 60000, Math.max(1000, later[0].srs.due - RV().LEARN_AHEAD - Date.now())));
     }
-    reviewIndex++;
-    reviewRevealed = false;
+    const more = extraCards(1).length ? '<button class="ghost" data-action="review-more" type="button">עוד חמישה כרטיסים</button>' : '';
+    const undo = reviewUndo.length ? '<button class="ghost" data-action="review-undo" type="button">בטלו</button>' : '';
+    host.innerHTML = reviewDone
+      ? `<div class="review-empty"><div class="empty-mark"><svg><use href="#i-check"></use></svg></div><h2>הסתיימה החזרה</h2><p>${escapeHtml(tf('reviewDone', { n: fmt(reviewDone) }))}</p>${wait}${more}<button class="primary" data-go="home" type="button">לדף הבית</button>${undo}</div>`
+      : `<div class="review-empty"><div class="empty-mark"><svg><use href="#i-check"></use></svg></div><h2>אין כרטיסים לחזרה עכשיו</h2><p>מילים בדרגות 1–4 הופכות לכרטיסים. מספר הכרטיסים החדשים ביום הוא היעד היומי שבהגדרות.</p>${wait}${more}<button class="primary" data-go="read" type="button">חזרה לקריאה</button></div>`;
+  }
+
+  function flipReview() {
+    if (!reviewCur || reviewFlipped) return;
+    reviewFlipped = true;
+    renderReview(true);
+  }
+
+  // The reader's scale on the card: 1-4 schedule it (Again, Hard, Good, Easy in
+  // Anki terms; each button shows when the card comes back) and become its
+  // reading status; K (known) and X (skip) take it out of review.
+  const RATE = { 1: 'again', 2: 'hard', 3: 'good', 4: 'easy' };
+  const REVIEW_SCALE = [[1, '1', 'לא מכיר'], [2, '2', 'מזהה'], [3, '3', 'מבין'], [4, '4', 'כמעט'], [5, 'K', 'ידוע'], [-1, 'X', 'דלג']];
+
+  function rateReview(g) {
+    if (!reviewCur) return;
+    if (!reviewFlipped) { flipReview(); return; }
+    const w = state.words[reviewCur.id];
+    if (!w) { reviewCur = null; renderReview(); return; }
+    const before = typeOf(w);
+    reviewUndo.push({ id: reviewCur.id, main: reviewCur.main, index: reviewIndex, seen: reviewSeen.has(reviewCur.id), word: JSON.stringify(w), log: JSON.stringify(srsToday()), day: RV().dayKey(), done: reviewDone });
+    if (reviewUndo.length > 50) reviewUndo.shift();
+    const now = Date.now();
+    if (RATE[g]) w.srs = RV().next(w.srs, RATE[g], now, true);
+    w.grade = g;
+    w.lastSeen = now;
+    const day = srsToday();
+    if (before === 'new') day.n++;
+    day.r++;
+    state.srsLog[RV().dayKey()] = day;
+    reviewDone++;
+    if (reviewCur.main) { reviewSeen.add(reviewCur.id); reviewIndex++; }
+    reviewCur = null;
+    save();
     renderReview();
     renderHome();
+  }
+
+  // Multi-step undo, as in Anki: the card, the day's counts and the queue place.
+  function undoReview() {
+    const u = reviewUndo.pop();
+    if (!u) return;
+    state.words[u.id] = JSON.parse(u.word);
+    state.srsLog[u.day || RV().dayKey()] = JSON.parse(u.log);   // the day the card was graded, even after the 4:00 rollover
+    reviewIndex = u.index;
+    if (!u.seen) reviewSeen.delete(u.id);
+    reviewDone = u.done;
+    reviewForced = { id: u.id, main: u.main };
+    reviewCur = null;
+    rebuildIndex();
+    save();
+    renderReview();
+    renderHome();
+  }
+
+  /* ---------------- sentence mining: cloze cards ---------------- */
+  // Where the target stands as a word of its own in the sentence (any occurrence for CJK, which has no spaces).
+  const CLOZE_CJK = /[぀-ヿ㐀-鿿豈-﫿가-힯]/;
+  const CLOZE_WORD = /[\p{L}\p{N}_]/u;
+  function clozeSpans(text, target) {
+    const out = [];
+    if (!text || !target) return out;
+    const cjk = CLOZE_CJK.test(target[0]) || CLOZE_CJK.test(target[target.length - 1]);
+    for (let i = text.indexOf(target); i >= 0; i = text.indexOf(target, i + target.length)) {
+      const prev = i > 0 ? Array.from(text.slice(Math.max(0, i - 2), i)).pop() : '';
+      const next = Array.from(text.slice(i + target.length, i + target.length + 2))[0] || '';
+      if (cjk || !(CLOZE_WORD.test(prev) || CLOZE_WORD.test(next))) out.push(i);
+    }
+    return out;
+  }
+
+  // The word as it stands in its sentence, or '' when the sentence does not hold it.
+  function clozeTarget(w, sentence) {
+    if (!w || !sentence || sentence.length < 12 || w.pos === 'pattern' || w.cloze) return '';
+    const forms = [currentWord && currentWord.raw, w.form, w.display, w.key].filter(f => f && f.length);
+    return forms.find(f => clozeSpans(sentence, f).length) || '';
+  }
+
+  const CLOZE_GAP = '＿＿＿';
+  // The sentence as [{ t, hit }] parts: every occurrence of the target is a hit.
+  function clozeParts(text, target) {
+    const spans = clozeSpans(text, target), parts = [];
+    let at = 0;
+    for (const i of spans) {
+      if (i > at) parts.push({ t: text.slice(at, i), hit: false });
+      parts.push({ t: target, hit: true });
+      at = i + target.length;
+    }
+    if (at < text.length) parts.push({ t: text.slice(at), hit: false });
+    return parts;
+  }
+
+  function clozeHtml(cz, reveal) {
+    return clozeParts(cz.text, cz.target).map(p => !p.hit ? escapeHtml(p.t)
+      : reveal ? `<b class="cloze-hit">${escapeHtml(p.t)}</b>` : `<span class="cloze-gap">${CLOZE_GAP}</span>`).join('');
+  }
+
+  // A study card is in review while its grade is 1-4; known (K) and ignored (X) cards are out of it.
+  const cardActive = w => !!w && Number(w.grade) >= 1 && Number(w.grade) <= 4;
+
+  // Add a pattern or cloze card, or bring back one that was marked known / ignored. false = already in review.
+  function addStudyCard(id, card) {
+    const old = state.words[id];
+    if (cardActive(old)) return false;
+    if (old) {
+      delete old.srs;
+      schedule(old, 1);
+      old.seen = (old.seen || 0) + 1;
+    } else {
+      state.words[id] = card;
+      schedule(card, 1);
+    }
+    return true;
+  }
+
+  function saveCloze() {
+    if (!currentWord) return;
+    const { w } = currentWord;
+    const sentence = (w.context || currentWord.context || '').trim();
+    const target = clozeTarget(w, sentence);
+    if (!target) return;
+    let h = 0;
+    for (const ch of sentence + '|' + target) h = (Math.imul(h, 31) + ch.codePointAt(0)) | 0;
+    const key = 'cloze:' + (h >>> 0).toString(36);
+    const id = w.lang + ':' + key;
+    const card = {
+      lang: w.lang, key, form: target, display: sentence, tr: '', pos: 'sentence',
+      meaning: (w.display || w.form || w.key) + (w.meaning ? ' — ' + w.meaning : ''),
+      context: '', cloze: { text: sentence, target },
+      grade: 1, added: Date.now(), lastSeen: Date.now(), seen: 1
+    };
+    if (!addStudyCard(id, card)) { toast(tr('הקלף כבר בחזרה')); return; }
+    rebuildIndex(); save(); renderHome();
+    toast(tr('נוסף לחזרה'));
+  }
+
+  /* ---------------- sentence patterns ---------------- */
+  // Data: patterns/<lang>.js (tools/pack_patterns.py). he/fr are real Tatoeba sentences ranked by
+  // frequency; the other languages are examples written for Shoresh, in curriculum order.
+  // js/patternmatch.js finds the patterns inside a sentence you are reading.
+  let patternLevel = '', patternFocus = '', patternKeep = false, patternFrom = '';
+  const patternOpen = new Set();
+  const PATTERN_LANGS = ['he', 'fr', 'en', 'zh', 'es', 'de', 'it', 'pt', 'ja', 'ko', 'ru'];
+  const PATTERN_CORPUS = ['he', 'fr'];
+  const PATTERN_SHOWN = 3;
+  const patternKey = p => 'pattern:' + p.id;
+
+  function loadPatterns(id) {
+    return Promise.all([NerLib.load('js/patternmatch.js'), NerLib.load('patterns/' + id + '.js')]);
+  }
+
+  function patternBack() {
+    const from = patternFrom;
+    patternFrom = ''; patternFocus = '';
+    if (from && state.articles.some(a => a.id === from)) openArticle(from);
+    else navigate('home');
+  }
+
+  function renderPatterns() {
+    const host = $('#patterns-list');
+    if (!host) return;
+    const L = lang();
+    $$('#pattern-levels .chip').forEach(c => c.classList.toggle('active', c.dataset.level === patternLevel));
+    $('#pattern-levels').hidden = !!patternFocus;
+    const credit = $('#patterns-credit');
+    if (credit) credit.textContent = PATTERN_CORPUS.includes(L.id)
+      ? tr('משפטי הדוגמה מ־Tatoeba (tatoeba.org), CC BY 2.0 FR. הדירוג לפי תדירות במאגר.')
+      : tr('משפטי הדוגמה והתרגומים נכתבו עבור שורש, לא נלקחו ממאגר, ולא נבדקו על ידי דובר שפת אם. הסדר לפי רמה.');
+    if (!PATTERN_LANGS.includes(L.id)) {
+      host.innerHTML = `<div class="review-empty"><h2>${escapeHtml(tr('אין עדיין תבניות לשפה הזו'))}</h2><p>${escapeHtml(tr('החליפו שפה בכפתור השפה למעלה'))}</p></div>`;
+      return;
+    }
+    const data = window.NER_PATTERNS && window.NER_PATTERNS[L.id];
+    if (!data) {
+      host.innerHTML = '<div class="patterns-loading">…</div>';
+      loadPatterns(L.id).then(() => { if (currentView === 'patterns') renderPatterns(); })
+        .catch(() => { host.innerHTML = '<div class="patterns-loading">!</div>'; });
+      return;
+    }
+    const b = baseLang().id;
+    const corpus = PATTERN_CORPUS.includes(L.id);
+    const list = patternFocus
+      ? data.filter(p => p.id === patternFocus)
+      : data.filter(p => !patternLevel || (patternLevel === 'B2' ? /^(B2|C)/.test(p.c) : p.c === patternLevel));
+    const head = patternFocus
+      ? `<button class="chip pattern-all" type="button" data-pattern-all>← ${escapeHtml(tr('כל התבניות'))}</button>` : '';
+    host.innerHTML = head + list.map(p => {
+      const saved = cardActive(state.words[L.id + ':' + patternKey(p)]);
+      const open = !!patternFocus || patternOpen.has(p.id);
+      const shown = open ? p.x : p.x.slice(0, PATTERN_SHOWN);
+      const ex = shown.map(e =>
+        `<div class="pattern-ex"><button class="icon-btn" type="button" data-speak="${escapeHtml(e.s)}" aria-label="${escapeHtml(tr('השמעה'))}"><svg><use href="#i-speaker"></use></svg></button>` +
+        `<div><span class="pattern-s" dir="${L.dir}">${escapeHtml(e.s)}</span><small dir="auto">${escapeHtml(e.t[b] || e.t.en || '')}</small></div></div>`).join('');
+      const more = !open && p.x.length > PATTERN_SHOWN
+        ? `<button class="ghost pattern-more" type="button" data-pattern-more="${escapeHtml(p.id)}">${escapeHtml(tr('עוד דוגמאות'))} (${fmt(p.x.length - PATTERN_SHOWN)})</button>` : '';
+      return `<article class="pattern-card"><header><div><strong class="pattern-p" dir="${L.dir}">${escapeHtml(p.p)}</strong>` +
+        `<span class="pattern-gloss" dir="auto">${escapeHtml(p.en)}</span></div>` +
+        `<div class="pattern-meta"><span class="badge">${escapeHtml(p.c)}</span>${corpus ? `<small>#${fmt(p.r)}</small>` : ''}</div></header>${ex}${more}` +
+        `<button class="ghost pattern-save${saved ? ' saved' : ''}" type="button" data-pattern-save="${escapeHtml(p.id)}">${escapeHtml(tr(saved ? 'נשמר לחזרה' : 'שמרו כקלף חזרה'))}</button></article>`;
+    }).join('') || `<div class="patterns-loading">${escapeHtml(tr('אין תבניות ברמה הזו'))}</div>`;
+    if (patternFocus) window.scrollTo(0, 0);
+  }
+
+  // Under the sentence in the word sheet: the patterns this sentence uses, each opening all its examples.
+  function renderSheetPatterns(langId, sentence) {
+    const host = $('#sheet-patterns');
+    if (!host) return;
+    host.hidden = true; host.textContent = '';
+    if (!sentence || !PATTERN_LANGS.includes(langId)) return;
+    const data = window.NER_PATTERNS && window.NER_PATTERNS[langId];
+    if (!data || !window.NerPatternMatch) {
+      loadPatterns(langId).then(() => { if (currentWord && currentWord.w && currentWord.w.lang === langId) renderSheetPatterns(langId, sentence); }).catch(() => {});
+      return;
+    }
+    const hits = window.NerPatternMatch.match(data, sentence, 3);
+    if (!hits.length) return;
+    const dir = (BY_LANG[langId] || {}).dir || 'ltr';
+    host.innerHTML = `<small class="sheet-patterns-label">${escapeHtml(tr('תבניות במשפט'))}</small>` +
+      hits.map(p => `<button type="button" class="chip pattern-chip" data-pattern-open="${escapeHtml(p.id)}"><b dir="${dir}">${escapeHtml(p.p)}</b> <span>${escapeHtml(p.c)}</span></button>`).join('');
+    host.hidden = false;
+  }
+
+  // A pattern becomes an ordinary review card: the pattern on the front, its gloss and an example behind.
+  function savePattern(id) {
+    const L = lang();
+    const p = ((window.NER_PATTERNS || {})[L.id] || []).find(x => x.id === id);
+    if (!p) return;
+    const key = patternKey(p), wid = L.id + ':' + key;
+    const e = p.x[0];
+    const eg = e && (e.t[baseLang().id] || e.t.en);
+    const w = {
+      lang: L.id, key, form: p.p, display: p.p, tr: '', pos: 'pattern',
+      meaning: p.en + (eg ? ' — ' + eg : ''),
+      context: e ? e.s : '', grade: 1, added: Date.now(), lastSeen: Date.now(), seen: 1
+    };
+    if (!addStudyCard(wid, w)) { toast(tr('הקלף כבר בחזרה')); return; }
+    rebuildIndex(); save(); renderPatterns(); renderHome();
+    toast(tr('נוסף לחזרה'));
   }
 
   /* ---------------- articles ---------------- */
@@ -2931,9 +3462,10 @@
     if (text.length < 10) { toast('הטקסט קצר מדי'); return; }
     const cleanTitle = String(title || '').trim() || text.split('\n')[0].slice(0, 70) || 'טקסט';
     const article = {
-      id: 'text-' + Date.now(), title: cleanTitle, text, lang: articleLang(detectLang(text, learnLangs())),
+      id: 'text-' + Date.now(), title: cleanTitle, text,
       kind, chapters, added: Date.now(), lastOpened: Date.now(), ...extra
     };
+    applyDetectedLang(article, text);
     addArticle(article);
     hideModal('paste');
     openReaderText(cleanTitle, text, article);
@@ -2943,6 +3475,7 @@
   function openArticle(id) {
     const article = state.articles.find(a => a.id === id);
     if (!article) return;
+    if (article.text) applyDetectedLang(article, article.text);
     article.lastOpened = Date.now();
     save();
     if (article.kind === 'book') requestVocabStats(article);
@@ -2952,8 +3485,16 @@
       openReaderText(article.title, article.text, article);
     } else if (article.url) {
       followLang(article.lang);
+      noteUnlearned(article);
       if (article.kind === 'watch') N.openWatch(article.url);
-      else N.openUrl(article.url);
+      else openInWeb(article.url, article.lang);
+    }
+  }
+
+  function openInWeb(url, textLang) {
+    try { N.openUrl(url, textLang || ''); }
+    catch (e) {
+      try { N.openUrl(url); } catch (e2) { toast('לא ניתן לפתוח את הקישור'); }
     }
   }
 
@@ -2963,11 +3504,13 @@
     if (!/^https?:$/.test(u.protocol)) { toast('הקישור לא תקין'); return; }
     const article = {
       id: 'web-' + Date.now(), title: title || u.hostname.replace(/^www\./, ''), url: u.href,
-      lang: articleLang(langFromUrl(u) || detectLang(title || '', learnLangs())), kind: 'web', added: Date.now(), lastOpened: Date.now()
+      kind: 'web', added: Date.now(), lastOpened: Date.now()
     };
+    applyKnownLang(article, langFromUrl(u) || detectLang(title || ''));
     addArticle(article);
     followLang(article.lang);
-    try { N.openUrl(u.href); } catch (e) { toast('לא ניתן לפתוח את הקישור'); }
+    noteUnlearned(article);
+    openInWeb(u.href, article.lang);
   }
 
   function onShare(json) {
@@ -2999,12 +3542,14 @@
     if (!/^https?:$/.test(u.protocol)) { toast('הקישור לא תקין'); return; }
     const article = {
       id: 'web-' + Date.now(), title: u.hostname.replace(/^www\./, ''), url: u.href,
-      lang: articleLang(langFromUrl(u)), kind: 'web', added: Date.now(), lastOpened: Date.now()
+      kind: 'web', added: Date.now(), lastOpened: Date.now()
     };
+    applyKnownLang(article, langFromUrl(u));
     addArticle(article);
     followLang(article.lang);
+    noteUnlearned(article);
     $('#url-input').value = '';
-    try { N.openUrl(u.href); } catch (e) { toast('לא ניתן לפתוח את הקישור'); }
+    openInWeb(u.href, article.lang);
   }
 
   function sampleForLang(id) {
@@ -3079,74 +3624,91 @@
 
   /* ---------------- language ---------------- */
 
-  // Writing systems in the order they are tried; 'han' and 'cyr' are split further below.
-  const SCRIPTS = [
-    ['han', /[぀-ヿ㐀-鿿豈-﫿]/g], ['ko', /[가-힯ᄀ-ᇿ]/g],
-    ['he', /[֐-׿]/g], ['ar', /[؀-ۿ]/g], ['cyr', /[Ѐ-ӿ]/g],
-    ['el', /[Ͱ-Ͽ]/g], ['th', /[฀-๿]/g], ['lat', /[a-zÀ-ɏḀ-ỿ]/gi]
-  ];
-  const SIMPLIFIED = /[这们说时对会来国为过发还现开问么见长门车马东书个学后样经没点让话应从头关]/g;
-  const TRADITIONAL = /[這們說時對會來國為過發還現開問麼見長門車馬東書個學後樣經沒點讓話應從頭關嘅咗喺唔佢啲嘢冇]/g;
-  // The most common words of each Latin-script language.
-  const STOP_WORDS = Object.fromEntries(Object.entries({
-    en: 'the and of to in is that it was for on with as his he you are this be at by not have from',
-    fr: 'le la les et des est une dans que qui pour pas sur au du il elle ne avec se ce sont mais',
-    es: 'el la los las y que de en un una por con no es se del para al lo como su pero más',
-    de: 'der die das und ist nicht ein eine zu mit sich auf den dem des ich er sie es auch für von',
-    it: 'il lo la gli le di che e è un una per non con del della sono ma si al nel anche',
-    pt: 'o a os as e de que em um uma do da não para com por se no na mais é ao dos',
-    nl: 'de het een en van is dat niet op te zijn met voor ik je die er maar ook hij',
-    sv: 'och att det är som en på av för med inte jag till den har var om men ett',
-    da: 'og at det er som en på af for med ikke jeg til den har var om men et hvad efter meget',
-    no: 'og at det er som en på av for med ikke jeg til den har var om men et ble hva etter mye',
-    pl: 'i w nie na się że jest to z do co jak ale o tak po od za jego przez',
-    tr: 've bir bu da de için ile ne çok değil mi ama gibi daha o ben sen var olarak',
-    fi: 'ja on ei se että oli hän mutta kun ovat myös tai jos niin minä sinä mitä tämä',
-    hu: 'a az és hogy nem is egy van meg de már csak volt mint ez el ki fel azt',
-    id: 'dan yang di itu ini dengan untuk tidak dari ada saya akan ke juga dalam adalah',
-    vi: 'và của là có không những được một các người cho với này trong đã khi'
-  }).map(([id, words]) => [id, new Set(words.split(' '))]));
+  const detectLang = (text, candidates) => window.NER_DETECT.detectLang(text, candidates);
+  const scriptOf = text => window.NER_DETECT.scriptOf(text);
 
-  // Latin-script languages whose common words make up a good share of the text, best first.
-  function rankLatin(sample) {
-    const tokens = sample.toLowerCase().match(/\p{L}+/gu) || [];
-    const scores = Object.entries(STOP_WORDS)
-      .map(([id, set]) => [id, tokens.filter(t => set.has(t)).length / (tokens.length || 1)])
-      .sort((a, b) => b[1] - a[1]);
-    const floor = Math.max(0.05, scores[0][1] * 0.7);
-    return scores.filter(([, score]) => score >= floor).map(([id]) => id);
+  function articleOwned(article) {
+    const id = article && article.lang;
+    if (!id) return window.NER_DETECT.ownArticleLang(null, learnLangs(), lang().id);
+    return {
+      lang: id,
+      learned: learnLangs().includes(id),
+      source: article.langSource || 'detected'
+    };
   }
 
-  // The language of a text, the first of candidates (when given) that fits: the
-  // script decides, then kana/simplified/traditional for Han, letters for
-  // Cyrillic and common words for Latin.
-  function detectLang(text, candidates) {
-    const sample = String(text || '').slice(0, 5000);
-    const count = re => (sample.match(re) || []).length;
-    let script = null, most = 0;
-    for (const [id, re] of SCRIPTS) {
-      const n = count(re);
-      if (n > most) { script = id; most = n; }
+  // Store the detected language even when the reader does not learn it.
+  // A stored language is only replaced while it is still unlocked (never
+  // detected, or a previous fallback), so a later page cannot flip the book.
+  function applyDetectedLang(article, text) {
+    if (!article || article.langSource === 'user') return articleOwned(article);
+    const owned = window.NER_DETECT.articleLanguage(text || '', learnLangs(), lang().id);
+    const unlocked = !article.langSource || article.langSource === 'fallback';
+    if (owned.langSource === 'detected' && unlocked) {
+      if (article.lang && article.lang !== owned.lang) delete article.vocab;
+      article.lang = owned.lang;
+      article.langSource = 'detected';
+    } else if (!article.lang) {
+      article.lang = owned.lang;
+      article.langSource = owned.langSource;
+    } else if (!article.langSource) {
+      article.langSource = owned.langSource;
     }
-    let ranked = script ? [script] : [];
-    if (script === 'han') {
-      ranked = count(/[぀-ヿ]/g) * 10 > most ? ['ja', 'zh', 'yue']
-        : count(TRADITIONAL) > count(SIMPLIFIED) ? ['yue', 'zh', 'ja'] : ['zh', 'yue', 'ja'];
-    } else if (script === 'cyr') {
-      ranked = count(/[іїєґ]/gi) > count(/[ыэъё]/gi) ? ['uk', 'ru'] : ['ru', 'uk'];
-    } else if (script === 'lat') {
-      ranked = rankLatin(sample);
-    }
-    return (candidates ? ranked.find(id => candidates.includes(id)) : ranked[0]) || null;
+    return articleOwned(article);
   }
 
-  function scriptOf(text) {
-    let script = null, most = 0;
-    for (const [id, re] of SCRIPTS) {
-      const n = (String(text).match(re) || []).length;
-      if (n > most) { script = id; most = n; }
+  // An id already known from the address, with the same ownership rules.
+  function applyKnownLang(article, detected) {
+    if (!article || article.langSource === 'user') return articleOwned(article);
+    const owned = window.NER_DETECT.ownArticleLang(detected, learnLangs(), lang().id);
+    const unlocked = !article.langSource || article.langSource === 'fallback';
+    if (owned.source === 'detected' && unlocked) {
+      if (article.lang && article.lang !== owned.lang) delete article.vocab;
+      article.lang = owned.lang;
+      article.langSource = 'detected';
+    } else if (!article.lang) {
+      article.lang = owned.lang;
+      article.langSource = 'fallback';
+    } else if (!article.langSource) {
+      article.langSource = owned.source;
     }
-    return script;
+    return articleOwned(article);
+  }
+
+  function repairOwnedLangs() {
+    let changed = false;
+    for (const a of state.articles || []) {
+      if (!a || a.langSource === 'user' || a.kind === 'watch') continue;
+      const before = a.lang;
+      const hadSource = a.langSource;
+      if (a.text) applyDetectedLang(a, a.text);
+      else if (a.url) {
+        let detected = null;
+        try { detected = langFromUrl(new URL(a.url)); } catch (e) { detected = null; }
+        if (detected) applyKnownLang(a, detected);
+      }
+      if (a.lang !== before || a.langSource !== hadSource) changed = true;
+    }
+    if (changed) save(true);
+  }
+
+  function noteUnlearned(article) {
+    const owned = articleOwned(article);
+    if (owned.source !== 'detected' || owned.learned || !BY_LANG[owned.lang]) return;
+    toast(tf('unlearnedText', { lang: langName(BY_LANG[owned.lang]) }));
+  }
+
+  function showForeignNote() {
+    const el = $('#reader-foreign');
+    if (!el) return;
+    const owned = articleOwned(currentArticle);
+    const show = owned.source === 'detected' && !owned.learned && !!BY_LANG[owned.lang];
+    el.hidden = !show;
+    if (!show) return;
+    const name = langName(BY_LANG[owned.lang]);
+    $('#reader-foreign-text').textContent = tf('unlearnedText', { lang: name });
+    const btn = $('#reader-foreign-add');
+    if (btn) btn.textContent = tf('addLang', { lang: name });
   }
 
   // The language of a word or two selected in another app. Too short for
@@ -3175,8 +3737,8 @@
     return BY_LANG[parts[0]] ? parts[0] : TLD_LANG[parts[parts.length - 1]] || null;
   }
 
-  // A new article belongs to its detected language when the user learns it, else the current one.
-  const articleLang = id => (id && learnLangs().includes(id) ? id : lang().id);
+  // article.lang is the detected language, including one the reader does not learn.
+  // langSource 'user' is left alone. 'fallback' means detection found nothing.
 
   function applyCustomBase() {
     const code = ($('#custom-base-code').value || '').trim().toLowerCase();
@@ -3261,10 +3823,17 @@
         <p>נבנה מערכי המילון של ויקימילון האנגלי דרך kaikki.org, ברישיון CC BY-SA 3.0, ומרשימת השכיחות של FrequencyWords (Hermit Dave), ברישיון CC BY-SA 4.0. החבילה מופצת תחת CC BY-SA 4.0.</p>
         <h3>מילון סיני</h3>
         <p>CC-CEDICT (cc-cedict.org), ברישיון CC BY-SA 4.0. משמש למילים, לפיניין ולחלוקת טקסט סיני למילים.</p>
+        <h3>קריאות ביפנית ובקנטונזית</h3>
+        <p>הקריאות בקאנה (ביפנית) לקוחות מ-JMdict ו-KANJIDIC2 של EDRDG (edrdg.org), ברישיון CC BY-SA 3.0. הקריאות בג׳ויטפינג (בקנטונזית) מ-to-jyutping של CanCLID (BSD 2-Clause). מילה שאין לה קריאה במקורות נשארת בלי קריאה.</p>
         <h3>ניבים, פתגמים וצירופים</h3>
         <p>ערכים מוויקימילון האנגלי דרך kaikki.org, ברישיון CC BY-SA 3.0, ב-26 שפות.</p>
+        <h3>תבניות משפט</h3>
+        <p>משפטי הדוגמה והתרגומים שלהם בעברית ובצרפתית הם מ-Tatoeba (tatoeba.org), ברישיון CC BY 2.0 FR, מאת תורמי Tatoeba. מספרי המשפטים נשמרים בקבצי החבילה (<code>i</code> למשפט, <code>ti</code> לתרגומים) וכל משפט נמצא ב-tatoeba.org/sentences/show/&lt;מספר&gt;.</p>
+        <p>תבניות בסינית, ביפנית, בקוריאנית, בגרמנית, בספרדית, באיטלקית, בפורטוגזית, ברוסית ובאנגלית נכתבו עבור שורש בעזרת עוזר בינה מלאכותית. הן לא נלקחו ממאגר ולא נבדקו על ידי דוברי שפת אם.</p>
         <h3>קוד</h3>
-        <p>אפליקציית Android, ממשק ה-WebView והמנוע נכתבו עבור הפרויקט הזה. ספריות צד שלישי: אין. כלי הבנייה: Android SDK ו-OpenJDK.</p>
+        <p>אפליקציית Android, ממשק ה-WebView והמנוע נכתבו עבור הפרויקט הזה. ספריות צד שלישי: pdf.js 3.11 (Mozilla, Apache 2.0) לקריאת PDF, ‏Tesseract4Android (Apache 2.0) ל-OCR, ו-Hanzi Writer 3.7 (‏David Chanin, ‏MIT) לסדר הקווים בסינית. כלי הבנייה: Android SDK ו-OpenJDK.</p>
+        <h3>סדר קווים בסינית</h3>
+        <p>נתוני הקווים של 9,574 תווים מ-hanzi-writer-data, שנבנו מ-Make Me a Hanzi על בסיס גופני AR PL של Arphic, ברישיון Arphic Public License. נוסח הרישיון מצורף לנתונים באפליקציה (<code>hanzi/ARPHICPL.TXT</code>).</p>
         <h3>תיעוד המקורות</h3>
         <p><code>THIRD-PARTY-NOTICES.md</code> נמצא בשורש הפרויקט, יחד עם הודעות הרישיון המלאות.</p>`;
     }
@@ -3357,10 +3926,11 @@
       try { head = JSON.parse(N.readBook(payload.bookId, 0, 20000)).text || ''; } catch (e) { }
       const article = {
         id: 'book-' + Date.now(), title, bookId: payload.bookId, stream: true,
-        bytes: Number(payload.bytes) || 0, lang: articleLang(detectLang(head, learnLangs())), kind: 'book',
+        bytes: Number(payload.bytes) || 0, kind: 'book',
         chapters: Array.isArray(payload.chapters) ? payload.chapters : [],
         added: Date.now(), lastOpened: Date.now()
       };
+      applyDetectedLang(article, head);
       addArticle(article);
       openStreamArticle(article);
       toast('הספר נטען לקריאה');
@@ -3390,6 +3960,7 @@
   }
 
   async function extractPdf(payload) {
+    if (!window.pdfjsLib) { try { await NerLib.load('vendor/pdf.min.js'); } catch (e) { } }
     if (!window.pdfjsLib) { toast('מנוע PDF לא נטען'); return; }
     toast('מחלץ טקסט מה-PDF…');
     try {
@@ -3503,7 +4074,7 @@
     const host = $('#library-list');
     const files = stats.files || {};
     const books = (state.articles || []).filter(a => a.bookId || a.pdfId);
-    $('#library-summary').textContent = `${fmt(Number(stats.count) || 0)} קבצים · ${fmtBytes(stats.bytes)} בשימוש`;
+    $('#library-summary').textContent = tf('libraryUse', { n: fmt(Number(stats.count) || 0), b: fmtBytes(stats.bytes) });
     if (!books.length) {
       host.innerHTML = '<div class="library-empty">אין ספרים גדולים שמורים כרגע.</div>';
     } else {
@@ -3621,6 +4192,18 @@
         renderWords();
         return;
       }
+      if (e.target.closest('[data-pattern-open]')) {
+        patternFocus = e.target.closest('[data-pattern-open]').dataset.patternOpen;
+        patternFrom = currentView === 'reader' && currentArticle ? currentArticle.id : '';
+        patternKeep = true;
+        navigate('patterns');
+        return;
+      }
+      if (e.target.closest('[data-pattern-more]')) { patternOpen.add(e.target.closest('[data-pattern-more]').dataset.patternMore); renderPatterns(); return; }
+      if (e.target.closest('[data-pattern-all]')) { patternFocus = ''; patternFrom = ''; renderPatterns(); return; }
+      if (e.target.closest('#pattern-levels .chip')) { patternLevel = e.target.closest('.chip').dataset.level; renderPatterns(); return; }
+      if (e.target.closest('#sheet-cloze')) { saveCloze(); return; }
+      if (e.target.closest('[data-pattern-save]')) { savePattern(e.target.closest('[data-pattern-save]').dataset.patternSave); return; }
       if (e.target.closest('[data-lang-id]')) { selectLanguage(e.target.closest('[data-lang-id]').dataset.langId); return; }
       if (e.target.closest('[data-speak]')) {
         e.stopPropagation();
@@ -3631,7 +4214,11 @@
       if (e.target.closest('[data-ignore-word]')) {
         e.stopPropagation();
         const id = e.target.closest('[data-ignore-word]').dataset.ignoreWord;
-        if (state.words[id]) { schedule(state.words[id], -1); save(); renderWords(); renderProgress(); }
+        if (state.words[id]) {
+          const prev = JSON.stringify(state.words[id]);
+          schedule(state.words[id], -1); save(); renderWords(); renderProgress();
+          toast('המילה הוסתרה', () => { state.words[id] = JSON.parse(prev); save(); renderWords(); renderProgress(); });
+        }
         return;
       }
       if (e.target.closest('[data-word-id]')) {
@@ -3675,17 +4262,27 @@
       if (e.target.closest('#card-expand')) { expandWord(); return; }
       if (e.target.closest('#sheet-close')) { closeSheet(); return; }
       if (e.target.closest('[data-word-tab]')) { wordTab = e.target.closest('[data-word-tab]').dataset.wordTab; fillSheetDetails(); return; }
+      if (e.target.closest('[data-stroke-char]')) {
+        strokeChar = e.target.closest('[data-stroke-char]').dataset.strokeChar;
+        $$('[data-stroke-char]').forEach(b => b.classList.toggle('active', b.dataset.strokeChar === strokeChar));
+        showStrokes(strokeChar);
+        return;
+      }
+      if (e.target.closest('[data-stroke]') && strokeWriter) { strokeWriter.animateStroke(Number(e.target.closest('[data-stroke]').dataset.stroke)); return; }
+      if (e.target.closest('#stroke-writer') && strokeWriter) { strokeWriter.loopCharacterAnimation(); return; }
       if (e.target.closest('#onboard-start')) { finishOnboarding(); return; }
       if (e.target.closest('[data-library-del]')) { deleteLibraryBook(e.target.closest('[data-library-del]').dataset.libraryDel); return; }
       if (e.target.closest('#sheet-edit')) { openEditWord(); return; }
       if (e.target.closest('#sheet-phrase, #card-phrase')) { openPhrase(); return; }
       if (e.target.closest('#edit-save')) { saveEditWord(); return; }
       if (e.target.closest('#sheet-speak, #card-speak')) {
-        if (currentWord) N.speak(currentWord.raw, lang().id);
+        if (currentWord) N.speak(currentWord.raw, (currentWord.w && currentWord.w.lang) || readerLang().id);
         return;
       }
-      if (e.target.closest('#review-grades button')) {
-        reviewGrade(Number(e.target.closest('#review-grades button').dataset.grade));
+      if (e.target.closest('[data-srs]')) { rateReview(Number(e.target.closest('[data-srs]').dataset.srs)); return; }
+      if (e.target.closest('[data-speak-review]')) {
+        const w = reviewCur && state.words[reviewCur.id];
+        if (w) N.speak(w.form || w.display || w.key, w.lang);
         return;
       }
       if (e.target.closest('#grade-grid button')) {
@@ -3740,6 +4337,15 @@
         case 'notices': openNotices('notices'); break;
         case 'privacy': openNotices('privacy'); break;
         case 'reader-back': cleanupReader(); navigate('read'); break;
+        case 'add-text-lang': {
+          const id = currentArticle && currentArticle.lang;
+          if (!id || !BY_LANG[id]) break;
+          if (!learnLangs().includes(id)) state.settings.learnLangs = [...state.settings.learnLangs, id];
+          setLearnLang(id);
+          showForeignNote();
+          toast(tf('langNow', { lang: langName(BY_LANG[id]) }));
+          break;
+        }
         case 'reader-aa': openReaderSettings(); break;
         case 'reader-settings-close': closeReaderSettings(); break;
         case 'page-next': turnReader(1); break;
@@ -3750,8 +4356,12 @@
         case 'read-aloud': readCurrentPageAloud(); break;
         case 'open-review': openReview(false); break;
         case 'practice-early': openReview(true); break;
+        case 'patterns-back': patternBack(); break;
         case 'sample': seedArticle(); break;
-        case 'review-reveal': reviewRevealed = !reviewRevealed; renderReview(); break;
+        case 'review-flip': flipReview(); break;
+        case 'review-undo': undoReview(); break;
+        case 'review-more': reviewQueue = reviewQueue.concat(extraCards(5)); renderReview(); break;
+        case 'review-swap': state.settings.cardFront = state.settings.cardFront === 'meaning' ? 'word' : 'meaning'; save(); reviewFlipped = false; renderReview(true); break;
         case 'reader-toc': openReaderToc(); break;
         case 'reader-bookmark': toggleBookmark(); break;
         case 'toc-close': closeReaderToc(); break;
@@ -3866,8 +4476,20 @@
       if (!e.target.closest('.ner-w,button,a')) $('#view-reader').classList.remove('chrome-hidden');
     });
     document.addEventListener('keydown', e => {
-      const grading = $('#word-sheet').classList.contains('open') ? gradeWord : (currentView === 'review' ? reviewGrade : null);
-      if (grading && $('#word-sheet').classList.contains('open') || (grading && currentView === 'review' && !$('#word-sheet').classList.contains('open'))) {
+      if (currentView === 'review' && !$('#word-sheet').classList.contains('open') && !e.target.closest('input,textarea,select')) {
+        const k = e.key;
+        if (k === ' ' || k === 'Enter') { e.preventDefault(); if (reviewFlipped) rateReview(3); else flipReview(); }
+        else if (/^[1-4]$/.test(k) && reviewFlipped) { e.preventDefault(); rateReview(Number(k)); }
+        else if ((k === 'k' || k === 'K') && reviewFlipped) { e.preventDefault(); rateReview(5); }
+        else if ((k === 'x' || k === 'X') && reviewFlipped) { e.preventDefault(); rateReview(-1); }
+        else if (k === 'z' || k === 'Z') { e.preventDefault(); undoReview(); }
+        else if (k === 'Escape') { e.preventDefault(); navigate('home'); }
+        return;
+      }
+      // The full sheet or the compact card next to the word (not while typing).
+      const cardUp = currentWord && !$('#word-card').hidden && !e.target.closest('input,textarea,select');
+      const grading = ($('#word-sheet').classList.contains('open') || cardUp) ? gradeWord : null;
+      if (grading) {
         if (/^[1-4]$/.test(e.key)) { e.preventDefault(); grading(Number(e.key)); }
         else if (e.key === 'k' || e.key === 'K') { e.preventDefault(); grading(5); }
         else if (e.key === 'x' || e.key === 'X') { e.preventDefault(); grading(-1); }
@@ -3906,12 +4528,13 @@
         schedule(w, 5);
       } else {
         const norm = normalizeWord(raw);
+        const lid = readerLang().id;
         const created = {
-          lang: lang().id, key: norm, form: raw, display: raw, tr: '', pos: '',
+          lang: lid, key: norm, form: raw, display: raw, tr: '', pos: '',
           meaning: '', grade: 5, added: Date.now(), lastSeen: Date.now(), seen: 0
         };
         schedule(created, 5);
-        state.words[lang().id + ':' + norm] = created;
+        state.words[lid + ':' + norm] = created;
       }
     }
     save();
@@ -3992,14 +4615,24 @@
   };
 
   /* ---------------- boot ---------------- */
+  const bm = window.__bm || function () { };
+  bm('app-start');
   load();
+  bm('state-loaded');
   applyTheme();
   renderAll();
+  bm('rendered');
   applyUiLanguage();
+  bm('translated');
   if (!state.onboarded) showOnboarding();
   startI18nObserver();
   bind();
   document.documentElement.classList.remove('booting');
+  bm('first-usable-frame');
+  // Heavy libraries load after the first frame; pinyin only for Chinese learners.
+  (window.requestIdleCallback || (f => setTimeout(f, 1500)))(() => {
+    if ((state.settings.learnLangs || [state.settings.lang]).some(l => l === 'zh' || l === 'yue') || state.settings.readerPinyin) ensurePinyin();
+  });
   if (boot.platform === 'web') {
     // Browser preview: make the sample available without native file access.
     setTimeout(() => { if (!state.articles.length) { /* keep the empty state */ } }, 0);

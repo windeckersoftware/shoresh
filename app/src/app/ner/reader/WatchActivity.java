@@ -192,12 +192,13 @@ public class WatchActivity extends Activity {
                 String pos = uri.getQueryParameter("pos");
                 String meaning = uri.getQueryParameter("meaning");
                 String meaningBase = uri.getQueryParameter("meaningBase");
+                String context = uri.getQueryParameter("context");
                 int g = 1;
                 try { g = Integer.parseInt(uri.getQueryParameter("grade")); } catch (Exception ignored) { }
                 final int grade = g;
                 new Thread(() -> {
                     JSONObject w = store.updateWord(l == null ? "he" : l, key == null ? "" : key,
-                            form, display, tr, pos, meaning, meaningBase, grade);
+                            form, display, tr, pos, meaning, meaningBase, grade, context);
                     runOnUiThread(() -> web.evaluateJavascript(
                             "(window.__NerWatch && __NerWatch.gradeResult) && __NerWatch.gradeResult(" +
                                     JSONObject.quote(w == null ? "{}" : w.toString()) + ");", null));
