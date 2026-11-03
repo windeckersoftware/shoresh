@@ -1207,3 +1207,13 @@ html[dir="ltr"] .langs-head .icon-btn svg { transform: scaleX(-1); }
 .srs-cloze { font-size: 22px; line-height: 1.6; font-weight: 600; }
 .cloze-gap { display: inline-block; min-width: 3.2em; text-align: center; color: var(--green); letter-spacing: .08em; border-bottom: 2px solid var(--green); }
 .cloze-hit { color: var(--green); font-weight: 850; }
+
+.pattern-more { justify-self: start; min-height: 44px; }
+.pattern-all { align-self: flex-start; margin-bottom: 4px; min-height: 44px; }
+.sheet-patterns { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 10px 0; }
+.sheet-patterns[hidden] { display: none; }
+.sheet-patterns-label { flex-basis: 100%; color: var(--muted); font-size: 12px; font-weight: 700; letter-spacing: .04em; }
+.pattern-chip { min-height: 40px; display: inline-flex; align-items: center; gap: 6px; }
+.pattern-chip span { color: var(--muted); font-size: 12px; }
+#pattern-levels[hidden] { display: none; }
+.pattern-all { justify-self: start; }

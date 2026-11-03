@@ -354,7 +354,7 @@
 
     <section id="view-patterns" class="view" aria-label="תבניות משפט">
       <div class="view-head langs-head">
-        <button class="icon-btn" data-go="home" aria-label="חזרה"><svg><use href="#i-arrow"></use></svg></button>
+        <button class="icon-btn" data-action="patterns-back" aria-label="חזרה"><svg><use href="#i-arrow"></use></svg></button>
         <div class="langs-title"><div class="eyebrow">דקדוק בתרגול</div><h1>תבניות משפט</h1></div>
       </div>
       <div class="chips" id="pattern-levels">
@@ -365,7 +365,7 @@
         <button class="chip" data-level="B2">B2+</button>
       </div>
       <div id="patterns-list" class="patterns-list"></div>
-      <p class="patterns-credit">משפטי הדוגמה מ־Tatoeba (tatoeba.org), CC BY 2.0 FR. הדירוג לפי תדירות במאגר.</p>
+      <p class="patterns-credit" id="patterns-credit">משפטי הדוגמה מ־Tatoeba (tatoeba.org), CC BY 2.0 FR. הדירוג לפי תדירות במאגר.</p>
     </section>
 
     <section id="view-languages" class="view" aria-label="שפות">
@@ -523,6 +523,7 @@
     </button>
     <ol id="sheet-glosses" class="gloss-list"></ol>
     <p id="sheet-context" class="sheet-context" hidden></p>
+    <div id="sheet-patterns" class="sheet-patterns" hidden></div>
     <button id="sheet-cloze" class="sheet-edit-btn" type="button" hidden><svg><use href="#i-plus"></use></svg>שמרו את המשפט כקלף השלמה</button>
     <button id="sheet-edit" class="sheet-edit-btn"><svg><use href="#i-plus"></use></svg>המשמעות שלכם</button>
   </div>

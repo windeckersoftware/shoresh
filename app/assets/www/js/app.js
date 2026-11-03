@@ -1020,7 +1020,7 @@
       if (view === 'read') renderRead();
       if (view === 'watch') renderWatch();
       if (view === 'words') renderWords();
-      if (view === 'patterns') renderPatterns();
+      if (view === 'patterns') { if (!patternKeep) { patternFocus = ''; patternFrom = ''; } patternKeep = false; renderPatterns(); }
       if (view === 'progress') renderProgress();
     }
   }
@@ -1037,6 +1037,7 @@
     if (!$('#notices-modal').hidden) { hideModal('notices'); return true; }
     if (currentView === 'reader') { cleanupReader(); navigate('read'); return true; }
     if (currentView === 'languages') { navigate('settings'); return true; }
+    if (currentView === 'patterns') { patternBack(); return true; }
     if (currentView !== 'home') { navigate('home'); return true; }
     return false;
   }
@@ -2760,6 +2761,7 @@
     $('#sheet-context').textContent = ctx ? (activeUiLang() === 'he' ? '״' + ctx + '״' : '“' + ctx + '”') : '';
     $('#sheet-context').dir = ((w && BY_LANG[w.lang]) || readerLang()).dir;
     $('#sheet-cloze').hidden = !clozeTarget(w, ctx);
+    renderSheetPatterns(w && w.lang, ctx);
     $$('#grade-grid button').forEach(b => b.classList.toggle('active', Number(b.dataset.grade) === Number(w.grade)));
     $('#sheet-source').textContent = lookup && lookup.found
       ? (/wiktionary|google/i.test(lookup.source || '') ? lookup.source.replace(/\s*\(online\)/i, '') : tr('מילון מקומי'))
@@ -3249,39 +3251,89 @@
   }
 
   /* ---------------- sentence patterns ---------------- */
-  // Data: patterns/<lang>.js (tools/pack_patterns.py from Tatoeba). Loaded on first visit.
-  let patternLevel = '';
-  const PATTERN_LANGS = ['he', 'fr'];
+  // Data: patterns/<lang>.js (tools/pack_patterns.py). he/fr are real Tatoeba sentences ranked by
+  // frequency; the other languages are examples written for Shoresh, in curriculum order.
+  // js/patternmatch.js finds the patterns inside a sentence you are reading.
+  let patternLevel = '', patternFocus = '', patternKeep = false, patternFrom = '';
+  const patternOpen = new Set();
+  const PATTERN_LANGS = ['he', 'fr', 'zh', 'es', 'de', 'it', 'pt', 'ja', 'ko', 'ru'];
+  const PATTERN_CORPUS = ['he', 'fr'];
+  const PATTERN_SHOWN = 3;
   const patternKey = p => 'pattern:' + p.id;
+
+  function loadPatterns(id) {
+    return Promise.all([NerLib.load('js/patternmatch.js'), NerLib.load('patterns/' + id + '.js')]);
+  }
+
+  function patternBack() {
+    const from = patternFrom;
+    patternFrom = ''; patternFocus = '';
+    if (from && state.articles.some(a => a.id === from)) openArticle(from);
+    else navigate('home');
+  }
 
   function renderPatterns() {
     const host = $('#patterns-list');
     if (!host) return;
     const L = lang();
     $$('#pattern-levels .chip').forEach(c => c.classList.toggle('active', c.dataset.level === patternLevel));
+    $('#pattern-levels').hidden = !!patternFocus;
+    const credit = $('#patterns-credit');
+    if (credit) credit.textContent = PATTERN_CORPUS.includes(L.id)
+      ? tr('משפטי הדוגמה מ־Tatoeba (tatoeba.org), CC BY 2.0 FR. הדירוג לפי תדירות במאגר.')
+      : tr('משפטי הדוגמה נכתבו עבור שורש, לא נלקחו ממאגר, ולא נבדקו על ידי דובר שפת אם. הסדר לפי רמה.');
     if (!PATTERN_LANGS.includes(L.id)) {
-      host.innerHTML = `<div class="review-empty"><h2>${escapeHtml(tr('תבניות משפט זמינות בעברית ובצרפתית'))}</h2><p>${escapeHtml(tr('החליפו שפה בכפתור השפה למעלה'))}</p></div>`;
+      host.innerHTML = `<div class="review-empty"><h2>${escapeHtml(tr('אין עדיין תבניות לשפה הזו'))}</h2><p>${escapeHtml(tr('החליפו שפה בכפתור השפה למעלה'))}</p></div>`;
       return;
     }
     const data = window.NER_PATTERNS && window.NER_PATTERNS[L.id];
     if (!data) {
       host.innerHTML = '<div class="patterns-loading">…</div>';
-      NerLib.load('patterns/' + L.id + '.js').then(() => { if (currentView === 'patterns') renderPatterns(); })
+      loadPatterns(L.id).then(() => { if (currentView === 'patterns') renderPatterns(); })
         .catch(() => { host.innerHTML = '<div class="patterns-loading">!</div>'; });
       return;
     }
     const b = baseLang().id;
-    const list = data.filter(p => !patternLevel || (patternLevel === 'B2' ? /^(B2|C)/.test(p.c) : p.c === patternLevel));
-    host.innerHTML = list.map(p => {
+    const corpus = PATTERN_CORPUS.includes(L.id);
+    const list = patternFocus
+      ? data.filter(p => p.id === patternFocus)
+      : data.filter(p => !patternLevel || (patternLevel === 'B2' ? /^(B2|C)/.test(p.c) : p.c === patternLevel));
+    const head = patternFocus
+      ? `<button class="chip pattern-all" type="button" data-pattern-all>← ${escapeHtml(tr('כל התבניות'))}</button>` : '';
+    host.innerHTML = head + list.map(p => {
       const saved = !!state.words[L.id + ':' + patternKey(p)];
-      const ex = p.x.map(e =>
+      const open = !!patternFocus || patternOpen.has(p.id);
+      const shown = open ? p.x : p.x.slice(0, PATTERN_SHOWN);
+      const ex = shown.map(e =>
         `<div class="pattern-ex"><button class="icon-btn" type="button" data-speak="${escapeHtml(e.s)}" aria-label="${escapeHtml(tr('השמעה'))}"><svg><use href="#i-speaker"></use></svg></button>` +
         `<div><span class="pattern-s" dir="${L.dir}">${escapeHtml(e.s)}</span><small dir="auto">${escapeHtml(e.t[b] || e.t.en || '')}</small></div></div>`).join('');
+      const more = !open && p.x.length > PATTERN_SHOWN
+        ? `<button class="ghost pattern-more" type="button" data-pattern-more="${escapeHtml(p.id)}">${escapeHtml(tr('עוד דוגמאות'))} (${fmt(p.x.length - PATTERN_SHOWN)})</button>` : '';
       return `<article class="pattern-card"><header><div><strong class="pattern-p" dir="${L.dir}">${escapeHtml(p.p)}</strong>` +
         `<span class="pattern-gloss" dir="auto">${escapeHtml(p.en)}</span></div>` +
-        `<div class="pattern-meta"><span class="badge">${escapeHtml(p.c)}</span><small>#${fmt(p.r)}</small></div></header>${ex}` +
+        `<div class="pattern-meta"><span class="badge">${escapeHtml(p.c)}</span>${corpus ? `<small>#${fmt(p.r)}</small>` : ''}</div></header>${ex}${more}` +
         `<button class="ghost pattern-save${saved ? ' saved' : ''}" type="button" data-pattern-save="${escapeHtml(p.id)}">${escapeHtml(tr(saved ? 'נשמר לחזרה' : 'שמרו כקלף חזרה'))}</button></article>`;
     }).join('') || `<div class="patterns-loading">${escapeHtml(tr('אין תבניות ברמה הזו'))}</div>`;
+    if (patternFocus) window.scrollTo(0, 0);
+  }
+
+  // Under the sentence in the word sheet: the patterns this sentence uses, each opening all its examples.
+  function renderSheetPatterns(langId, sentence) {
+    const host = $('#sheet-patterns');
+    if (!host) return;
+    host.hidden = true; host.textContent = '';
+    if (!sentence || !PATTERN_LANGS.includes(langId)) return;
+    const data = window.NER_PATTERNS && window.NER_PATTERNS[langId];
+    if (!data || !window.NerPatternMatch) {
+      loadPatterns(langId).then(() => { if (currentWord && currentWord.w && currentWord.w.lang === langId) renderSheetPatterns(langId, sentence); }).catch(() => {});
+      return;
+    }
+    const hits = window.NerPatternMatch.match(data, sentence, 3);
+    if (!hits.length) return;
+    const dir = (BY_LANG[langId] || {}).dir || 'ltr';
+    host.innerHTML = `<small class="sheet-patterns-label">${escapeHtml(tr('תבניות במשפט'))}</small>` +
+      hits.map(p => `<button type="button" class="chip pattern-chip" data-pattern-open="${escapeHtml(p.id)}"><b dir="${dir}">${escapeHtml(p.p)}</b> <span>${escapeHtml(p.c)}</span></button>`).join('');
+    host.hidden = false;
   }
 
   // A pattern becomes an ordinary review card: the pattern on the front, its gloss and an example behind.
@@ -4044,6 +4096,15 @@
         renderWords();
         return;
       }
+      if (e.target.closest('[data-pattern-open]')) {
+        patternFocus = e.target.closest('[data-pattern-open]').dataset.patternOpen;
+        patternFrom = currentView === 'reader' && currentArticle ? currentArticle.id : '';
+        patternKeep = true;
+        navigate('patterns');
+        return;
+      }
+      if (e.target.closest('[data-pattern-more]')) { patternOpen.add(e.target.closest('[data-pattern-more]').dataset.patternMore); renderPatterns(); return; }
+      if (e.target.closest('[data-pattern-all]')) { patternFocus = ''; patternFrom = ''; renderPatterns(); return; }
       if (e.target.closest('#pattern-levels .chip')) { patternLevel = e.target.closest('.chip').dataset.level; renderPatterns(); return; }
       if (e.target.closest('#sheet-cloze')) { saveCloze(); return; }
       if (e.target.closest('[data-pattern-save]')) { savePattern(e.target.closest('[data-pattern-save]').dataset.patternSave); return; }
@@ -4199,6 +4260,7 @@
         case 'read-aloud': readCurrentPageAloud(); break;
         case 'open-review': openReview(false); break;
         case 'practice-early': openReview(true); break;
+        case 'patterns-back': patternBack(); break;
         case 'sample': seedArticle(); break;
         case 'review-flip': flipReview(); break;
         case 'review-undo': undoReview(); break;

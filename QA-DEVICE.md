@@ -23,3 +23,4 @@ For each, cold (app force-stopped) and warm:
 - Switch to another language: friendly "available for Hebrew and French" message.
 - Tap a word in a book, expand the sheet, "Save sentence as a cloze card": Review shows the blank, flips to the full sentence.
 - Review header (`n new · n learning · n review`) does not wrap awkwardly on a narrow phone with the undo button showing.
+- Patterns for zh/ja/ko/de/es/it/pt/ru: have a native speaker skim `tools/authored_patterns/<lang>.py` (sentences were composed by Claude, never reviewed). Open a sentence in a book, tap a word, expand: "Patterns in this sentence" chips appear; tap one -> all examples; Back returns to the text.

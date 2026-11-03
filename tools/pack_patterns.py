@@ -1,52 +1,72 @@
 #!/usr/bin/env python3
-"""Slim data/patterns/<lang>.json (+ he-topics.json) into the APK's app/assets/www/patterns/.
+"""Build app/assets/www/patterns/<lang>.js, the sentence-pattern packs the app loads on demand.
 
   tools/pack_patterns.py
 
-Per pattern: id, text, English gloss, function, CEFR, rank, Tatoeba count and
-3 short example sentences with translations (en, hu, de, es, zh and the other
-of fr/he). Sentence ids are kept for CC BY 2.0 FR attribution. Output is a JS
-file assigning window.NER_PATTERNS[lang] so the page needs no fetch (file://).
+Two sources:
+  * Tatoeba (he, fr): data/patterns/<lang>.json from tools/build_patterns.py. Real sentences with
+    human translations (CC BY 2.0 FR, sentence ids kept), ranked by frequency, 6 examples each.
+  * Written for Shoresh (every other language): tools/authored_patterns/<lang>.py. Short example
+    sentences with an English gloss, ordered by level. They were composed, not drawn from a corpus,
+    so they are not frequency-ranked and not native-reviewed.
+
+Every pattern carries `rx`, a regex (Python syntax, \\b/\\w are made Unicode-aware at runtime by
+js/patternmatch.js) used to spot the pattern in the sentence being read.
+Run `node tools/check_patterns.js` afterwards: every example must match its own pattern.
 """
+import importlib.util
 import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / 'data/patterns'
+AUTHORED = ROOT / 'tools/authored_patterns'
 OUT = ROOT / 'app/assets/www/patterns'
 TR = {'eng': 'en', 'hun': 'hu', 'deu': 'de', 'spa': 'es', 'cmn': 'zh', 'fra': 'fr', 'heb': 'he'}
-PER = 3
+PER = 6
 
 
 def pick(examples, field):
-    ok = [e for e in examples if 20 <= len(e[field]) <= 80 and 'eng' in e['tr']]
-    ok.sort(key=lambda e: (len(e['tr']) * -1, len(e[field])))  # best-translated, then short
+    ok = [e for e in examples if 20 <= len(e[field]) <= 90 and 'eng' in e['tr']]
+    ok.sort(key=lambda e: (-len(e['tr']), len(e[field])))  # best translated, then short
     return (ok or examples)[:PER]
 
 
-def pack(lang):
+def from_tatoeba(lang):
     d = json.load(open(SRC / f'{lang}.json', encoding='utf-8'))
+    field = 'heb' if lang == 'he' else 'fra'
     out = []
     for p in d['patterns']:
-        field = lang
-        ex = []
-        for e in pick(p['examples'], 'heb' if lang == 'he' else 'fra'):
-            s = e['heb'] if lang == 'he' else e['fra']
-            sid = e['heb_id'] if lang == 'he' else e['fra_id']
-            ex.append({'s': s, 'i': sid, 't': {TR[k]: v['text'] for k, v in e['tr'].items() if k in TR}})
-        out.append({'id': p['id'], 'p': p[field], 'en': p['en'], 'f': p['function'], 'c': p['cefr'],
-                    'r': p['rank'], 'n': p['count'], 'x': ex})
+        ex = [{'s': e[field], 'i': e[field + '_id'],
+               't': {TR[k]: v['text'] for k, v in e['tr'].items() if k in TR}} for e in pick(p['examples'], field)]
+        out.append({'id': p['id'], 'p': p[lang], 'en': p['en'], 'f': p['function'], 'c': p['cefr'],
+                    'r': p['rank'], 'n': p['count'], 'rx': p['regex'], 'x': ex})
+    return out
+
+
+def from_authored(path):
+    spec = importlib.util.spec_from_file_location('authored_' + path.stem, path)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    out = []
+    for n, (pid, text, gloss, cefr, rx, examples) in enumerate(mod.PATTERNS, 1):
+        out.append({'id': pid, 'p': text, 'en': gloss, 'c': cefr, 'r': n, 'rx': rx,
+                    'x': [{'s': s, 't': {'en': en}} for s, en in examples]})
     return out
 
 
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
-    for lang in ('he', 'fr'):
-        data = pack(lang)
-        (OUT / f'{lang}.js').write_text(
-            'window.NER_PATTERNS=window.NER_PATTERNS||{};window.NER_PATTERNS.%s=%s;' % (
-                lang, json.dumps(data, ensure_ascii=False, separators=(',', ':'))), encoding='utf-8')
-        print(lang, len(data), 'patterns', (OUT / f'{lang}.js').stat().st_size // 1024, 'KB')
+    packs = {lang: from_tatoeba(lang) for lang in ('he', 'fr')}
+    for path in sorted(AUTHORED.glob('*.py')):
+        packs[path.stem] = from_authored(path)
+    for lang, data in packs.items():
+        dest = OUT / f'{lang}.js'
+        dest.write_text('window.NER_PATTERNS=window.NER_PATTERNS||{};window.NER_PATTERNS.%s=%s;' % (
+            lang, json.dumps(data, ensure_ascii=False, separators=(',', ':'))), encoding='utf-8')
+        print(lang, len(data), 'patterns', sum(len(p['x']) for p in data), 'examples', dest.stat().st_size // 1024, 'KB')
+    (OUT / 'index.json').write_text(json.dumps({
+        'tatoeba': ['he', 'fr'], 'written': sorted(p.stem for p in AUTHORED.glob('*.py'))}), encoding='utf-8')
 
 
 if __name__ == '__main__':
