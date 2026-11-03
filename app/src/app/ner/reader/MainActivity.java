@@ -761,11 +761,11 @@ public class MainActivity extends Activity {
                 String raw = store.load();
                 Log.i("NerBoot", "state " + raw.length() + " chars");
                 o.put("state", new JSONObject(raw));
-                o.put("version", "1.8.1");
+                o.put("version", "1.8.2");
                 o.put("platform", "android");
                 return o.toString();
             } catch (Exception e) {
-                return "{\"state\":{},\"version\":\"1.8.1\",\"platform\":\"android\"}";
+                return "{\"state\":{},\"version\":\"1.8.2\",\"platform\":\"android\"}";
             }
         }
 
@@ -1019,7 +1019,7 @@ public class MainActivity extends Activity {
                     HttpURLConnection c = (HttpURLConnection) url.openConnection();
                     c.setConnectTimeout(4000);
                     c.setReadTimeout(8000);
-                    c.setRequestProperty("User-Agent", "Shoresh/1.8.1");
+                    c.setRequestProperty("User-Agent", "Shoresh/1.8.2");
                     int code = c.getResponseCode();
                     if (code == 200) {
                         InputStream in = c.getInputStream();
@@ -1124,6 +1124,6 @@ public class MainActivity extends Activity {
         }
 
         @JavascriptInterface
-        public String version() { return "1.8.1"; }
+        public String version() { return "1.8.2"; }
     }
 }

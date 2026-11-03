@@ -1,7 +1,18 @@
 # Shoresh (שורש) — language-learning reading app
 
 Shoresh is an original Android reading app built from scratch. The name is the Hebrew word for “root”, שורש. 
-**Current build:** `out/Shoresh-1.8.1.apk` (dev-signed, Android 8+). The Android package is still `app.ner.reader`, so this installs over the earlier Ner build and keeps its data.
+**Current build:** `out/Shoresh-1.8.2.apk` (dev-signed, Android 8+). The Android package is still `app.ner.reader`, so this installs over the earlier Ner build and keeps its data.
+
+## New in 1.8.2
+
+- **Sentence patterns in 11 languages.** Home → Sentence patterns lists the patterns a language is built from, with real example sentences you can hear and translate, a level filter (A1–B2+), "more examples", and "Save as review card". Hebrew (142 patterns) and French (154) use real sentences from Tatoeba with their human translations (CC BY 2.0 FR, ranked by how often each pattern occurs). Chinese, Japanese, Korean, German, Spanish, Italian, Portuguese, Russian and English (14–49 patterns each) are hand-written for Shoresh, are not native-checked and say so on the screen. Every pattern has a short learner-facing name and its English meaning.
+- **Patterns found while you read.** Open a word's full sheet: "Patterns in this sentence" shows the patterns the sentence uses (up to three). Tap one to see it with all its examples; Back returns to your place in the text.
+- **Cloze cards.** In the word sheet, "Save sentence as a cloze card" turns the sentence into a fill-in-the-blank review card (every occurrence of the word is blanked, in left-to-right, right-to-left and Chinese/Japanese text), graded 1–4 / K / X like any other card.
+- **Accessibility.** Touch targets are at least 44×44 px, secondary text and the amber, green, blue and red text colours reach 4.5:1 contrast (reader papers included), every icon button has a translated label, keyboard focus is visible, the review announces its counts and the answer to screen readers, and the word sheet and card follow the interface direction (Hebrew, Arabic right-to-left) while the word you are learning keeps its own.
+- **Faster start.** PDF.js, Hanzi Writer and the Chinese pinyin data load when first needed instead of before the first screen.
+- **Number keys grade from the word card.** 1–4, K and X work from the small card next to the word, not only from the full sheet.
+- **Share from Drive and Brave.** The read permission of a shared file now travels with it even when the sending app only puts the link in `EXTRA_STREAM`, so PDFs and EPUBs shared from Drive open reliably.
+- Also: the Aa button stays on a 360 px phone; the review header reads "n new · n learning · n review"; a pattern or cloze card marked known or ignored can be saved again; undo restores the right day's counters and the reader's word colours.
 
 ## New in 1.8.1
 
@@ -147,7 +158,7 @@ The project builds without Gradle, using the Android SDK command-line tools and 
 ./build.sh
 ```
 
-The script writes `out/Shoresh-1.8.1.apk`. The toolchain lives in `.toolchain/` and is not part of the app. The dev keystore is `keystore/ner-dev.keystore` (password `nerdev`); do not ship with it.
+The script writes `out/Shoresh-1.8.2.apk`. The toolchain lives in `.toolchain/` and is not part of the app. The dev keystore is `keystore/ner-dev.keystore` (password `nerdev`); do not ship with it.
 
 ## Data pipeline
 
