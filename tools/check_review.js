@@ -86,7 +86,10 @@ let failed = 0, passed = 0;
 function ok(name, cond, detail) {
   if (cond) passed++; else { failed++; console.log('FAIL ' + name + (detail !== undefined ? '  -> ' + JSON.stringify(detail) : '')); }
 }
-const eq = (name, a, b) => ok(name, JSON.stringify(a) === JSON.stringify(b), { got: a, want: b });
+// key order never matters
+const canon = v => Array.isArray(v) ? v.map(canon) : v && typeof v === 'object' ? Object.fromEntries(Object.keys(v).sort().map(k => [k, canon(v[k])])) : v;
+const same = (a, b) => JSON.stringify(canon(a)) === JSON.stringify(canon(b));
+const eq = (name, a, b) => ok(name, same(a, b), { got: a, want: b });
 const MIN = 60 * 1000, DAY = 24 * 60 * MIN;
 const reset = () => { T.state = { words: {}, srsLog: {}, stats: {}, articles: [], settings: { dailyGoal: 20, lang: 'fr' } }; T.currentWord = null; T.reviewUndo.length = 0; T.toasts.length = 0; T.LANG = { id: 'fr', dir: 'ltr' }; };
 const rate = (id, g) => { T.reviewCur = { id, main: true }; T.reviewFlipped = true; F.rateReview(g); };
@@ -246,7 +249,119 @@ if (require.main === module) {
   F.undoReview();
   ok('undo: reader index follows the restored word object', T.wordIndex.get('pluie') === T.state.words['fr:pluie'] && T.wordIndex.get('pluie').grade === 1);
 
-  // SYNC-SECTION
+  // =========================================================================
+  // 5. Two-phone sync: per-word merge
+  // =========================================================================
+  const mw = F.mergeWord, ms = F.mergeSrsLog, mr = F.mergeRemoteState;
+  ok('sync: mergeWord / mergeSrsLog / mergeRemoteState exist', !!(mw && ms && mr));
+  const T0 = new Date(2026, 0, 1, 12).getTime();
+  const srs = (reps, dueDays, ivl = reps) => ({ reps, ivl, step: 0, ef: 2.5, lapses: 0, due: T0 + dueDays * DAY });
+  const word = (o) => ({ lang: 'fr', key: 'pluie', form: 'pluie', display: 'pluie', meaning: 'rain', grade: 2, added: T0, lastSeen: T0, seen: 1, ...o });
+  // the old behaviour, to show the scenario below really lost data before: whole word, newer lastSeen wins
+  const oldPick = (lw, rw) => (!lw || (rw.lastSeen || rw.added || 0) > (lw.lastSeen || lw.added || 0)) ? rw : lw;
+  const both = (x, y) => [mw(x, y), mw(y, x)];   // the merge must not depend on which phone merges
+
+  // --- a review on A, then the word is opened on B (later lastSeen, older schedule) ---
+  {
+    const A = word({ srs: srs(3, 5), grade: 3, lastSeen: T0 + 1 * DAY });                       // reviewed on A
+    const B = word({ srs: srs(2, 2), grade: 2, lastSeen: T0 + 2 * DAY, seen: 4, context: 'Il pleut.' }); // only opened on B, afterwards
+    ok('sync: (the old whole-word merge would have kept B and lost the review)', oldPick(A, B).srs.reps === 2);
+    for (const [name, m] of [['B merges A', mw(B, A)], ['A merges B', mw(A, B)]]) {
+      ok(`sync review-on-A-then-open-on-B (${name}): A's schedule survives`, m.srs.reps === 3 && m.srs.due === A.srs.due, m.srs);
+      ok(`sync review-on-A-then-open-on-B (${name}): grade comes with that schedule`, m.grade === 3);
+      ok(`sync review-on-A-then-open-on-B (${name}): B's later lastSeen and larger seen count kept`, m.lastSeen === B.lastSeen && m.seen === 4);
+      ok(`sync review-on-A-then-open-on-B (${name}): context from the side that has one`, m.context === 'Il pleut.');
+    }
+  }
+  // --- same word reviewed on both phones ---
+  {
+    const A = word({ srs: srs(5, 10), grade: 3, lastSeen: T0 + 3 * DAY });
+    const B = word({ srs: srs(4, 6), grade: 4, lastSeen: T0 + 4 * DAY });
+    for (const m of both(A, B)) ok('sync both reviewed: more reps wins, with its grade', m.srs.reps === 5 && m.grade === 3, [m.srs, m.grade]);
+    const A2 = word({ srs: srs(4, 9), grade: 2, lastSeen: T0 + 3 * DAY });
+    const B2 = word({ srs: srs(4, 6), grade: 4, lastSeen: T0 + 4 * DAY });
+    for (const m of both(A2, B2)) ok('sync both reviewed, same reps: later due is the tiebreak (grade follows)', m.srs.due === A2.srs.due && m.grade === 2, [m.srs, m.grade]);
+    const A3 = word({ srs: srs(4, 6), grade: 2, lastSeen: T0 + 3 * DAY });
+    const B3 = word({ srs: srs(4, 6), grade: 5, lastSeen: T0 + 4 * DAY });
+    for (const m of both(A3, B3)) ok('sync identical schedules: the later touch wins (known mark in the reader)', m.grade === 5 && m.srs.reps === 4);
+    for (const m of both(A, B)) ok('sync: result is a plain word, no stray fields', Object.keys(m).every(k => k in A || k in B), Object.keys(m));
+  }
+  // --- added / context ---
+  {
+    const A = word({ added: T0 + 5 * DAY, context: '', srs: srs(1, 1) });
+    const B = word({ added: T0 + 1 * DAY, context: 'Ce matin il pleuvait.', srs: srs(1, 1) });
+    const m = mw(A, B);
+    ok('sync: keeps the earlier `added`', m.added === T0 + 1 * DAY);
+    ok('sync: first non-empty context (local first, then remote)', m.context === 'Ce matin il pleuvait.' && mw(B, { ...A, context: 'x' }).context === 'Ce matin il pleuvait.');
+  }
+  // --- a word on one side only is kept as it is (a deletion on one phone does not propagate) ---
+  {
+    const only = word({ key: 'seul', form: 'seul', srs: srs(2, 3) });
+    ok('sync: word only on remote is added unchanged', mw(undefined, only) === only);
+    ok('sync: word only on local is kept unchanged', mw(only, undefined) === only);
+    reset();
+    T.state.words = { 'fr:local': word({ key: 'local', form: 'local' }) };           // B deleted "fr:gone", still has "fr:local"
+    const remote = { words: { 'fr:gone': word({ key: 'gone', form: 'gone', srs: srs(3, 4) }) } }; // A still has "gone"
+    mr(remote);
+    ok('sync: word deleted on one phone comes back from the other, nothing else is dropped', !!T.state.words['fr:gone'] && !!T.state.words['fr:local'] && Object.keys(T.state.words).length === 2, Object.keys(T.state.words));
+  }
+  // --- old 1.7 words (no srs, due/interval/reps instead) ---
+  {
+    const legacy = word({ grade: 3, reps: 3, interval: 3 * DAY, due: T0 + 3 * DAY, lastSeen: T0 + 2 * DAY });   // 1.7 phone, had reached days
+    const fresh = word({ grade: 2, srs: srs(1, 1), lastSeen: T0 + 1 * DAY });                                  // 1.8 phone, one review
+    for (const m of both(JSON.parse(JSON.stringify(legacy)), JSON.parse(JSON.stringify(fresh)))) {
+      ok('sync 1.7 word: migrated, then its longer history wins', m.srs && m.srs.reps === 3 && m.srs.ivl === 3 && m.grade === 3, m);
+      ok('sync 1.7 word: legacy due/interval/reps fields are gone', !('due' in m) && !('interval' in m) && !('reps' in m), Object.keys(m));
+    }
+    const legacyLow = word({ grade: 2, reps: 1, interval: 10 * MIN, due: T0 + 10 * MIN, lastSeen: T0 });         // 1.7 10-minute step: restarts as a new card
+    const same = word({ grade: 4, lastSeen: T0 + 1 * DAY });                                                      // no srs either
+    for (const m of both(JSON.parse(JSON.stringify(legacyLow)), JSON.parse(JSON.stringify(same)))) {
+      ok('sync 1.7 words without srs on both sides: later touch wins, no srs invented', m.grade === 4 && m.srs === undefined && !('due' in m), m);
+    }
+    const m3 = mw(JSON.parse(JSON.stringify(fresh)), word({ grade: 1, lastSeen: T0 }));   // new on the other phone: scheduled side wins
+    ok('sync: a scheduled word beats an unscheduled one', m3.srs && m3.srs.reps === 1 && m3.grade === 2);
+  }
+  // --- srsLog: max per day for n and r ---
+  {
+    const a = { '2026-1-10': { n: 5, r: 20 }, '2026-1-11': { n: 1, r: 2 } };
+    const b = { '2026-1-10': { n: 8, r: 10 }, '2026-1-12': { n: 3, r: 4 } };
+    const m = ms(a, b), m2 = ms(b, a);
+    eq('sync srsLog: max per day, union of days', m, { '2026-1-10': { n: 8, r: 20 }, '2026-1-11': { n: 1, r: 2 }, '2026-1-12': { n: 3, r: 4 } });
+    eq('sync srsLog: order does not matter', m, m2);
+    eq('sync srsLog: missing sides', [ms(undefined, b), ms(a, undefined), ms(undefined, undefined)], [b, a, {}]);
+    ok('sync srsLog: inputs not mutated', JSON.stringify(a) === JSON.stringify({ '2026-1-10': { n: 5, r: 20 }, '2026-1-11': { n: 1, r: 2 } }));
+  }
+  // --- the whole payload ---
+  {
+    reset();
+    T.state.words = { 'fr:pluie': word({ srs: srs(2, 2), grade: 2, lastSeen: T0 + 2 * DAY, seen: 4 }) };
+    T.state.srsLog = { '2026-1-10': { n: 2, r: 5 } };
+    T.state.stats = { '2026-1-10': { read: 10, listened: 0, added: 1 } };
+    const remote = {
+      words: { 'fr:pluie': word({ srs: srs(3, 5), grade: 3, lastSeen: T0 + 1 * DAY }), 'fr:neige': word({ key: 'neige', form: 'neige', grade: 1 }) },
+      srsLog: { '2026-1-10': { n: 1, r: 9 }, '2026-1-11': { n: 4, r: 4 } },
+      stats: { '2026-1-10': { read: 30, listened: 5, added: 0 } }
+    };
+    const remoteCopy = JSON.stringify(remote);
+    mr(remote);
+    ok('sync payload: reviewed word keeps the review done on the other phone', T.state.words['fr:pluie'].srs.reps === 3 && T.state.words['fr:pluie'].grade === 3);
+    ok('sync payload: new word added', !!T.state.words['fr:neige']);
+    eq('sync payload: srsLog merged', T.state.srsLog, { '2026-1-10': { n: 2, r: 9 }, '2026-1-11': { n: 4, r: 4 } });
+    eq('sync payload: stats still merged by max (unchanged behaviour)', T.state.stats['2026-1-10'], { read: 30, listened: 5, added: 1 });
+    const once = JSON.parse(JSON.stringify(T.state.words));
+    mr(JSON.parse(remoteCopy));
+    ok('sync payload: merging the same state again changes nothing (idempotent)', same(T.state.words, once));
+    let threw = false; try { mr({}); } catch (e) { threw = true; }
+    ok('sync payload: a payload without words is rejected', threw);
+    // two phones converge: B merges A and pushes back, A adopts it; a second round is a no-op
+    const A = { words: { 'fr:x': word({ key: 'x', form: 'x', srs: srs(4, 8), grade: 3 }) }, srsLog: { d: { n: 1, r: 6 } } };
+    reset(); T.state.words = { 'fr:x': word({ key: 'x', form: 'x', srs: srs(2, 2), grade: 2, lastSeen: T0 + 9 * DAY }) }; T.state.srsLog = { d: { n: 3, r: 2 } };
+    mr(JSON.parse(JSON.stringify(A)));
+    const bMerged = JSON.parse(JSON.stringify({ words: T.state.words, srsLog: T.state.srsLog }));
+    reset(); T.state.words = JSON.parse(JSON.stringify(A.words)); T.state.srsLog = JSON.parse(JSON.stringify(A.srsLog));
+    mr(JSON.parse(JSON.stringify(bMerged)));
+    eq('sync: both phones end with the same srs and counters', { s: T.state.words['fr:x'].srs, log: T.state.srsLog }, { s: bMerged.words['fr:x'].srs, log: bMerged.srsLog });
+  }
 
   process.exit(summary() ? 1 : 0);
 }

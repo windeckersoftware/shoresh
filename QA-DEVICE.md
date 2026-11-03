@@ -23,6 +23,10 @@ Nothing in 1.8.2 has been run on Android: the cloud sessions that built it had n
 - Read a book, tap a word, expand: "Patterns in this sentence" chips; tap one, see all examples, Back returns to the same place in the text.
 - "Save as review card" and "Save sentence as a cloze card": the card appears in Review, flips, grades 1–4/K/X, undo works; mark one K, save it again, it returns. Check the blank on a real RTL (Hebrew) and a Chinese sentence.
 
+## Two-phone sync
+- Phone A: review five cards. Phone B (earlier copy of the same words): open one of those words, then Settings → Local sync (join A). After the merge, B's Review shows A's schedule for that word, and the home review counts agree on both phones.
+- A phone still on 1.7 joining a 1.8.2 phone: its words arrive with a schedule, none of the 1.7 due/interval fields linger.
+
 ## Accessibility
 - TalkBack: icon buttons are announced with translated names (try Hebrew, Arabic, English); the review announces the counts and then the answer; the word sheet is announced as a dialog; focus order is sensible.
 - Touch targets feel right (44 px) on the Words list, Settings, reader bars and word sheet of a small phone; the reader bottom bar (← 1 2 3 4 I K →) fits a 360 px phone; **Aa stays on screen** in the top bar at 360 and 393 px.

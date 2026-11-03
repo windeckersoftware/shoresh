@@ -12,6 +12,7 @@ Shoresh is an original Android reading app built from scratch. The name is the H
 - **Faster start.** PDF.js, Hanzi Writer and the Chinese pinyin data load when first needed instead of before the first screen.
 - **Number keys grade from the word card.** 1–4, K and X work from the small card next to the word, not only from the full sheet.
 - **Share from Drive and Brave.** The read permission of a shared file now travels with it even when the sending app only puts the link in `EXTRA_STREAM`, so PDFs and EPUBs shared from Drive open reliably.
+- **Two-phone sync keeps your reviews.** Settings → Local sync now merges word by word: a review done on one phone is no longer overwritten when you merely open the same word on the other, the review counters of both phones are merged (the larger new and review count per day), and 1.7 words without a schedule are upgraded first. A word deleted on one phone comes back from the other. The transport is unchanged.
 - Also: the Aa button stays on a 360 px phone; the review header reads "n new · n learning · n review"; a pattern or cloze card marked known or ignored can be saved again; undo restores the right day's counters and the reader's word colours.
 
 ## New in 1.8.1

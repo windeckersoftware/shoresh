@@ -883,14 +883,48 @@
     try { N.syncGet(ip, port, token, 'get'); } catch (e) { toast('החיבור נכשל'); }
   }
 
+  // Two-phone sync merges word by word. A review done on one phone must survive the other phone opening the
+  // same word later, so the schedule (word.srs) with the later last review wins - srs.reps, then srs.due as the
+  // tiebreak - and the grade comes from the same side as that schedule. When both sides hold the same schedule
+  // the later touch wins (a grade changed in the reader). A word on one side only is kept as it is.
+  function mergeWord(local, remote) {
+    if (!local) return remote;
+    if (!remote) return local;
+    for (const w of [local, remote]) if (!w.srs && (w.due || w.interval) && window.NerReview) migrateSchedule(w); // 1.7 words
+    const rank = w => (w.srs ? [Number(w.srs.reps) || 0, Number(w.srs.due) || 0] : [-1, 0]);
+    const a = rank(local), b = rank(remote);
+    let c = a[0] - b[0] || a[1] - b[1];
+    if (c === 0) c = (local.lastSeen || local.added || 0) - (remote.lastSeen || remote.added || 0);
+    const win = c >= 0 ? local : remote, lose = win === local ? remote : local;
+    const out = { ...lose };
+    for (const [k, v] of Object.entries(win)) if (v !== undefined && v !== null && v !== '') out[k] = v;
+    out.grade = win.grade;
+    if (win.srs) out.srs = win.srs; else delete out.srs;
+    const added = [local.added, remote.added].filter(Boolean);
+    if (added.length) out.added = Math.min(...added);
+    const context = local.context || remote.context;
+    if (context) out.context = context;
+    out.lastSeen = Math.max(local.lastSeen || 0, remote.lastSeen || 0) || out.lastSeen;
+    out.seen = Math.max(local.seen || 0, remote.seen || 0) || out.seen;
+    return out;
+  }
+
+  // Study counters per day: the larger n (new cards) and r (reviews) of the two phones.
+  function mergeSrsLog(a, b) {
+    const out = { ...(a || {}) };
+    for (const [day, rb] of Object.entries(b || {})) {
+      const ra = out[day] || {};
+      out[day] = { ...ra, ...rb, n: Math.max(ra.n || 0, rb.n || 0), r: Math.max(ra.r || 0, rb.r || 0) };
+    }
+    return out;
+  }
+
   function mergeRemoteState(remote) {
     if (!remote || !remote.words) throw new Error('bad state');
     const localWords = state.words || {};
-    for (const [id, rw] of Object.entries(remote.words)) {
-      const lw = localWords[id];
-      if (!lw || (rw.lastSeen || rw.added || 0) > (lw.lastSeen || lw.added || 0)) localWords[id] = rw;
-    }
+    for (const [id, rw] of Object.entries(remote.words)) localWords[id] = mergeWord(localWords[id], rw);
     state.words = localWords;
+    state.srsLog = mergeSrsLog(state.srsLog, remote.srsLog);
     const localStats = state.stats || {};
     for (const [day, rs] of Object.entries(remote.stats || {})) {
       const ls = localStats[day] || {};
