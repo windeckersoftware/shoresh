@@ -16,7 +16,11 @@ Run `node tools/check_patterns.js` afterwards: every example must match its own 
 """
 import importlib.util
 import json
+import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import pattern_names  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / 'data/patterns'
@@ -34,6 +38,11 @@ def pick(examples, field):
 
 def from_tatoeba(lang):
     d = json.load(open(SRC / f'{lang}.json', encoding='utf-8'))
+    names = pattern_names.HE if lang == 'he' else pattern_names.FR
+    ids = {p['id'] for p in d['patterns']}
+    if ids != set(names):
+        sys.exit(f'{lang}: pattern_names.py out of step with data/patterns/{lang}.json: '
+                 f'missing {sorted(ids - set(names))}, unknown {sorted(set(names) - ids)}')
     field = 'heb' if lang == 'he' else 'fra'
     out = []
     for p in d['patterns']:
@@ -41,7 +50,8 @@ def from_tatoeba(lang):
         ex = [{'s': e[field], 'i': e[field + '_id'],
                't': {TR[k]: v['text'] for k, v in e['tr'].items() if k in TR},
                'ti': {TR[k]: v['id'] for k, v in e['tr'].items() if k in TR}} for e in pick(p['examples'], field)]
-        out.append({'id': p['id'], 'p': p[lang], 'en': p['en'], 'f': p['function'], 'c': p['cefr'],
+        name, meaning = names[p['id']]
+        out.append({'id': p['id'], 'p': name, 'en': meaning, 'f': p['function'], 'c': p['cefr'],
                     'r': p['rank'], 'n': p['count'], 'rx': p['regex'], 'x': ex})
     return out
 
