@@ -7,7 +7,7 @@ Two sources:
   * Tatoeba (he, fr): data/patterns/<lang>.json from tools/build_patterns.py. Real sentences with
     human translations (CC BY 2.0 FR, sentence ids kept), ranked by frequency, 6 examples each.
   * Written for Shoresh (every other language): tools/authored_patterns/<lang>.py. Short example
-    sentences with an English gloss, ordered by level. They were composed, not drawn from a corpus,
+    sentences with an English gloss (English itself: Hebrew and Hungarian translations), ordered by level. They were composed, not drawn from a corpus,
     so they are not frequency-ranked and not native-reviewed.
 
 Every pattern carries `rx`, a regex (Python syntax, \\b/\\w are made Unicode-aware at runtime by
@@ -44,6 +44,13 @@ def from_tatoeba(lang):
     return out
 
 
+def authored_example(e):
+    """(sentence, English) or (sentence, None, {'he': ..., 'hu': ...}) when the sentence is English itself."""
+    if len(e) == 3:
+        return {'s': e[0], 't': dict(e[2])}
+    return {'s': e[0], 't': {'en': e[1]}}
+
+
 def from_authored(path):
     spec = importlib.util.spec_from_file_location('authored_' + path.stem, path)
     mod = importlib.util.module_from_spec(spec)
@@ -51,7 +58,7 @@ def from_authored(path):
     out = []
     for n, (pid, text, gloss, cefr, rx, examples) in enumerate(mod.PATTERNS, 1):
         out.append({'id': pid, 'p': text, 'en': gloss, 'c': cefr, 'r': n, 'rx': rx,
-                    'x': [{'s': s, 't': {'en': en}} for s, en in examples]})
+                    'x': [authored_example(e) for e in examples]})
     return out
 
 

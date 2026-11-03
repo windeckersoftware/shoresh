@@ -3271,7 +3271,7 @@
   // js/patternmatch.js finds the patterns inside a sentence you are reading.
   let patternLevel = '', patternFocus = '', patternKeep = false, patternFrom = '';
   const patternOpen = new Set();
-  const PATTERN_LANGS = ['he', 'fr', 'zh', 'es', 'de', 'it', 'pt', 'ja', 'ko', 'ru'];
+  const PATTERN_LANGS = ['he', 'fr', 'en', 'zh', 'es', 'de', 'it', 'pt', 'ja', 'ko', 'ru'];
   const PATTERN_CORPUS = ['he', 'fr'];
   const PATTERN_SHOWN = 3;
   const patternKey = p => 'pattern:' + p.id;
