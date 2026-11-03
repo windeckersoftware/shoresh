@@ -645,12 +645,27 @@ public final class Dict {
     }
 
     /** zh/yue: the headword in the other script (traditional for zh, simplified for yue), from the pack's forms. */
+    private Map<String, String> otherIndex;
+    private Map<String, String> otherIndexFor;
+
     private String otherScript(String lang, String key) {
-        if (forms == null || !("zh".equals(lang) || "yue".equals(lang))) return "";
-        for (Map.Entry<String, String> me : forms.entrySet()) {
-            if (key.equals(me.getValue()) && me.getKey().length() == key.length()) return me.getKey();
+        Map<String, String> f = forms;
+        if (f == null || !("zh".equals(lang) || "yue".equals(lang))) return "";
+        Map<String, String> idx;
+        synchronized (lock) {
+            // Reverse index (target form -> first source form of equal length), built once per pack.
+            if (otherIndex == null || otherIndexFor != f) {
+                Map<String, String> m = new HashMap<>();
+                for (Map.Entry<String, String> me : f.entrySet()) {
+                    if (me.getKey().length() == me.getValue().length()) m.putIfAbsent(me.getValue(), me.getKey());
+                }
+                otherIndex = m;
+                otherIndexFor = f;
+            }
+            idx = otherIndex;
         }
-        return "";
+        String r = idx.get(key);
+        return r == null ? "" : r;
     }
 
     public String lookup(String lang, String raw) {

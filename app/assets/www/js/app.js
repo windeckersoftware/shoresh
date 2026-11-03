@@ -4223,7 +4223,9 @@
         else if (k === 'Escape') { e.preventDefault(); navigate('home'); }
         return;
       }
-      const grading = $('#word-sheet').classList.contains('open') ? gradeWord : null;
+      // The full sheet or the compact card next to the word (not while typing).
+      const cardUp = currentWord && !$('#word-card').hidden && !e.target.closest('input,textarea,select');
+      const grading = ($('#word-sheet').classList.contains('open') || cardUp) ? gradeWord : null;
       if (grading) {
         if (/^[1-4]$/.test(e.key)) { e.preventDefault(); grading(Number(e.key)); }
         else if (e.key === 'k' || e.key === 'K') { e.preventDefault(); grading(5); }
