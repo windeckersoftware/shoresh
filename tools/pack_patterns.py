@@ -37,8 +37,10 @@ def from_tatoeba(lang):
     field = 'heb' if lang == 'he' else 'fra'
     out = []
     for p in d['patterns']:
+        # i = Tatoeba id of the sentence, ti = ids of its translations by language code (CC BY 2.0 FR attribution).
         ex = [{'s': e[field], 'i': e[field + '_id'],
-               't': {TR[k]: v['text'] for k, v in e['tr'].items() if k in TR}} for e in pick(p['examples'], field)]
+               't': {TR[k]: v['text'] for k, v in e['tr'].items() if k in TR},
+               'ti': {TR[k]: v['id'] for k, v in e['tr'].items() if k in TR}} for e in pick(p['examples'], field)]
         out.append({'id': p['id'], 'p': p[lang], 'en': p['en'], 'f': p['function'], 'c': p['cefr'],
                     'r': p['rank'], 'n': p['count'], 'rx': p['regex'], 'x': ex})
     return out

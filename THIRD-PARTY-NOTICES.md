@@ -44,6 +44,20 @@ Ner's application code is original. The following data and tools are used under 
 - Used for: frequency ranks and the 700-word starter list.
 - Changes: normalised niqqud, intersected with dictionary lemmas.
 
+## Tatoeba — Hebrew and French sentence patterns
+
+- Source: https://tatoeba.org (per-language sentence and link exports, https://downloads.tatoeba.org/exports/)
+- Licence: Creative Commons Attribution 2.0 France (CC BY 2.0 FR). Sentences are by Tatoeba contributors.
+- Used for: every example sentence and every translation shown on the Sentence patterns screen for Hebrew and French, in `app/assets/www/patterns/he.js` and `fr.js` (142 Hebrew and 154 French patterns, 655 and 798 examples) and the source data in `data/patterns/he.json`, `fr.json`, `he-topics.json`.
+- Attribution: the Tatoeba id of each sentence is kept in `i`, and the ids of its translations in `ti` (by language code); a sentence is at `https://tatoeba.org/sentences/show/<id>`. The Patterns screen credits Tatoeba for these two languages.
+- Changes: sentences are unmodified; they were selected by regular expression, ranked by frequency and trimmed to the six shortest, best-translated examples per pattern. Built by `tools/build_patterns.py` and `tools/pack_patterns.py`.
+
+## Hand-written sentence patterns (not from Tatoeba)
+
+- Chinese (`zh`), Japanese (`ja`), Korean (`ko`), German (`de`), Spanish (`es`), Italian (`it`), Portuguese (`pt`), Russian (`ru`) and English (`en`) patterns in `app/assets/www/patterns/` come from `tools/authored_patterns/<lang>.py`.
+- Written for Shoresh with the help of an AI assistant. The example sentences and their translations (English, and Hebrew and Hungarian for the English set) are not taken from a corpus and have **not been checked by native speakers**; the Patterns screen says so. They are part of the project and released with its code.
+- Hebrew and French pattern names and English glosses are also written for Shoresh; only their example sentences are from Tatoeba.
+
 ## StevenBlack/hosts
 
 - Source: https://github.com/StevenBlack/hosts

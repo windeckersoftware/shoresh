@@ -3296,7 +3296,7 @@
     const credit = $('#patterns-credit');
     if (credit) credit.textContent = PATTERN_CORPUS.includes(L.id)
       ? tr('משפטי הדוגמה מ־Tatoeba (tatoeba.org), CC BY 2.0 FR. הדירוג לפי תדירות במאגר.')
-      : tr('משפטי הדוגמה נכתבו עבור שורש, לא נלקחו ממאגר, ולא נבדקו על ידי דובר שפת אם. הסדר לפי רמה.');
+      : tr('משפטי הדוגמה והתרגומים נכתבו עבור שורש, לא נלקחו ממאגר, ולא נבדקו על ידי דובר שפת אם. הסדר לפי רמה.');
     if (!PATTERN_LANGS.includes(L.id)) {
       host.innerHTML = `<div class="review-empty"><h2>${escapeHtml(tr('אין עדיין תבניות לשפה הזו'))}</h2><p>${escapeHtml(tr('החליפו שפה בכפתור השפה למעלה'))}</p></div>`;
       return;
@@ -3749,6 +3749,9 @@
         <p>CC-CEDICT (cc-cedict.org), ברישיון CC BY-SA 4.0. משמש למילים, לפיניין ולחלוקת טקסט סיני למילים.</p>
         <h3>ניבים, פתגמים וצירופים</h3>
         <p>ערכים מוויקימילון האנגלי דרך kaikki.org, ברישיון CC BY-SA 3.0, ב-26 שפות.</p>
+        <h3>תבניות משפט</h3>
+        <p>משפטי הדוגמה והתרגומים שלהם בעברית ובצרפתית הם מ-Tatoeba (tatoeba.org), ברישיון CC BY 2.0 FR, מאת תורמי Tatoeba. מספרי המשפטים נשמרים בקבצי החבילה (<code>i</code> למשפט, <code>ti</code> לתרגומים) וכל משפט נמצא ב-tatoeba.org/sentences/show/&lt;מספר&gt;.</p>
+        <p>תבניות בסינית, ביפנית, בקוריאנית, בגרמנית, בספרדית, באיטלקית, בפורטוגזית, ברוסית ובאנגלית נכתבו עבור שורש בעזרת עוזר בינה מלאכותית. הן לא נלקחו ממאגר ולא נבדקו על ידי דוברי שפת אם.</p>
         <h3>קוד</h3>
         <p>אפליקציית Android, ממשק ה-WebView והמנוע נכתבו עבור הפרויקט הזה. ספריות צד שלישי: pdf.js 3.11 (Mozilla, Apache 2.0) לקריאת PDF, ‏Tesseract4Android (Apache 2.0) ל-OCR, ו-Hanzi Writer 3.7 (‏David Chanin, ‏MIT) לסדר הקווים בסינית. כלי הבנייה: Android SDK ו-OpenJDK.</p>
         <h3>סדר קווים בסינית</h3>
