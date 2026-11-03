@@ -1237,6 +1237,9 @@ html[dir="ltr"] .sheet-phrase svg { transform: none; }
 }
 :is(.topbar, #view-words, #view-settings, #view-patterns, .reader-view, #word-sheet, .modal) :is(input[type="range"], #word-search, #reader-page-input, select) { min-height: 44px; }
 #reader-page-input { min-width: 44px; }
+/* Eight buttons share the reader bar: 44px tall, but 36px (30px for page arrows) wide so Aa stays on a 360px phone. */
+#view-reader .reader-topbar .icon-btn { min-width: 36px; }
+#view-reader .reader-topbar .page-btn { min-width: 30px; }
 .page-box { min-height: 44px; }
 .grade-bar { gap: 0; }
 .grade-bar button { min-width: 44px; max-width: none; min-height: 44px; height: auto; }
