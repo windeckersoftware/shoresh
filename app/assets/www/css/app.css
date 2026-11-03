@@ -1007,6 +1007,7 @@ html[lang="ar"] body { font-family: "Noto Naskh Arabic", "Noto Sans Arabic", "No
 .srs-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .srs-counts { font-size: 15px; font-weight: 700; color: var(--muted); font-variant-numeric: tabular-nums; }
 .srs-counts b { font-weight: 800; }
+.srs-counts small { font-size: 12px; font-weight: 650; }
 .srs-counts b.cur { text-decoration: underline; text-underline-offset: 4px; }
 .srs-c-n { color: var(--ink-2); }
 .srs-c-l { color: var(--amber); }

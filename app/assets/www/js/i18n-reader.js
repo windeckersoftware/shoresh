@@ -51,6 +51,8 @@
     'ניקוי': ['Clear', 'Törlés', 'Borrar', 'Effacer', 'Leeren', 'Очистить', 'مسح'],
     'מחפש…': ['Looking up…', 'Keresés…', 'Buscando…', 'Recherche…', 'Suche…', 'Поиск…', 'جارٍ البحث…'],
     'לא נמצאה משמעות. אפשר לפתוח תרגום אונליין.': ['No meaning found. Try the online translation.', 'Nem található jelentés. Próbáld az online fordítást.', 'No se encontró significado. Prueba la traducción en línea.', 'Aucun sens trouvé. Essayez la traduction en ligne.', 'Keine Bedeutung gefunden. Versuche die Online-Übersetzung.', 'Значение не найдено. Попробуйте онлайн-перевод.', 'لم يُعثر على معنى. جرّب الترجمة عبر الإنترنت.'],
+    'חדשים': ['new', 'új', 'nuevas', 'nouvelles', 'neu', 'новых', 'جديدة'],
+    'לחזרה': ['review', 'ismétlés', 'repaso', 'révision', 'Wiederholung', 'повторение', 'مراجعة'],
     'כרטיס חדש': ['New card', 'Új kártya', 'Tarjeta nueva', 'Nouvelle carte', 'Neue Karte', 'Новая карточка', 'بطاقة جديدة'],
     'בלמידה': ['Learning', 'Tanulás alatt', 'Aprendiendo', 'En apprentissage', 'Lernen', 'Изучается', 'قيد التعلم'],
     'בלמידה מחדש': ['Relearning', 'Újratanulás', 'Reaprendiendo', 'Réapprentissage', 'Neu lernen', 'Повторное изучение', 'إعادة التعلم'],

@@ -3107,7 +3107,7 @@
     const meaningFront = state.settings.cardFront === 'meaning' && !!meaning;
     const t = typeOf(w);
     const cur = t === 'new' ? 'n' : t === 'review' ? 'r' : 'l';
-    const count = (k, n) => `<b class="srs-c-${k}${cur === k ? ' cur' : ''}">${fmt(n)}</b>`;
+    const count = (k, n) => `<span class="srs-c srs-c-${k}"><b${cur === k ? ' class="cur"' : ''}>${fmt(n)}</b> <small>${escapeHtml(tr({ n: 'חדשים', l: 'בלמידה', r: 'לחזרה' }[k]))}</small></span>`;
     const kind = { new: 'כרטיס חדש', learn: 'בלמידה', relearn: 'בלמידה מחדש', review: 'כרטיס חזרה' }[t];
     const pos = /^(proverb|idiom|phrase)$/.test(w.pos) ? ' · ' + posLabel(w.pos) : '';
     const wordHtml = `<span class="srs-word" dir="${lang().dir}">${escapeHtml(word)}</span>`;
@@ -3119,7 +3119,7 @@
         (ctx ? `<span class="srs-context" dir="${lang().dir}">${escapeHtml(ctx)}</span>` : '')
       : '';
     host.innerHTML =
-      `<div class="srs-head"><span class="srs-counts">${count('n', c.n)} + ${count('l', c.l)} + ${count('r', c.r)}</span>` +
+      `<div class="srs-head"><span class="srs-counts">${count('n', c.n)} · ${count('l', c.l)} · ${count('r', c.r)}</span>` +
       `<span class="srs-tools">${reviewUndo.length ? '<button class="icon-btn" data-action="review-undo" type="button" aria-label="בטלו"><svg><use href="#i-undo"></use></svg></button>' : ''}` +
       `<button class="srs-swap" data-action="review-swap" type="button">${escapeHtml(tr(meaningFront ? 'משמעות קודם' : 'מילה קודם'))} ⇄</button>` +
       `<button class="icon-btn" data-speak-review type="button" aria-label="השמעה"><svg><use href="#i-speaker"></use></svg></button></span></div>` +
