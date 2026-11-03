@@ -13,6 +13,7 @@ Shoresh is an original Android reading app built from scratch. The name is the H
 - **Number keys grade from the word card.** 1–4, K and X work from the small card next to the word, not only from the full sheet.
 - **Share from Drive and Brave.** The read permission of a shared file now travels with it even when the sending app only puts the link in `EXTRA_STREAM`, so PDFs and EPUBs shared from Drive open reliably.
 - **Two-phone sync keeps your reviews.** Settings → Local sync now merges word by word: a review done on one phone is no longer overwritten when you merely open the same word on the other, the review counters of both phones are merged (the larger new and review count per day), and 1.7 words without a schedule are upgraded first. A word deleted on one phone comes back from the other. The transport is unchanged.
+- **Readings in Japanese and Cantonese.** Japanese words and kanji now show kana (hiragana or katakana; on'yomi · kun'yomi for a single kanji) from JMdict and KANJIDIC2 instead of IPA, and Cantonese words show jyutping where the Cantonese pack had none. `tools/add_readings.py` rebuilds them; words the sources do not list stay without a reading. Credits are in Settings → Licences.
 - Also: the Aa button stays on a 360 px phone; the review header reads "n new · n learning · n review"; a pattern or cloze card marked known or ignored can be saved again; undo restores the right day's counters and the reader's word colours.
 
 ## New in 1.8.1
@@ -164,6 +165,7 @@ The script writes `out/Shoresh-1.8.2.apk`. The toolchain lives in `.toolchain/` 
 ## Data pipeline
 
 - `tools/build_zh_pack.py` builds `zh` and `yue` from CC-CEDICT (CC BY-SA 4.0) with FrequencyWords zh_cn ranks and HSK 3.0 levels from complete-hsk-vocabulary (MIT).
+- `tools/add_readings.py` (run after the pack builders) fills the `ja` pack with kana readings from JMdict/KANJIDIC2 and the `yue` pack with jyutping from to-jyutping; sources are downloaded to `data/raw/readings` with pinned checksums.
 - `tools/build_phrases.py [codes…]` builds the phrase packs from kaikki.org; downloads are cached in `data/raw/phrases/` (multi-word lines only for the large verb/adj files).
 
 - `tools/build_he_pack.py` builds the Hebrew dictionary from:

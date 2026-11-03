@@ -37,6 +37,20 @@ Ner's application code is original. The following data and tools are used under 
 - Used for: the phrase packs in `app/assets/dict/phrases/` (chengyu, proverbs, idioms, fixed expressions in 26 languages).
 - Changes: normalised to match tokens, inflected forms pointed at their base phrase, generic two-word pairs dropped. Built by `tools/build_phrases.py`.
 
+## JMdict and KANJIDIC2 — Japanese readings
+
+- Source: the JMdict and KANJIDIC2 dictionary files of the Electronic Dictionary Research and Development Group (EDRDG), as packaged in the PyPI package `jamdict-data` 1.5 (https://pypi.org/project/jamdict-data/, JMdict of April 2021, SQLite export).
+- Licence: Creative Commons Attribution-ShareAlike 3.0 (the EDRDG licence, https://www.edrdg.org/edrdg/licence.html). These files are the property of the Electronic Dictionary Research and Development Group and are used in conformance with the Group's licence.
+- Used for: the kana readings (`tr`) in `app/assets/dict/ja.json.gz`: hiragana or katakana for kanji words, and on'yomi (katakana) · kun'yomi (hiragana) for single kanji.
+- Changes: for each word the JMdict entry is chosen by shared meaning words and entry priority and its usual (first) reading is taken; kun'yomi okurigana dots and hyphens are removed and at most two on'yomi and two kun'yomi are shown. Words JMdict does not list keep an empty reading. Built by `tools/add_readings.py`.
+
+## to-jyutping — Cantonese readings
+
+- Source: `src/trie.txt` of https://github.com/CanCLID/to-jyutping at tag 3.1.1 (sha256 `4995ec44…a87729`), by the Cantonese Computational Linguistics Infrastructure Development Workgroup (CanCLID).
+- Licence: BSD 2-Clause, as declared by that repository for its code and data. The repository does not list the upstream sources of its pronunciation data.
+- Used for: the jyutping readings (`tr`) in `app/assets/dict/yue.json.gz`. A word in the trie gets its attested reading; any other word gets the longest attested pieces and single characters joined, as that library does. Words with a character it does not know keep an empty reading.
+- Changes: decoded by a Python port of the library's decoder (`tools/add_readings.py`); no code from the package is run. A single character with several readings gets the most common one, which may differ from the meaning shown for it.
+
 ## FrequencyWords
 
 - Source: https://github.com/hermitdave/FrequencyWords (`content/2018/he/he_50k.txt`)

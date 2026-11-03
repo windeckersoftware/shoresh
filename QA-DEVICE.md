@@ -38,4 +38,5 @@ Nothing in 1.8.2 has been run on Android: the cloud sessions that built it had n
 
 ## Known gaps
 - `LinkSheet.java` (the in-app dictionary sheet) still takes its header direction from the system locale.
-- Japanese readings are still IPA and Cantonese has none (see the data-pack notes in the release report).
+- Japanese and Cantonese readings (item 6) are built from JMdict/KANJIDIC2 and to-jyutping and were only spot-checked offline: on a phone open the word card and Characters tab for common Japanese words (今日, 明日, 上手, 人, 日本) and Cantonese words (行, 長, 銀行, 香港) and have a speaker confirm them. A single Cantonese character with several readings shows the most common one.
+- The "source" label of Japanese and Cantonese lookups still says Wiktionary / CC-CEDICT (Dict.java), not JMdict / to-jyutping.
