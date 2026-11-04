@@ -1083,7 +1083,7 @@
     $('#goal-range-val').textContent = state.settings.dailyGoal;
     $('#tts-range').value = Math.round((state.settings.ttsRate || 1) * 100);
     $('#tts-range-val').textContent = (state.settings.ttsRate || 1).toFixed(1) + '×';
-    $('#app-version').textContent = boot.version || '1.8.2';
+    $('#app-version').textContent = boot.version || '1.8.3';
     renderSyncUI();
     renderLanguages();
   }
