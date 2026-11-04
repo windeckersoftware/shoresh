@@ -231,7 +231,9 @@
         <button class="chip" data-filter="learning">בלימוד</button>
         <button class="chip" data-filter="known">ידועות</button>
         <button class="chip" data-filter="ignored">דילגתי</button>
+        <button class="chip" data-filter="phrases">ביטויים</button>
       </div>
+      <button class="ghost drill-open" id="phrase-drill-btn" data-action="phrase-drill" type="button" hidden>תרגול שמיעה</button>
       <div id="word-list" class="word-list"></div>
     </section>
 
@@ -670,6 +672,18 @@
       <div class="custom-base-controls"><input id="custom-base-code" class="field" maxlength="3" placeholder="hu"><button class="small-btn" data-action="base-custom">השתמשו</button></div>
     </div>
     <div id="lang-list" class="lang-list"></div>
+  </div>
+</div>
+
+<div id="phrasedrill-modal" class="modal" hidden>
+  <div class="modal-card drill-card">
+    <div class="modal-head"><h2>תרגול שמיעה</h2><button class="icon-btn" data-close="phrasedrill" aria-label="סגירה"><svg><use href="#i-close"></use></svg></button></div>
+    <div class="drill-opts">
+      <label><span>שומעים</span><select id="drill-hear"></select></label>
+      <label><span>השהיה לתשובה (שניות)</span><select id="drill-gap"><option value="3">3</option><option value="5" selected>5</option><option value="8">8</option><option value="12">12</option></select></label>
+    </div>
+    <div class="drill-stage" id="drill-stage" aria-live="polite"></div>
+    <button class="primary" id="drill-toggle" data-action="phrase-drill-toggle" type="button">התחלה</button>
   </div>
 </div>
 
