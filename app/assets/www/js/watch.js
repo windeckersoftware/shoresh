@@ -131,6 +131,8 @@
       padding:12px 16px 28px;color:#f6f0e0;
       font-size:16px;line-height:1.7;overflow:auto}
     .cc[hidden]{display:none}
+    .topcover{position:fixed;left:0;right:0;top:0;background:#0c100e;pointer-events:none}
+    .topcover[hidden]{display:none}
     .cc-head{display:flex;align-items:center;gap:8px;margin-bottom:10px}
     .cc-channel{flex:1;min-width:0;border:0;background:transparent;color:#f6f0e0;font:inherit;font-size:15px;font-weight:750;text-align:start;padding:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
     .cc-label{font-size:8px;letter-spacing:.13em;color:#b9b1a0;font-weight:800;direction:ltr}
@@ -267,6 +269,9 @@
   window.addEventListener('popstate', syncCollapsed);
   setInterval(syncCollapsed, 800);
 
+  // With the recommendations scrolling under the pinned player, a dark band keeps them out of the strip above the video.
+  var topCover = el('div', 'topcover'); topCover.hidden = true;
+  root.appendChild(topCover);
   var cc = el('div', 'cc'); cc.hidden = true;
   // Caption words are never coloured by learning state.
   var hlOn = false;
@@ -296,6 +301,7 @@
     transBtn.classList.toggle('on', prefs.trans !== 'off'); transBtn.setAttribute('aria-pressed', String(prefs.trans !== 'off'));
     ccTranslation.classList.toggle('blur', prefs.trans === 'blur');
     ccTranslation.classList.toggle('off', prefs.trans === 'off');
+    document.documentElement.classList.toggle('ner-recs', !prefs.box);
     try { localStorage.setItem('nerWatchPrefs', JSON.stringify(prefs)); } catch (e) { }
   }
   playBtn.addEventListener('click', function () { var v = theVideo(); if (v) { if (v.paused) v.play(); else v.pause(); } });
@@ -317,7 +323,8 @@
   function fitCaption() {
     if (cc.hidden) return;
     applyPrefsOnce();
-    var node = document.querySelector('video') || document.querySelector('#player');
+    // The player container, not the video element: its own box moves oddly while the page scrolls.
+    var node = document.querySelector('#movie_player') || document.querySelector('video') || document.querySelector('#player');
     var top = Math.round(window.innerHeight * 0.42);
     if (node) {
       var r = node.getBoundingClientRect();
@@ -325,6 +332,20 @@
     }
     cc.style.top = top + 'px';
     cc.style.maxHeight = prefs.box ? '' : Math.max(160, window.innerHeight - top - 8) + 'px';
+    var vid = document.querySelector('#movie_player') || document.querySelector('video');
+    var vt = vid ? Math.round(vid.getBoundingClientRect().top) : 0;
+    topCover.hidden = prefs.box || vt < 30;
+    topCover.style.height = vt + 'px';
+    // Recommendations start just below the caption row, not behind it.
+    var res = document.querySelector('ytm-single-column-watch-next-results-renderer');
+    if (res && !prefs.box && !wp.classList.contains('open')) {
+      var rr = res.getBoundingClientRect();
+      if (rr.top > 100) {
+        var need = Math.max(0, Math.round(cc.getBoundingClientRect().bottom - (rr.top + window.scrollY) + 6));
+        var have = parseFloat(getComputedStyle(res).paddingTop) || 0;
+        if (Math.abs(need - have) > 10) res.style.setProperty('padding-top', need + 'px', 'important');
+      }
+    } else if (res && prefs.box) res.style.removeProperty('padding-top');
   }
 
   var prefsApplied = false;
@@ -404,18 +425,24 @@
     a[href^="intent:"], a[href^="vnd.youtube:"], a[href^="youtube:"], a[href*="youtube://"],
     ytm-app-promo, ytm-app-upsell, .ytm-app-banner, [class*="app-promo"], [class*="open-app"],
     ytm-statement-banner-renderer { display:none!important; }
-    html.ner-watch ytm-single-column-watch-next-results-renderer,
-    html.ner-watch ytm-item-section-renderer,
+    html.ner-watch:not(.ner-recs) ytm-single-column-watch-next-results-renderer,
+    html.ner-watch:not(.ner-recs) ytm-item-section-renderer,
+    html.ner-watch:not(.ner-recs) .related-items-container,
+    html.ner-watch:not(.ner-recs) ytd-watch-next-secondary-results-renderer,
+    html.ner-watch:not(.ner-recs) #related,
     html.ner-watch ytm-comments-entry-point-header-renderer,
     html.ner-watch ytm-comment-section-renderer,
     html.ner-watch ytm-engagement-panel,
     html.ner-watch comments-entry-point-teaser-view-model,
     html.ner-watch ytm-slim-video-information-renderer,
     html.ner-watch ytm-video-metadata-carousel-view-model,
-    html.ner-watch .related-items-container,
-    html.ner-watch ytd-watch-next-secondary-results-renderer,
-    html.ner-watch ytd-comments, html.ner-watch #related, html.ner-watch #comments,
+    html.ner-watch ytd-comments, html.ner-watch #comments,
     html.ner-watch .ytp-endscreen-content, html.ner-watch .ytp-ce-element { display:none!important; }
+    /* Recommendations below the caption row (when the box is off): only the list of videos,
+       not the title block, comments or the ad slot that sit beside it. */
+    html.ner-watch.ner-recs ytm-single-column-watch-next-results-renderer > :not(.related-items-container),
+    html.ner-watch.ner-recs ad-slot-renderer, html.ner-watch.ner-recs ytm-promoted-video-renderer,
+    html.ner-watch.ner-recs ytm-promoted-sparkles-web-renderer, html.ner-watch.ner-recs ytm-companion-slot { display:none!important; }
   `;
   document.documentElement.appendChild(pageStyle);
 
