@@ -1,7 +1,15 @@
 # Shoresh (שורש) — language-learning reading app
 
 Shoresh is an original Android reading app built from scratch. The name is the Hebrew word for “root”, שורש. 
-**Current build:** `out/Shoresh-1.8.2.apk` (dev-signed, Android 8+). The Android package is still `app.ner.reader`, so this installs over the earlier Ner build and keeps its data.
+**Current build:** `out/Shoresh-1.8.3.apk` (dev-signed, Android 8+). The Android package is still `app.ner.reader`, so this installs over the earlier Ner build and keeps its data.
+
+## New in 1.8.3
+
+- **Watch, one caption.** Only the learning language's caption line is shown, so the translation is not shown twice, and the history is one row. The caption area is a compact row by default; a Box toggle brings back the full black box.
+- **Tap a word to pause.** Select more words by tapping beside the selection or with the longer/shorter arrows: the whole phrase is translated and saved as a phrase when you pick a level. A play-on button resumes.
+- **Toggles:** pause at every sentence, caption box, and translation on / blurred / off.
+- **Recommended videos** show below the caption row (with the box off); tapping one opens it in the same player.
+- **Listening drill** (Words → Phrases): hear a saved phrase in either language or alternating, get 3–12 seconds (default 5) to say the answer, then hear and see it.
 
 ## New in 1.8.2
 
@@ -160,7 +168,7 @@ The project builds without Gradle, using the Android SDK command-line tools and 
 ./build.sh
 ```
 
-The script writes `out/Shoresh-1.8.2.apk`. The toolchain lives in `.toolchain/` and is not part of the app. The dev keystore is `keystore/ner-dev.keystore` (password `nerdev`); do not ship with it.
+The script writes `out/Shoresh-1.8.3.apk`. The toolchain lives in `.toolchain/` and is not part of the app. The dev keystore is `keystore/ner-dev.keystore` (password `nerdev`); do not ship with it.
 
 ## Data pipeline
 

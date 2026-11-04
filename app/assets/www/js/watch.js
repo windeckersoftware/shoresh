@@ -32,6 +32,17 @@
   };
   var uiPref = (state.settings && state.settings.ui) || 'system';
   var uiCode = uiPref === 'system' ? normLang((navigator.language || 'en').split('-')[0]) : normLang(uiPref);
+  var EXTRA = {
+    en: { pauseS: 'Pause each sentence', box: 'Box', trans: 'Translation', selection: 'Selection', longer: 'Longer or shorter', pickLevel: 'Pick a level to save it', playOn: 'Play on' },
+    hu: { pauseS: 'Állj meg minden mondatnál', box: 'Doboz', trans: 'Fordítás', selection: 'Kijelölés', longer: 'Hosszabb vagy rövidebb', pickLevel: 'Válassz szintet a mentéshez', playOn: 'Tovább' },
+    he: { pauseS: 'עצירה בכל משפט', box: 'תיבה', trans: 'תרגום', selection: 'בחירה', longer: 'ארוך או קצר יותר', pickLevel: 'בחרו רמה כדי לשמור', playOn: 'המשך' },
+    es: { pauseS: 'Pausa en cada frase', box: 'Cuadro', trans: 'Traducción', selection: 'Selección', longer: 'Más largo o más corto', pickLevel: 'Elige un nivel para guardarlo', playOn: 'Seguir' },
+    fr: { pauseS: 'Pause à chaque phrase', box: 'Boîte', trans: 'Traduction', selection: 'Sélection', longer: 'Plus long ou plus court', pickLevel: 'Choisissez un niveau pour l’enregistrer', playOn: 'Continuer' },
+    de: { pauseS: 'Pause nach jedem Satz', box: 'Kasten', trans: 'Übersetzung', selection: 'Auswahl', longer: 'Länger oder kürzer', pickLevel: 'Stufe zum Speichern wählen', playOn: 'Weiter' },
+    ru: { pauseS: 'Пауза после каждой фразы', box: 'Блок', trans: 'Перевод', selection: 'Выделение', longer: 'Длиннее или короче', pickLevel: 'Выберите уровень, чтобы сохранить', playOn: 'Дальше' },
+    ar: { pauseS: 'إيقاف عند كل جملة', box: 'مربع', trans: 'الترجمة', selection: 'التحديد', longer: 'أطول أو أقصر', pickLevel: 'اختر مستوى للحفظ', playOn: 'متابعة' }
+  };
+  Object.keys(EXTRA).forEach(function (l) { if (UI[l]) Object.keys(EXTRA[l]).forEach(function (k) { UI[l][k] = EXTRA[l][k]; }); });
   if (!UI[uiCode]) uiCode = 'en';
   var uiDir = (uiCode === 'he' || uiCode === 'ar') ? 'rtl' : 'ltr';
   function t(key) { return (UI[uiCode] && UI[uiCode][key]) || UI.en[key] || key; }
@@ -120,6 +131,8 @@
       padding:12px 16px 28px;color:#f6f0e0;
       font-size:16px;line-height:1.7;overflow:auto}
     .cc[hidden]{display:none}
+    .topcover{position:fixed;left:0;right:0;top:0;background:#0c100e;pointer-events:none}
+    .topcover[hidden]{display:none}
     .cc-head{display:flex;align-items:center;gap:8px;margin-bottom:10px}
     .cc-channel{flex:1;min-width:0;border:0;background:transparent;color:#f6f0e0;font:inherit;font-size:15px;font-weight:750;text-align:start;padding:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
     .cc-label{font-size:8px;letter-spacing:.13em;color:#b9b1a0;font-weight:800;direction:ltr}
@@ -169,6 +182,17 @@
     .yt-search{flex:1;min-width:0;height:29px;border:0;border-radius:8px;background:rgba(255,255,255,.1);color:#f6f0e0;padding:0 10px;font:inherit;font-size:12px;direction:ltr;text-align:start;outline:none}
     .yt-search::placeholder{color:#b9b1a0}
     .yt-channel{max-width:38%;height:29px;border:0;border-radius:8px;background:rgba(255,255,255,.12);color:#f6f0e0;padding:0 8px;font:inherit;font-size:11px;font-weight:750;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;flex:0 1 auto}
+    .cc-tools{display:flex;align-items:center;gap:6px;margin:0 0 8px;flex-wrap:wrap;direction:${uiDir}}
+    .tool{border:0;border-radius:9px;background:rgba(255,255,255,.1);color:#f6f0e0;font:inherit;font-size:12px;font-weight:700;padding:7px 11px;min-height:34px;cursor:pointer}
+    .tool.on{background:rgba(127,208,174,.28);color:#d8f3e6}
+    .cc.compact{bottom:auto;height:auto;padding:8px 14px 14px;border-radius:0 0 16px 16px;box-shadow:0 12px 28px rgba(0,0,0,.4)}
+    .cc.compact .cc-head{display:none}
+    .cc-translation.blur{filter:blur(7px);cursor:pointer}
+    .cc-translation.off{display:none}
+    .selrow{display:flex;align-items:center;justify-content:space-between;gap:6px;margin:12px 0 0}
+    .selrow span{flex:1;text-align:center;font-size:11px;color:#726c60}
+    .selrow button{width:44px;height:40px;border:0;border-radius:10px;background:#f0e9db;color:#1c1b18;font:inherit;font-size:16px;font-weight:800;cursor:pointer}
+    .selrow button:disabled{opacity:.3}
     [hidden]{display:none!important}
     .mini{position:fixed;z-index:2147483647;top:42%;left:0;width:28px;height:46px;border:0;border-radius:0 12px 12px 0;
       background:rgba(15,20,18,.9);color:#f6f0e0;font:inherit;font-size:14px;font-weight:800;pointer-events:auto;
@@ -245,6 +269,9 @@
   window.addEventListener('popstate', syncCollapsed);
   setInterval(syncCollapsed, 800);
 
+  // With the recommendations scrolling under the pinned player, a dark band keeps them out of the strip above the video.
+  var topCover = el('div', 'topcover'); topCover.hidden = true;
+  root.appendChild(topCover);
   var cc = el('div', 'cc'); cc.hidden = true;
   // Caption words are never coloured by learning state.
   var hlOn = false;
@@ -256,9 +283,35 @@
   hlBtn.setAttribute('aria-pressed', 'false');
   hlBtn.hidden = true;
   ccHead.appendChild(channelBtn); ccHead.appendChild(ccLabel); ccHead.appendChild(hlBtn);
+  var prefs = { autoPause: false, box: false, trans: 'on' };
+  try { var savedPrefs = JSON.parse(localStorage.getItem('nerWatchPrefs') || '{}'); Object.keys(savedPrefs).forEach(function (k) { prefs[k] = savedPrefs[k]; }); } catch (e) { }
+  var ccTools = el('div', 'cc-tools');
+  var playBtn = el('button', 'tool', '▶'); playBtn.setAttribute('aria-label', t('playOn'));
+  var pauseBtn = el('button', 'tool', t('pauseS'));
+  var boxBtn = el('button', 'tool', t('box'));
+  var transBtn = el('button', 'tool', t('trans'));
+  [playBtn, pauseBtn, boxBtn, transBtn].forEach(function (b) { ccTools.appendChild(b); });
   var ccLine = el('div', 'cc-line');
   var ccTranslation = el('div', 'cc-translation');
-  cc.appendChild(ccHead); cc.appendChild(ccLine); cc.appendChild(ccTranslation);
+  cc.appendChild(ccHead); cc.appendChild(ccTools); cc.appendChild(ccLine); cc.appendChild(ccTranslation);
+  function applyPrefs() {
+    cc.classList.toggle('compact', !prefs.box);
+    boxBtn.classList.toggle('on', !!prefs.box); boxBtn.setAttribute('aria-pressed', String(!!prefs.box));
+    pauseBtn.classList.toggle('on', !!prefs.autoPause); pauseBtn.setAttribute('aria-pressed', String(!!prefs.autoPause));
+    transBtn.classList.toggle('on', prefs.trans !== 'off'); transBtn.setAttribute('aria-pressed', String(prefs.trans !== 'off'));
+    ccTranslation.classList.toggle('blur', prefs.trans === 'blur');
+    ccTranslation.classList.toggle('off', prefs.trans === 'off');
+    document.documentElement.classList.toggle('ner-recs', !prefs.box);
+    try { localStorage.setItem('nerWatchPrefs', JSON.stringify(prefs)); } catch (e) { }
+  }
+  playBtn.addEventListener('click', function () { var v = theVideo(); if (v) { if (v.paused) v.play(); else v.pause(); } });
+  pauseBtn.addEventListener('click', function () { prefs.autoPause = !prefs.autoPause; applyPrefs(); });
+  boxBtn.addEventListener('click', function () { prefs.box = !prefs.box; applyPrefs(); });
+  transBtn.addEventListener('click', function () { prefs.trans = prefs.trans === 'on' ? 'blur' : prefs.trans === 'blur' ? 'off' : 'on'; applyPrefs(); });
+  ccTranslation.addEventListener('click', function () { if (prefs.trans === 'blur') ccTranslation.classList.toggle('blur'); });
+  // Playing again lets the next sentence through; the play button follows the video.
+  document.addEventListener('play', function (e) { if (e.target && e.target.tagName === 'VIDEO') { frozen = false; lastCaption = ''; updatePlayBtn(); } }, true);
+  document.addEventListener('pause', function (e) { if (e.target && e.target.tagName === 'VIDEO') updatePlayBtn(); }, true);
   root.appendChild(cc);
   function applyHighlight() {
     cc.classList.toggle('no-hl', !hlOn);
@@ -269,15 +322,34 @@
   applyHighlight();
   function fitCaption() {
     if (cc.hidden) return;
-    var node = document.querySelector('video') || document.querySelector('#player');
+    applyPrefsOnce();
+    // The player container, not the video element: its own box moves oddly while the page scrolls.
+    var node = document.querySelector('#movie_player') || document.querySelector('video') || document.querySelector('#player');
     var top = Math.round(window.innerHeight * 0.42);
     if (node) {
       var r = node.getBoundingClientRect();
       if (r.height > 40 && r.bottom > 48 && r.bottom < window.innerHeight - 120) top = Math.round(r.bottom);
     }
     cc.style.top = top + 'px';
+    cc.style.maxHeight = prefs.box ? '' : Math.max(160, window.innerHeight - top - 8) + 'px';
+    var vid = document.querySelector('#movie_player') || document.querySelector('video');
+    var vt = vid ? Math.round(vid.getBoundingClientRect().top) : 0;
+    topCover.hidden = prefs.box || vt < 30;
+    topCover.style.height = vt + 'px';
+    // Recommendations start just below the caption row, not behind it.
+    var res = document.querySelector('ytm-single-column-watch-next-results-renderer');
+    if (res && !prefs.box && !wp.classList.contains('open')) {
+      var rr = res.getBoundingClientRect();
+      if (rr.top > 100) {
+        var need = Math.max(0, Math.round(cc.getBoundingClientRect().bottom - (rr.top + window.scrollY) + 6));
+        var have = parseFloat(getComputedStyle(res).paddingTop) || 0;
+        if (Math.abs(need - have) > 10) res.style.setProperty('padding-top', need + 'px', 'important');
+      }
+    } else if (res && prefs.box) res.style.removeProperty('padding-top');
   }
 
+  var prefsApplied = false;
+  function applyPrefsOnce() { if (!prefsApplied) { prefsApplied = true; applyPrefs(); } }
   var wp = el('div', 'wp');
   wp.appendChild(el('div', 'grab'));
   var whead = el('div', 'whead');
@@ -285,9 +357,20 @@
   var wordEl = el('h2', 'word', '…');
   var metaEl = el('p', 'meta');
   wleft.appendChild(wordEl); wleft.appendChild(metaEl);
+  var resumeW = el('button', 'close', '▶'); resumeW.setAttribute('aria-label', t('playOn'));
   var closeW = el('button', 'close', '×');
-  whead.appendChild(wleft); whead.appendChild(closeW);
+  var wbtns = el('div', null); wbtns.style.cssText = 'display:flex;gap:6px';
+  wbtns.appendChild(resumeW); wbtns.appendChild(closeW);
+  whead.appendChild(wleft); whead.appendChild(wbtns);
   wp.appendChild(whead);
+  // Longer or shorter: grow or shrink the selected words, to translate and save a phrase.
+  var selRow = el('div', 'selrow');
+  var selBtns = {};
+  [['eb', 0], ['sf', 1], ['lbl', 2], ['sl', 3], ['ea', 4]].forEach(function (d) {
+    if (d[0] === 'lbl') { selRow.appendChild(el('span', null, t('longer'))); return; }
+    var b = el('button', null, ''); b.setAttribute('data-sel', d[0]); selBtns[d[0]] = b; selRow.appendChild(b);
+  });
+  wp.appendChild(selRow);
   var phraseEl = el('div', 'phrase');
   phraseEl.hidden = true;
   var phraseKind = el('small'), phraseText = el('b'), phraseMeaning = el('span');
@@ -298,7 +381,8 @@
   var meaningEl = el('p', 'meaning', t('loading'));
   var moreEl = el('p', 'more');
   wp.appendChild(meaningEl); wp.appendChild(moreEl);
-  wp.appendChild(el('div', 'label', t('howWell')));
+  var gradeLabel = el('div', 'label', t('howWell'));
+  wp.appendChild(gradeLabel);
   var grades = el('div', 'grades');
   [[1,'1', t('g1')],[2,'2', t('g2')],[3,'3', t('g3')],[4,'4', t('g4')],[5,'K', t('g5')],[-1,'X', t('gx')]].forEach(function (g) {
     var b = el('button', g[0] === 5 ? 'k' : g[0] === -1 ? 'x' : '');
@@ -341,18 +425,24 @@
     a[href^="intent:"], a[href^="vnd.youtube:"], a[href^="youtube:"], a[href*="youtube://"],
     ytm-app-promo, ytm-app-upsell, .ytm-app-banner, [class*="app-promo"], [class*="open-app"],
     ytm-statement-banner-renderer { display:none!important; }
-    html.ner-watch ytm-single-column-watch-next-results-renderer,
-    html.ner-watch ytm-item-section-renderer,
+    html.ner-watch:not(.ner-recs) ytm-single-column-watch-next-results-renderer,
+    html.ner-watch:not(.ner-recs) ytm-item-section-renderer,
+    html.ner-watch:not(.ner-recs) .related-items-container,
+    html.ner-watch:not(.ner-recs) ytd-watch-next-secondary-results-renderer,
+    html.ner-watch:not(.ner-recs) #related,
     html.ner-watch ytm-comments-entry-point-header-renderer,
     html.ner-watch ytm-comment-section-renderer,
     html.ner-watch ytm-engagement-panel,
     html.ner-watch comments-entry-point-teaser-view-model,
     html.ner-watch ytm-slim-video-information-renderer,
     html.ner-watch ytm-video-metadata-carousel-view-model,
-    html.ner-watch .related-items-container,
-    html.ner-watch ytd-watch-next-secondary-results-renderer,
-    html.ner-watch ytd-comments, html.ner-watch #related, html.ner-watch #comments,
+    html.ner-watch ytd-comments, html.ner-watch #comments,
     html.ner-watch .ytp-endscreen-content, html.ner-watch .ytp-ce-element { display:none!important; }
+    /* Recommendations below the caption row (when the box is off): only the list of videos,
+       not the title block, comments or the ad slot that sit beside it. */
+    html.ner-watch.ner-recs ytm-single-column-watch-next-results-renderer > :not(.related-items-container),
+    html.ner-watch.ner-recs ad-slot-renderer, html.ner-watch.ner-recs ytm-promoted-video-renderer,
+    html.ner-watch.ner-recs ytm-promoted-sparkles-web-renderer, html.ner-watch.ner-recs ytm-companion-slot { display:none!important; }
   `;
   document.documentElement.appendChild(pageStyle);
 
@@ -428,19 +518,32 @@
   } catch (e) { }
   window.__NerWatchCleanAds = cleanAds;
 
+  // The text of the caption on the video. YouTube may show two lines (the original and its own
+  // translation); for a language with its own script only the lines in that script are kept, so
+  // the translation is not shown twice (once from YouTube, once from Shoresh).
   function findCaption() {
     var selectors = ['.ytp-caption-segment', '.caption-window', '.ytp-caption-window-container', '[class*="caption-window"]'];
     var best = '';
     selectors.forEach(function (sel) {
       document.querySelectorAll(sel).forEach(function (n) {
-        var text = (n.innerText || n.textContent || '').replace(/\s+/g, ' ').trim();
-        if (text.length > best.length) best = text;
+        var raw = (n.innerText || n.textContent || '');
+        var text = raw.replace(/\s+/g, ' ').trim();
+        if (text.length > best.length) best = raw;
       });
     });
-    return best;
+    var lines = best.split(/\n+/).map(function (l) { return l.replace(/\s+/g, ' ').trim(); }).filter(Boolean);
+    var marker = scriptRe(lang);
+    if (marker && lines.length > 1) {
+      var own = lines.filter(function (l) { return new RegExp(marker.source).test(l); });
+      if (own.length) lines = own;
+    }
+    var seen = {};
+    lines = lines.filter(function (l) { if (seen[l]) return false; seen[l] = 1; return true; });
+    return lines.join(' ');
   }
 
   var captionHistory = [];
+  var frozen = false;
   var wordTranslations = {};
   var translationSeq = 0;
   var currentTranslationRid = '';
@@ -560,8 +663,21 @@
     ccLine.appendChild(line);
   }
 
+  // "Pause each sentence": the video stops when a caption ends or is replaced by a new sentence
+  // (not when auto-captions only grow), and the sentence just heard stays on screen.
+  function sameSentence(a, b) { return !a || !b || a.indexOf(b) >= 0 || b.indexOf(a) >= 0; }
+  function theVideo() { return document.querySelector('video'); }
+  function updatePlayBtn() {
+    var v = theVideo();
+    playBtn.textContent = v && !v.paused ? '⏸' : '▶';
+  }
   function renderCaption(text) {
     var watching = location.pathname.indexOf('/watch') >= 0;
+    if (frozen) return;
+    if (prefs.autoPause && lastCaption && (!text || !sameSentence(lastCaption, text))) {
+      var vv = theVideo();
+      if (vv && !vv.paused && !vv.ended) { vv.pause(); frozen = true; updatePlayBtn(); return; }
+    }
     if (!text) {
       if (watching) cc.hidden = false;
       else { cc.hidden = true; lastCaption = ''; captionHistory = []; }
@@ -571,7 +687,7 @@
     if (text === lastCaption) return;
     lastCaption = text;
     if (captionHistory[captionHistory.length - 1] !== text) captionHistory.push(text);
-    if (captionHistory.length > 5) captionHistory.shift();
+    if (captionHistory.length > 1) captionHistory.shift();
     while (ccLine.firstChild) ccLine.removeChild(ccLine.firstChild);
     rebuild();
     captionHistory.forEach(function (line, i) {
@@ -612,6 +728,7 @@
     panelMeaning = text || '';
     var key = currentKey || norm(raw || current || '');
     if (!key || !text) return;
+    if (phraseMode && !words[lang + ':' + key]) return; // a selection is saved when a level is picked
     var id = lang + ':' + key;
     var entry = words[id];
     var gradeNow = entry ? (entry.grade || 1) : 1;
@@ -644,7 +761,42 @@
     }));
   }
 
+  var phraseMode = false, selLine = null, selA = -1, selB = -1, selTimer = 0;
+  function lineSpans() { return selLine ? Array.prototype.slice.call(selLine.querySelectorAll('.ccw')) : []; }
+  function applySel() {
+    lineSpans().forEach(function (sp, i) { sp.classList.toggle('active', i >= selA && i <= selB); });
+    var n = lineSpans().length, rtl = dir === 'rtl';
+    var glyphs = rtl ? ['›', '‹|', '|›', '‹'] : ['‹', '|›', '‹|', '›'];
+    ['eb', 'sf', 'sl', 'ea'].forEach(function (k, i) { selBtns[k].textContent = glyphs[i]; });
+    selBtns.eb.disabled = selA <= 0; selBtns.ea.disabled = selB >= n - 1;
+    selBtns.sf.disabled = selB <= selA; selBtns.sl.disabled = selB <= selA;
+    selRow.style.direction = dir;
+  }
+  // The selected words as they stand in the caption, with whatever sits between them.
+  function selText() {
+    var sp = lineSpans(), out = '', on = false;
+    if (!sp[selA] || !sp[selB]) return '';
+    for (var node = selLine.firstChild; node; node = node.nextSibling) {
+      if (node === sp[selA]) on = true;
+      if (on) out += node.nodeType === 1 ? (node.getAttribute('data-raw') || '') : node.nodeValue;
+      if (node === sp[selB]) break;
+    }
+    return out.replace(/\s+/g, ' ').trim();
+  }
+  function openSelection() {
+    var sp = lineSpans();
+    if (!sp[selA] || !sp[selB]) return;
+    phraseMode = selB > selA;
+    openWord(selText(), sp[selA]);
+    applySel();
+    gradeLabel.textContent = phraseMode ? t('pickLevel') : t('howWell');
+    if (phraseMode) metaEl.textContent = t('selection');
+  }
+  function reopenSelection() { clearTimeout(selTimer); applySel(); selTimer = setTimeout(openSelection, 220); }
+  function pauseForStudy() { var v = theVideo(); if (v && !v.paused) v.pause(); }
+
   function openWord(raw, span) {
+    pauseForStudy();
     current = raw; currentKey = null; panelMeaning = '';
     root.querySelectorAll('.ccw.active').forEach(function (s) { s.classList.remove('active'); });
     if (span) span.classList.add('active');
@@ -728,7 +880,8 @@
 
   function closePanel() {
     wp.classList.remove('open');
-    current = null;
+    current = null; phraseMode = false; selA = selB = -1; selLine = null; clearTimeout(selTimer);
+    gradeLabel.textContent = t('howWell');
     root.querySelectorAll('.ccw.active').forEach(function (s) { s.classList.remove('active'); });
   }
 
@@ -739,7 +892,7 @@
     var form = (w && w.form) || current;
     var display = (w && w.display) || current;
     var tr = (w && w.tr) || '';
-    var pos = (w && w.pos) || '';
+    var pos = phraseMode ? 'phrase' : ((w && w.pos) || '');
     var meaning = panelMeaning || (w && w.meaningBase === baseLang ? w.meaning : '') || '';
     send('grade', { lang: lang, key: key, form: form, display: display, tr: tr, pos: pos, meaning: meaning, meaningBase: meaning ? baseLang : '', grade: g, context: currentCtx });
     if (!words[lang + ':' + key]) {
@@ -841,6 +994,7 @@
     }
     if (!target || target === gloss.lang) {
       showMeaning(gloss.parts[0], gloss.parts.slice(1).join(' · '), rankNote);
+      if (phraseMode) return;
       if (!w) grade(1);
       else rememberMeaning(gloss.parts[0], current);
       return;
@@ -866,9 +1020,25 @@
     var g = e.target.closest('[data-grade]');
     if (g) { grade(Number(g.getAttribute('data-grade'))); return; }
     if (e.target === closeW) { closePanel(); return; }
+    if (e.target === resumeW) { var pv = theVideo(); closePanel(); if (pv) pv.play(); return; }
+    var sb = e.target.closest('[data-sel]');
+    if (sb && !sb.disabled) {
+      var k = sb.getAttribute('data-sel');
+      if (k === 'eb') selA--; else if (k === 'ea') selB++; else if (k === 'sf') selA++; else if (k === 'sl') selB--;
+      reopenSelection();
+      return;
+    }
     if (e.target === speak) { if (current) send('speak', { text: current, lang: lang }); return; }
     var s = e.target.closest('.ccw');
-    if (s) { openWord(s.getAttribute('data-raw'), s); return; }
+    if (s) {
+      // A word beside the selection joins it; a word inside it narrows the selection to that word.
+      var line = s.parentNode, all = Array.prototype.slice.call(line.querySelectorAll('.ccw')), idx = all.indexOf(s);
+      if (wp.classList.contains('open') && selLine === line && selA >= 0 && !(idx >= selA && idx <= selB)) {
+        selA = Math.min(selA, idx); selB = Math.max(selB, idx);
+      } else { selLine = line; selA = selB = idx; }
+      clearTimeout(selTimer); applySel(); openSelection();
+      return;
+    }
   });
   close.addEventListener('click', function () { send('close', {}); });
   homeBtn.addEventListener('click', function () { send('navigate', { url: 'https://m.youtube.com/' }); });
@@ -905,10 +1075,11 @@
       last = Date.now();
     }
     time.textContent = (Math.floor(seconds / 60)) + ':' + (seconds % 60 < 10 ? '0' : '') + (seconds % 60);
-    renderCaption(findCaption());
     readChannel();
     fitCaption();
   }, 800);
+
+  setInterval(function () { renderCaption(findCaption()); }, 250);
 
   window.__NerWatch = {
     cleanAds: cleanAds,

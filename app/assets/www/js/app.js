@@ -730,6 +730,102 @@
     $('#watch-streak').textContent = fmt(streak());
   }
 
+  /* ---------------- phrase drill ---------------- */
+
+  // Phrases saved from captions and sayings: hear one side, say the other, then hear the answer.
+  const PHRASE_POS = /^(phrase|proverb|idiom)$/;
+  const phraseItems = () => Object.values(state.words).filter(w => w && w.lang === lang().id && PHRASE_POS.test(w.pos || '') && w.meaning && Number(w.grade) !== -1);
+  let drill = null;
+
+  function drillSides(w, n) {
+    const orig = { text: w.form || w.display || w.key, lang: w.lang };
+    const trans = { text: w.meaning, lang: w.meaningBase || state.settings.baseLang };
+    const mode = $('#drill-hear').value;
+    return (mode === 'orig' || (mode === 'alt' && n % 2 === 0)) ? { p: orig, a: trans } : { p: trans, a: orig };
+  }
+
+  function drillShow(p, a, countText, waiting) {
+    const stage = $('#drill-stage');
+    stage.innerHTML = `<div class="drill-count">${escapeHtml(countText)}</div>` +
+      `<div class="drill-tag">${escapeHtml(langName(BY_LANG[p.lang] || { id: p.lang }))}</div><div class="drill-text" dir="auto">${escapeHtml(p.text)}</div>` +
+      (waiting != null ? `<div class="drill-wait">${waiting}</div>` : '') +
+      (a ? `<div class="drill-tag">${escapeHtml(langName(BY_LANG[a.lang] || { id: a.lang }))}</div><div class="drill-text answer" dir="auto">${escapeHtml(a.text)}</div>` : '');
+  }
+
+  function drillSay(text, langId, phase) {
+    const id = 'readdrill' + drill.token + phase;
+    drill.waiting = id;
+    clearTimeout(drill.safety);
+    // If the phone never reports the end of the speech, carry on anyway.
+    drill.safety = setTimeout(() => drillSpoken(id), 15000);
+    try { if (typeof N.speakAs === 'function') N.speakAs(text, langId, id); else { N.speak(text, langId); drill.safety = setTimeout(() => drillSpoken(id), 2500); } }
+    catch (e) { drill.safety = setTimeout(() => drillSpoken(id), 2500); }
+  }
+
+  function drillSpoken(id) {
+    if (!drill || drill.waiting !== id) return;
+    drill.waiting = '';
+    clearTimeout(drill.safety);
+    if (id.endsWith('p')) drillGap(); else drill.timer = setTimeout(drillNext, 1500);
+  }
+
+  function drillStep() {
+    if (!drill) return;
+    const w = drill.items[drill.i];
+    drill.sides = drillSides(w, drill.i);
+    drill.count = tf('cardOf', { a: fmt(drill.i + 1), b: fmt(drill.items.length) });
+    drillShow(drill.sides.p, null, drill.count);
+    drillSay(drill.sides.p.text, drill.sides.p.lang, 'p');
+  }
+
+  // The pause in which the answer is said out loud.
+  function drillGap() {
+    if (!drill) return;
+    let left = Number($('#drill-gap').value) || 5;
+    drillShow(drill.sides.p, null, drill.count, left);
+    clearInterval(drill.tick);
+    drill.tick = setInterval(() => {
+      left--;
+      if (left > 0) { drillShow(drill.sides.p, null, drill.count, left); return; }
+      clearInterval(drill.tick);
+      drillShow(drill.sides.p, drill.sides.a, drill.count);
+      drillSay(drill.sides.a.text, drill.sides.a.lang, 'a');
+    }, 1000);
+  }
+
+  function drillNext() {
+    if (!drill) return;
+    drill.i++;
+    if (drill.i >= drill.items.length) { stopDrill(); $('#drill-stage').innerHTML = `<div class="drill-text">${escapeHtml(tr('סיימתם את כל הביטויים.'))}</div>`; return; }
+    drillStep();
+  }
+
+  function stopDrill() {
+    if (drill) { clearTimeout(drill.safety); clearTimeout(drill.timer); clearInterval(drill.tick); }
+    drill = null;
+    try { N.stopSpeak(); } catch (e) { }
+    $('#drill-toggle').textContent = tr('התחלה');
+  }
+
+  function startDrill() {
+    const items = phraseItems();
+    if (!items.length) { $('#drill-stage').innerHTML = `<div class="drill-text">${escapeHtml(tr('עוד אין ביטויים שמורים. בחרו כמה מילים בכתוביות ושמרו אותן.'))}</div>`; return; }
+    for (let i = items.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [items[i], items[j]] = [items[j], items[i]]; }
+    drill = { items, i: 0, token: Date.now() % 100000, waiting: '' };
+    $('#drill-toggle').textContent = tr('עצירה');
+    drillStep();
+  }
+
+  function openDrill() {
+    const l = lang(), baseId = state.settings.baseLang;
+    $('#drill-hear').innerHTML = `<option value="orig">${escapeHtml(langName(l))}</option>` +
+      `<option value="trans">${escapeHtml(langName(BY_LANG[baseId] || { id: baseId }))}</option>` +
+      `<option value="alt">${escapeHtml(tr('לסירוגין'))}</option>`;
+    $('#drill-stage').innerHTML = `<div class="drill-text">${escapeHtml(tf('words', { n: fmt(phraseItems().length) }))}</div>`;
+    $('#drill-toggle').textContent = tr('התחלה');
+    showModal('phrasedrill');
+  }
+
   function renderWords() {
     const l = lang();
     const all = Object.values(state.words).filter(w => w.lang === l.id);
@@ -741,6 +837,9 @@
     if (wordFilter === 'learning') list = list.filter(w => w.grade >= 1 && w.grade <= 4);
     if (wordFilter === 'known') list = list.filter(w => w.grade === 5);
     if (wordFilter === 'ignored') list = list.filter(w => w.grade === -1);
+    if (wordFilter === 'phrases') list = list.filter(w => PHRASE_POS.test(w.pos || ''));
+    const drillBtn = $('#phrase-drill-btn');
+    if (drillBtn) drillBtn.hidden = !phraseItems().length;
     if (wordSearch.trim()) {
       const q = wordSearch.trim().toLocaleLowerCase(uiLocale());
       list = list.filter(w => [w.key, w.form, w.display, w.tr, w.meaning].some(v => String(v || '').toLocaleLowerCase(uiLocale()).includes(q)));
@@ -984,7 +1083,7 @@
     $('#goal-range-val').textContent = state.settings.dailyGoal;
     $('#tts-range').value = Math.round((state.settings.ttsRate || 1) * 100);
     $('#tts-range-val').textContent = (state.settings.ttsRate || 1).toFixed(1) + '×';
-    $('#app-version').textContent = boot.version || '1.8.2';
+    $('#app-version').textContent = boot.version || '1.8.3';
     renderSyncUI();
     renderLanguages();
   }
@@ -2195,6 +2294,7 @@
   }
 
   function onSpeakDone(id) {
+    if (/^readdrill/.test(id)) { drillSpoken(id); return; }
     if (!aloud || id !== 'read' + aloud.token) return;
     aloud.i++;
     if (aloud.i < aloud.plan.length) speakAloudIndex();
@@ -2207,7 +2307,8 @@
     clearAloudMark();
   }
 
-  function onSpeakFail() {
+  function onSpeakFail(id) {
+    if (drill && drill.waiting) { drillSpoken(drill.waiting); return; }
     if (!aloud) return;
     stopAloud(false);
   }
@@ -4149,7 +4250,7 @@
       if (go) { navigate(go.dataset.go); return; }
 
       const close = e.target.closest('[data-close]');
-      if (close) { hideModal(close.dataset.close); return; }
+      if (close) { if (close.dataset.close === 'phrasedrill') stopDrill(); hideModal(close.dataset.close); return; }
 
       if (e.target.closest('#theme-btn')) {
         state.settings.theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
@@ -4358,6 +4459,8 @@
         case 'practice-early': openReview(true); break;
         case 'patterns-back': patternBack(); break;
         case 'sample': seedArticle(); break;
+        case 'phrase-drill': openDrill(); break;
+        case 'phrase-drill-toggle': if (drill) stopDrill(); else startDrill(); break;
         case 'review-flip': flipReview(); break;
         case 'review-undo': undoReview(); break;
         case 'review-more': reviewQueue = reviewQueue.concat(extraCards(5)); renderReview(); break;
